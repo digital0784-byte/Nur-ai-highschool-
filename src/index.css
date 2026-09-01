@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Noto Sans Ethiopic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #FAF6EC;
+    color: #24211E;
+  }
+
+  h1, h2, h3, .font-serif-ethiopic {
+    font-family: 'Noto Serif Ethiopic', 'Newsreader', Georgia, serif;
+  }
+
+  [dir="rtl"] {
+    font-family: 'Cairo', 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] .font-serif-ethiopic {
+    font-family: 'Cairo', 'Noto Sans Arabic', serif;
+  }
+}
+
+/* 3D Flip Card Styles */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Notebook grid/lines subtle pattern */
+.notebook-ruled {
+  background-image: linear-gradient(to bottom, transparent 95%, rgba(68, 64, 60, 0.08) 95%);
+  background-size: 100% 2.2rem;
+  line-height: 2.2rem;
+}
+
+/* Scrollbar styling for academic feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F2ECE0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1C7B7;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B0A390;
+}

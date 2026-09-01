@@ -1,0 +1,6 @@
+{
+  "name": "የክፍል 9-12 ቲቶሪያል",
+  "description": "የኢትዮጵያ የሁለተኛ ደረጃ (9-12 ክፍል) ተማሪዎች መስተጋብራዊ የትምህርት፣ የፍላሽካርድ እና የፈተና መተግበሪያ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
