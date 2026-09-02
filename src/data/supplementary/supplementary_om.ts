@@ -1,0 +1,136 @@
+import { SupplementaryBook } from '../../types';
+
+export const supplementaryBooksOromo: SupplementaryBook[] = [
+  {
+    id: 'supp-math-extreme-11-12',
+    title: 'Extreme Series: Herrega Olaanaa Kutaa 11-12 (Afaan Oromoo)',
+    amharicTitle: 'Qophii Qormaata Biyyoolessaa Herregaa',
+    authorOrSeries: 'Extreme Educational Series',
+    category: 'extreme',
+    categoryLabel: 'Extreme Series',
+    subjectId: 'math',
+    grades: [11, 12],
+    badge: 'Qormaata ESSLCE tiif Filatamaa',
+    description: 'Foormulaawwan herregaa kutaa 11 fi 12, tooftaalee saffisaa (Shortcuts), fi furmaata qormaata seensaa waggoota 10n darban.',
+    highlights: [
+      'Gaaffilee qormaata biyyoolessaa 800+ ibsa guutuun furaman',
+      'Tooftaalee Kaalkulasii (Liimiitii, Deereveetiivii, Intigiraalii)',
+      'Saffisaan maatiriiksii fi veektara furuu',
+      'Tooftaalee yerotti fayyadamuu qormaata biyyoolessaaf',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Maatiriiksii, Diitarminaantii fi Sirna Qixaatoota Sararaawaa',
+        summary: 'Gosa maatiriiksii, diitarminaantii 2x2 fi 3x3, invarsii fi Seera Kireemarii.',
+        keyFormulasAndRules: [
+          'det([[a, b], [c, d]]) = ad - bc',
+          'A⁻¹ = (1 / det(A)) * adj(A)',
+          'Seera Kireemarii: x_i = det(A_i) / det(A)',
+          'det(kA) = kⁿ * det(A)',
+        ],
+        sampleExamProblems: [
+          {
+            problem: 'Maatiriiksii 2x2 A tiif det(A) = 5 yoo ta\'e, det(3A) meeqa ta\'a?',
+            solution: 'det(3A) = 3² * 5 = 9 * 5 = 45.',
+            tip: 'Maatiriiksii 2x2 tiif k², maatiriiksii 3x3 tiif k³ fayyadamaa!',
+          },
+        ],
+        fullContent: ['Maatiriiksiin tartiiba lakkoofsotaa sararaa fi dhaabaan taa\'aniidha.'],
+      },
+    ],
+  },
+  {
+    id: 'supp-physics-extreme-11-12',
+    title: 'Extreme Series: Fiiziksii Qormaata Seensaa (Kutaa 11-12)',
+    amharicTitle: 'Qajeelcha Fiiziksii ESSLCE',
+    authorOrSeries: 'Extreme Educational Series',
+    category: 'extreme',
+    categoryLabel: 'Extreme Series',
+    subjectId: 'physics',
+    grades: [11, 12],
+    badge: 'Foormulaa fi Furmaata Saffisaa',
+    description: 'Foormulaawwan fiiziksii kutaa 11 fi 12, socho\'a pirojektayilii, elektirikii, maagineetizimii fi teermodaayinaamiiksii.',
+    highlights: [
+      'Tooftaalee socho\'a pirojektayilii fi marsoo',
+      'Elektiroostaatiksii fi seera Kiirkoof (Kirchhoff\'s Rules)',
+      'Seera Faaraadaay fi indaakshinii',
+      'Gaaffilee qormaata biyyoolessaa 100+ ibsa bal\'aan',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Socho\'a Pirojektayilii (Projectile Motion)',
+        summary: 'Kallattii dalgaa fi gubbaa pirojektayilii, fageenya balalii fi olka\'iinsa guddaa.',
+        keyFormulasAndRules: [
+          'Yeroo balalii: T = (2 * v₀ * sin θ) / g',
+          'Olka\'iinsa guddaa: H = (v₀² * sin² θ) / (2g)',
+          'Fageenya dalgaa: R = (v₀² * sin(2θ)) / g',
+          'Fageenyi guddaan θ = 45° irratti argama: R_max = v₀² / g',
+        ],
+        sampleExamProblems: [
+          {
+            problem: 'Kubbaan tokko saffisa 20 m/s tiin koorniyaa 30° irratti darbatame. Olka\'iinsa guddaa (H) barbaadi. (g = 10 m/s²)',
+            solution: 'H = (20² * sin²(30°)) / (2 * 10) = (400 * 0.25) / 20 = 5 meetira.',
+            tip: 'sin(30°) = 0.5 ta\'uu yaadadhaa.',
+          },
+        ],
+        fullContent: ['Socho\'i pirojektayilii walitti makama socho\'a dalgaa fi gubbaati.'],
+      },
+    ],
+  },
+  {
+    id: 'supp-national-exam-past-papers',
+    title: 'Qormaata Biyyoolessaa ESSLCE Waggoota Darbanii (2010 - 2024)',
+    amharicTitle: 'Kuufoo Qormaata Biyyoolessaa Itoophiyaa',
+    authorOrSeries: 'Kuufoo Qormaata Biyyoolessaa EAES',
+    category: 'national_exam',
+    categoryLabel: 'National Exam Archive',
+    subjectId: 'all',
+    grades: [12],
+    badge: 'Qormaata Waggaa 15',
+    description: 'Qormaata seensaa yuunivarsiitii kutaa 12ffaa bara 2010 hanga 2024 tti kenname hunda furmaata isaanii waliin.',
+    highlights: [
+      'Herrega, Fiiziksii, Keemistirii, Baayoloojii fi Afaan Ingilizii',
+      'Gaaffilee irra deddeebi\'amanii dhufan',
+      'Gorsa kiyyoo fi dogoggora hambisuuf gargaaran',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Gaaffilee Herregaa ESSLCE Irra Deddeebi\'aman',
+        summary: 'Kaalkulasii, maatiriiksii, veektaraa fi tirigoonoomeetirii.',
+        keyFormulasAndRules: ['f\'(x) = 0 taasisanii gatii guddaa/xiqqaa barbaaduu'],
+        sampleExamProblems: [],
+        fullContent: ['Qormaanni biyyoolessaa waggaa waggaan dhiyaatu qophii ga\'aa barbaada.'],
+      },
+    ],
+  },
+  {
+    id: 'supp-alpha-formula-handbook',
+    title: 'Alpha Matrix: Gabatee Foormulaa Guutuu Sadarkaa 2ffaa',
+    amharicTitle: 'Qajeelcha Foormulaa Saffisaa',
+    authorOrSeries: 'Alpha Science Publications',
+    category: 'formula_handbook',
+    categoryLabel: 'Formula Matrix',
+    subjectId: 'all',
+    grades: [9, 10, 11, 12],
+    badge: 'Foormulaa Hunda Bakka Tokkotti',
+    description: 'Barattoota kutaa 9-12 tiif gabatee foormulaa herregaa, fiiziksii fi keemistirii guutuu.',
+    highlights: [
+      'Foormulaa Ji\'oomeetirii, Aljebraa fi Tirigoonoomeetirii',
+      'Dhaabbatoota fiiziksii fi yuunitii SI',
+      'Dhaabbatoota keemistirii fi seera gaazii',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Dhaabbatoota Bu\'uuraa fi Foormulaawwan Murteessoo',
+        summary: 'Dhaabbatoota saayinsii hunda bakka tokkotti.',
+        keyFormulasAndRules: ['g = 9.8 m/s²', 'k = 8.99 × 10⁹ N·m²/C²', 'N_A = 6.022 × 10²³ mol⁻¹'],
+        sampleExamProblems: [],
+        fullContent: ['Gabateen foormulaa kun irra deebii qormaataaf gargaara.'],
+      },
+    ],
+  },
+];

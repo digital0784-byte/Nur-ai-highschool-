@@ -10,6 +10,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useProgress } from '../context/ProgressContext';
 
 interface QuizViewProps {
   topic: Topic;
@@ -18,11 +19,13 @@ interface QuizViewProps {
 
 export const QuizView: React.FC<QuizViewProps> = ({ topic, subject }) => {
   const { t, isRtl } = useLanguage();
+  const { recordQuizResult, getTopicProgress } = useProgress();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
   const [isFinished, setIsFinished] = useState(false);
 
+  const topicProgress = getTopicProgress(topic.id);
   const questions = topic.quizQuestions;
   const currentQuestion = questions[currentQuestionIndex] || questions[0];
 
@@ -32,7 +35,7 @@ export const QuizView: React.FC<QuizViewProps> = ({ topic, subject }) => {
     setSelectedOptionIndex(null);
     setUserAnswers(new Array(topic.quizQuestions.length).fill(null));
     setIsFinished(false);
-  }, [topic.id]);
+  }, [topic.id, topic.quizQuestions.length]);
 
   const handleSelectOption = (index: number) => {
     if (selectedOptionIndex !== null) return; // Already answered this question
@@ -49,6 +52,12 @@ export const QuizView: React.FC<QuizViewProps> = ({ topic, subject }) => {
       setSelectedOptionIndex(null);
     } else {
       setIsFinished(true);
+
+      // Record quiz completion in progress state
+      const correctCount = userAnswers.reduce((count: number, answer, idx) => {
+        return answer === questions[idx]?.correctIndex ? count + 1 : count;
+      }, 0);
+      recordQuizResult(topic.id, correctCount, questions.length);
     }
   };
 
@@ -114,14 +123,14 @@ export const QuizView: React.FC<QuizViewProps> = ({ topic, subject }) => {
           </div>
 
           {/* Retry Button */}
-          <div className="pt-3">
+          <div className="pt-3 flex items-center justify-center gap-3">
             <button
               id="quiz-retry-btn"
               onClick={handleRestartQuiz}
               className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold border-[1.5px] border-[#38332D] bg-[#38332D] text-[#FAF6EC] hover:bg-[#24211E] transition-all cursor-pointer shadow-xs active:translate-y-0.5"
             >
               <RotateCcw className="w-4 h-4" />
-              {t.retryBtn}
+              <span className="font-serif-ethiopic">{t.retryBtn}</span>
             </button>
           </div>
         </div>
@@ -130,7 +139,7 @@ export const QuizView: React.FC<QuizViewProps> = ({ topic, subject }) => {
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#5A5143] pb-2 border-b-[1.5px] border-[#38332D]">
             <BookOpen className="w-4 h-4" />
-            {t.reviewTitle}
+            <span className="font-serif-ethiopic">{t.reviewTitle}</span>
           </div>
 
           <div className="space-y-4">
@@ -207,7 +216,7 @@ export const QuizView: React.FC<QuizViewProps> = ({ topic, subject }) => {
     <div id="active-quiz-container" className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
       {/* Quiz Progress Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-[1.5px] border-[#38332D] pb-3">
-        <div>
+        <div className="space-y-0.5">
           <span className="text-xs font-bold uppercase tracking-wider text-[#5A5143]">
             {t.quizSubtitle}
           </span>
@@ -216,17 +225,28 @@ export const QuizView: React.FC<QuizViewProps> = ({ topic, subject }) => {
           </h3>
         </div>
 
-        {/* Question Counter */}
-        <div
-          id="quiz-progress-badge"
-          className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#EDE6D4] border-[1.5px] border-[#38332D] text-xs font-mono font-bold text-[#1E1B18] self-start sm:self-auto"
-        >
-          <span>{t.questionLabel}</span>
-          <span className="text-sm font-bold" style={{ color: subject.accentColor }}>
-            {currentQuestionIndex + 1}
-          </span>
-          <span>{t.fromLabel}</span>
-          <span>{questions.length}</span>
+        {/* Question Counter & Status */}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {topicProgress.quizCompleted && (
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 border border-emerald-300">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+              <span>
+                {t.quizPassedBadge} ({topicProgress.quizScore}/{topicProgress.quizTotal || 4})
+              </span>
+            </span>
+          )}
+
+          <div
+            id="quiz-progress-badge"
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#EDE6D4] border-[1.5px] border-[#38332D] text-xs font-mono font-bold text-[#1E1B18]"
+          >
+            <span>{t.questionLabel}</span>
+            <span className="text-sm font-bold" style={{ color: subject.accentColor }}>
+              {currentQuestionIndex + 1}
+            </span>
+            <span>{t.fromLabel}</span>
+            <span>{questions.length}</span>
+          </div>
         </div>
       </div>
 
@@ -347,7 +367,9 @@ export const QuizView: React.FC<QuizViewProps> = ({ topic, subject }) => {
             className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold border-[1.5px] border-[#38332D] text-[#FAF6EC] transition-all cursor-pointer shadow-xs active:translate-y-0.5"
             style={{ backgroundColor: subject.accentColor }}
           >
-            <span>{currentQuestionIndex < questions.length - 1 ? t.nextQuestionBtn : t.viewResultBtn}</span>
+            <span className="font-serif-ethiopic">
+              {currentQuestionIndex < questions.length - 1 ? t.nextQuestionBtn : t.viewResultBtn}
+            </span>
             {isRtl ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
           </button>
         </div>

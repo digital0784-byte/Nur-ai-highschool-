@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab, Subject } from '../types';
-import { BookOpen, Layers, HelpCircle } from 'lucide-react';
+import { BookOpen, Layers, HelpCircle, Award, Video, Library } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 interface TabBarProps {
@@ -16,8 +16,12 @@ export const TabBar: React.FC<TabBarProps> = ({
 }) => {
   const { t } = useLanguage();
 
-  const tabs: { id: ActiveTab; label: string; icon: React.ReactNode }[] = [
+  const tabs: { id: ActiveTab; label: string; icon: React.ReactNode; badge?: string }[] = [
     { id: 'lesson', label: t.tabLesson, icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'textbook', label: t.tabTextbook || 'የተማሪ መጽሐፍ', icon: <BookOpen className="w-4 h-4 text-emerald-700" /> },
+    { id: 'objectives_exam', label: t.tabObjectivesExam || 'የቻፕተር ፈተና', icon: <Award className="w-4 h-4 text-amber-700" />, badge: 'AI' },
+    { id: 'video_learning', label: t.tabVideoLearning || 'ቪዲዮ ትምህርት', icon: <Video className="w-4 h-4 text-rose-700" /> },
+    { id: 'supplementary', label: t.tabSupplementary || 'አጋዥ መጽሐፍት', icon: <Library className="w-4 h-4 text-indigo-700" /> },
     { id: 'flashcards', label: t.tabFlashcards, icon: <Layers className="w-4 h-4" /> },
     { id: 'quiz', label: t.tabQuiz, icon: <HelpCircle className="w-4 h-4" /> },
   ];
@@ -25,7 +29,7 @@ export const TabBar: React.FC<TabBarProps> = ({
   return (
     <div
       id="main-tab-bar"
-      className="flex border-b-[1.5px] border-[#38332D] bg-[#EDE6D4] px-3 sm:px-6 pt-2 gap-1 sm:gap-2 overflow-x-auto no-scrollbar"
+      className="flex border-b-[1.5px] border-[#38332D] bg-[#EDE6D4] px-2 sm:px-4 pt-2 gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar"
       role="tablist"
       aria-label={t.appTitle}
     >
@@ -39,7 +43,7 @@ export const TabBar: React.FC<TabBarProps> = ({
             role="tab"
             aria-selected={isActive}
             onClick={() => onChangeTab(tab.id)}
-            className={`flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold border-t-[1.5px] border-l-[1.5px] border-r-[1.5px] transition-all cursor-pointer whitespace-nowrap relative -mb-[1.5px] ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-2 sm:py-2.5 text-xs sm:text-xs font-bold border-t-[1.5px] border-l-[1.5px] border-r-[1.5px] transition-all cursor-pointer whitespace-nowrap relative -mb-[1.5px] ${
               isActive
                 ? 'bg-[#FAF6EC] text-[#1E1B18] border-[#38332D] shadow-xs z-10'
                 : 'bg-[#E3DAC4] text-[#5A5143] hover:bg-[#DCD2BB] border-transparent'
@@ -53,6 +57,11 @@ export const TabBar: React.FC<TabBarProps> = ({
               {tab.icon}
             </span>
             <span className="font-serif-ethiopic">{tab.label}</span>
+            {tab.badge && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-200 text-amber-900 border border-amber-400 font-sans font-black">
+                {tab.badge}
+              </span>
+            )}
           </button>
         );
       })}

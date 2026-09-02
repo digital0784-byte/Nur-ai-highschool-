@@ -1,22 +1,59 @@
 import { useState, useMemo } from 'react';
-import { Grade, ActiveTab } from './types';
+import { Grade, ActiveTab, Topic, SubjectStream } from './types';
 import { getCurriculum } from './data/curriculumData';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { ProgressProvider, useProgress } from './context/ProgressContext';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { TopicChips } from './components/TopicChips';
 import { TabBar } from './components/TabBar';
 import { LessonView } from './components/LessonView';
+import { TextbookView } from './components/TextbookView';
+import { ObjectivesExamView } from './components/ObjectivesExamView';
+import { VideoLearningView } from './components/VideoLearningView';
+import { SupplementaryBooksView } from './components/SupplementaryBooksView';
 import { FlashcardView } from './components/FlashcardView';
 import { QuizView } from './components/QuizView';
+import { CourseProgressModal } from './components/CourseProgressModal';
+import { CompletionCertificateModal } from './components/CompletionCertificateModal';
+import { AllTextbooksModal } from './components/AllTextbooksModal';
+import { NewCurriculumModal } from './components/NewCurriculumModal';
+import { AIChapterTutorModal } from './components/AIChapterTutorModal';
 
 function TutorialAppContent() {
   const { language, t } = useLanguage();
+  const { getOverallProgress } = useProgress();
 
   // Application State
   const [selectedGrade, setSelectedGrade] = useState<Grade>(9);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('math');
   const [activeTab, setActiveTab] = useState<ActiveTab>('lesson');
+  const [selectedStream, setSelectedStream] = useState<SubjectStream | 'all'>('all');
+
+  // Modals state
+  const [isChecklistOpen, setIsChecklistOpen] = useState<boolean>(false);
+  const [isCertificateOpen, setIsCertificateOpen] = useState<boolean>(false);
+  const [isAllTextbooksOpen, setIsAllTextbooksOpen] = useState<boolean>(false);
+  const [isNewCurriculumOpen, setIsNewCurriculumOpen] = useState<boolean>(false);
+
+  // AI Tutor / Deep-Dive Modal State
+  const [aiTutorState, setAiTutorState] = useState<{
+    isOpen: boolean;
+    chapterTitle: string;
+    mode: 'analysis' | 'chat';
+  }>({
+    isOpen: false,
+    chapterTitle: '',
+    mode: 'analysis',
+  });
+
+  const handleOpenAITutor = (chapterTitle: string, mode: 'analysis' | 'chat' = 'analysis') => {
+    setAiTutorState({
+      isOpen: true,
+      chapterTitle,
+      mode,
+    });
+  };
 
   // Load localized curriculum based on current language
   const currentCurriculum = useMemo(() => {
@@ -66,6 +103,21 @@ function TutorialAppContent() {
     setSelectedTopicId(newTopic.id);
   };
 
+  // Handler for selecting topic directly from checklist modal or chips
+  const handleSelectTopicDirect = (subjectId: string, topic: Topic) => {
+    setSelectedSubjectId(subjectId);
+    setSelectedTopicId(topic.id);
+  };
+
+  // Handler for opening textbook from library modal
+  const handleSelectSubjectAndGradeForTextbook = (subjectId: string, grade: Grade) => {
+    setSelectedSubjectId(subjectId);
+    setSelectedGrade(grade);
+    setActiveTab('textbook');
+  };
+
+  const overall = getOverallProgress(currentCurriculum);
+
   return (
     <div className="min-h-screen bg-[#FAF6EC] text-[#24211E] py-3 sm:py-6 px-2 sm:px-4 md:px-6 flex flex-col items-center justify-start">
       {/* Main Container with 1.5px solid dark notebook border */}
@@ -73,10 +125,15 @@ function TutorialAppContent() {
         id="app-main-frame"
         className="w-full max-w-6xl border-[1.5px] border-[#38332D] bg-[#FAF6EC] shadow-sm flex flex-col overflow-hidden"
       >
-        {/* Top Header */}
+        {/* Top Header with Course Completion Progress, Textbooks Library & Actions */}
         <Header
           selectedGrade={selectedGrade}
           onSelectGrade={handleSelectGrade}
+          subjects={currentCurriculum}
+          onOpenChecklist={() => setIsChecklistOpen(true)}
+          onOpenCertificate={() => setIsCertificateOpen(true)}
+          onOpenAllTextbooks={() => setIsAllTextbooksOpen(true)}
+          onOpenNewCurriculum={() => setIsNewCurriculumOpen(true)}
         />
 
         {/* Workspace: Sidebar + Content */}
@@ -86,6 +143,8 @@ function TutorialAppContent() {
             subjects={currentCurriculum}
             selectedSubjectId={currentSubject.id}
             onSelectSubject={handleSelectSubject}
+            selectedStream={selectedStream}
+            onSelectStream={setSelectedStream}
           />
 
           {/* Main Study Panel */}
@@ -101,7 +160,7 @@ function TutorialAppContent() {
               onSelectTopic={(topic) => setSelectedTopicId(topic.id)}
             />
 
-            {/* 3 Tabs Header: Lesson | Flashcards | Quiz */}
+            {/* Tabs Header: Lesson | Textbook | Objectives Exam | Video | Supplementary | Flashcards | Quiz */}
             <TabBar
               activeTab={activeTab}
               onChangeTab={setActiveTab}
@@ -115,7 +174,52 @@ function TutorialAppContent() {
                   topic={currentTopic}
                   subject={currentSubject}
                   onChangeTab={setActiveTab}
+                  onOpenAITutor={handleOpenAITutor}
                 />
+              )}
+
+              {activeTab === 'textbook' && (
+                <TextbookView
+                  subject={currentSubject}
+                  selectedGrade={selectedGrade}
+                  onSelectGrade={handleSelectGrade}
+                  onOpenAllTextbooksModal={() => setIsAllTextbooksOpen(true)}
+                  onOpenAITutor={handleOpenAITutor}
+                  onTakeObjectivesExam={() => setActiveTab('objectives_exam')}
+                  onExit={() => setActiveTab('lesson')}
+                />
+              )}
+
+              {activeTab === 'objectives_exam' && (
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <ObjectivesExamView
+                    subject={currentSubject}
+                    grade={selectedGrade}
+                    onOpenAITutor={handleOpenAITutor}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'video_learning' && (
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <VideoLearningView
+                    subject={currentSubject}
+                    grade={selectedGrade}
+                    onOpenAITutor={handleOpenAITutor}
+                    onExit={() => setActiveTab('lesson')}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'supplementary' && (
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <SupplementaryBooksView
+                    subject={currentSubject}
+                    grade={selectedGrade}
+                    onOpenAITutor={handleOpenAITutor}
+                    onExit={() => setActiveTab('lesson')}
+                  />
+                </div>
               )}
 
               {activeTab === 'flashcards' && (
@@ -152,6 +256,50 @@ function TutorialAppContent() {
           </div>
         </footer>
       </div>
+
+      {/* Interactive AI Chapter Tutor Modal */}
+      <AIChapterTutorModal
+        isOpen={aiTutorState.isOpen}
+        onClose={() => setAiTutorState((prev) => ({ ...prev, isOpen: false }))}
+        subject={currentSubject}
+        grade={selectedGrade}
+        chapterTitle={aiTutorState.chapterTitle || currentTopic.lessonTitle}
+        initialMode={aiTutorState.mode}
+      />
+
+      {/* New Ethiopian Curriculum Guide Modal */}
+      <NewCurriculumModal
+        isOpen={isNewCurriculumOpen}
+        onClose={() => setIsNewCurriculumOpen(false)}
+        onSelectStream={(stream) => setSelectedStream(stream)}
+      />
+
+      {/* All Subjects & Grades PDF Textbooks Library Modal */}
+      <AllTextbooksModal
+        isOpen={isAllTextbooksOpen}
+        onClose={() => setIsAllTextbooksOpen(false)}
+        subjects={currentCurriculum}
+        onSelectSubjectAndGrade={handleSelectSubjectAndGradeForTextbook}
+      />
+
+      {/* Completion Checklist Modal */}
+      <CourseProgressModal
+        isOpen={isChecklistOpen}
+        onClose={() => setIsChecklistOpen(false)}
+        subjects={currentCurriculum}
+        onSelectTopic={handleSelectTopicDirect}
+        onOpenCertificate={() => setIsCertificateOpen(true)}
+      />
+
+      {/* Course Completion & Mastery Certificate Modal */}
+      <CompletionCertificateModal
+        isOpen={isCertificateOpen}
+        onClose={() => setIsCertificateOpen(false)}
+        selectedGrade={selectedGrade}
+        subjects={currentCurriculum}
+        completedCount={overall.completedTopics}
+        totalTopics={overall.totalTopics}
+      />
     </div>
   );
 }
@@ -159,7 +307,9 @@ function TutorialAppContent() {
 export default function App() {
   return (
     <LanguageProvider>
-      <TutorialAppContent />
+      <ProgressProvider>
+        <TutorialAppContent />
+      </ProgressProvider>
     </LanguageProvider>
   );
 }

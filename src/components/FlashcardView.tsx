@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Topic, Subject } from '../types';
-import { ChevronLeft, ChevronRight, RotateCw, Check, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCw, Check, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useProgress } from '../context/ProgressContext';
 
 interface FlashcardViewProps {
   topic: Topic;
@@ -10,8 +11,11 @@ interface FlashcardViewProps {
 
 export const FlashcardView: React.FC<FlashcardViewProps> = ({ topic, subject }) => {
   const { t, isRtl } = useLanguage();
+  const { markFlashcardsComplete, getTopicProgress } = useProgress();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+
+  const topicProgress = getTopicProgress(topic.id);
 
   // Reset flip and index when topic changes
   useEffect(() => {
@@ -21,6 +25,13 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({ topic, subject }) 
 
   const cards = topic.flashcards;
   const currentCard = cards[currentIndex] || cards[0];
+
+  // If user reaches last card or flips 2+ cards, mark flashcards as reviewed
+  useEffect(() => {
+    if (currentIndex >= cards.length - 1 || isFlipped) {
+      markFlashcardsComplete(topic.id);
+    }
+  }, [currentIndex, isFlipped, cards.length, topic.id, markFlashcardsComplete]);
 
   const handleFlip = () => {
     setIsFlipped((prev) => !prev);
@@ -62,7 +73,7 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({ topic, subject }) 
     <div id="flashcard-view-container" className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
       {/* Top Meta Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-[1.5px] border-[#38332D] pb-3">
-        <div>
+        <div className="space-y-0.5">
           <span className="text-xs font-bold uppercase tracking-wider text-[#5A5143]">
             {t.flashcardsSubtitle}
           </span>
@@ -71,17 +82,26 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({ topic, subject }) 
           </h3>
         </div>
 
-        {/* Counter Badge */}
-        <div
-          id="flashcard-counter-badge"
-          className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#EDE6D4] border-[1.5px] border-[#38332D] text-xs font-mono font-bold text-[#1E1B18] self-start sm:self-auto"
-        >
-          <span>{t.cardLabel}</span>
-          <span className="text-sm font-bold" style={{ color: subject.accentColor }}>
-            {currentIndex + 1}
-          </span>
-          <span>{t.ofLabel}</span>
-          <span>{cards.length}</span>
+        {/* Counter Badge & Status */}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {topicProgress.flashcardsCompleted && (
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 border border-emerald-300">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+              <span>{t.flashcardsCompletedBadge}</span>
+            </span>
+          )}
+
+          <div
+            id="flashcard-counter-badge"
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#EDE6D4] border-[1.5px] border-[#38332D] text-xs font-mono font-bold text-[#1E1B18]"
+          >
+            <span>{t.cardLabel}</span>
+            <span className="text-sm font-bold" style={{ color: subject.accentColor }}>
+              {currentIndex + 1}
+            </span>
+            <span>{t.ofLabel}</span>
+            <span>{cards.length}</span>
+          </div>
         </div>
       </div>
 

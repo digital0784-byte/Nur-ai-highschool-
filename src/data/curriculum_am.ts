@@ -6,6 +6,8 @@ export const curriculumAmharic: Subject[] = [
     id: 'math',
     name: 'ሂሳብ',
     subName: 'Mathematics',
+    stream: 'common',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
     accentColor: '#1D4ED8',
     accentLight: '#EFF6FF',
     accentBorder: '#2563EB',
@@ -17,6 +19,23 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '9-10',
         applicableGrades: [9, 10],
         lessonTitle: 'የሁለተኛ ዲግሪ (ኳድራቲክ) እኩልዮሾች አፈታት ስልቶች',
+        competencies: [
+          'የኳድራቲክ እኩልዮሽን መደበኛ ቅርጽ (ax² + bx + c = 0) መለየትና መግለጽ',
+          'በፋክተራይዜሽን፣ ሙሉ ካሬ በመስራት እና በኳድራቲክ ፎርሙላ እኩልዮሾችን መፍታት',
+          'የዲሰክሪሚናንት (Discriminant) ዋጋን በመጠቀም የመልሶችን አይነትና ብዛት መተንበይ',
+          'በገሃዱ አለም የሚያጋጥሙ የቦታና የፍጥነት ስሌቶችን በኳድራቲክ እኩልዮሽ መቅረጽ'
+        ],
+        practicalActivity: {
+          title: 'የፓራቦላ ግራፍ እና የመስመር አቀማመጥ ተግባራዊ ስሌት (Graphing Parabolic Curves)',
+          materials: ['የግራፍ ደብተር (Graph Paper)', 'እርሳስና መስመሪያ', 'ሳይንቲፊክ ካልኩሌተር'],
+          steps: [
+            '1. ለ f(x) = x² - 4x + 3 የተሰኙ የ x ዋጋዎችን (-1, 0, 1, 2, 3, 4, 5) ሰንጠረዥ አዘጋጅ።',
+            '2. ተጓዳኝ የ y ዋጋዎችን አስላ። (y = f(x))።',
+            '3. ነጥቦቹን በግራፍ ወረቀት ላይ አሳርፍና ለስላሳ የፓራቦላ ኩርባ ሳል።',
+            '4. ግራፉ የ x-ዘንግን የሚቆርጥባቸውን ነጥቦች (x-intercepts) ከእኩልዮሹ መልሶች ጋር አነጻጽር።'
+          ],
+          observation: 'ግራፉ የ x-ዘንግን በ x=1 እና x=3 ላይ ይቆርጣል፤ ይህም (x-1)(x-3)=0 ከሚለው ትክክለኛ መልስ ጋር ይስማማል።'
+        },
         lessonContent: [
           'ኳድራቲክ እኩልዮሽ የሚባለው ማንኛውም በ ax² + bx + c = 0 መልክ የሚገለፅ እኩልዮሽ ሲሆን፣ እዚህ ላይ a፣ b እና c ቋሚ ቁጥሮች ናቸው፤ a ደግሞ ከዜሮ ጋር እኩል መሆን አይችልም። የዚህ እኩልዮሽ ከፍተኛው የዋጋ አርቢ (degree) 2 ነው።',
           'እነዚህን እኩልዮሾች ለመፍታት ሶስት ዋና ዋና መንገዶችን እንጠቀማለን፡ አንደኛው በፋክተራይዜሽን (Factorization)፣ ሁለተኛው ሙሉ ካሬ በመስራት (Completing the Square)፣ እና ሦስተኛው በኳድራቲክ ፎርሙላ x = (-b ± √(b² - 4ac)) / (2a) ነው።',
@@ -86,6 +105,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '11-12',
         applicableGrades: [11, 12],
         lessonTitle: 'የለውጥ ፍጥነት እና የዴሪቫቲቭ (Derivatives) መሰረቶች',
+        competencies: [
+          'የቅጽበታዊ የለውጥ ፍጥነትን በሊሚት (Limits) ቀመር መግለጽና ማስላት',
+          'የፓወር ህግ፣ የብዜት ህግ እና የሰንሰለት ህግን በመጠቀም የተወሳሰቡ ፈንክሽኖች ዴሪቫቲቭ መፈለግ',
+          'የፈንክሽኖችን ከፍተኛ (Max) እና ዝቅተኛ (Min) ነጥቦች በማስላት ለኦፕቲማይዜሽን ችግሮች መፍትሄ መስጠት',
+          'ካልኩለስን በኢኮኖሚክስ (Marginal Cost/Revenue) እና በፊዚክስ (Velocity/Acceleration) ውስጥ መተግበር'
+        ],
+        practicalActivity: {
+          title: 'የታንጀንት መስመር ቁልቁለት ስሌት እና የዴሪቫቲቭ ተግባራዊ ማረጋገጫ (Tangent Slope Experiment)',
+          materials: ['የግራፍ ሶፍትዌር ወይም የግራፍ ደብተር', 'መስመሪያ', 'ስሌት ሰንጠረዥ'],
+          steps: [
+            '1. f(x) = x² ግራፍ ላይ በ (2, 4) ነጥብ ዙሪያ የሴካንት መስመሮችን ስሎፕ ከ x=2.5, x=2.1, x=2.01 ጋር አስላ።',
+            '2. የለውጥ ምጣኔው ወደ ምን ቁጥር እንደሚጠጋ (limit) ተመልከት።',
+            '3. በፎርሙላው f\'(2) = 2(2) = 4 መሆኑን አረጋግጥ።'
+          ],
+          observation: 'የሴካንት መስመሮች ቁልቁለት ወደ 4 እየተቃረበ ይመጣል፤ ይህም የታንጀንቱ ትክክለኛ ስሎፕ 4 መሆኑን በተግባር ያረጋግጣል።'
+        },
         lessonContent: [
           'ካልኩለስ የቀጣይነት ያለው ለውጥ የሂሳብ ጥናት ነው። የዴሪቫቲቭ ዋና አላማ የአንድ ፈንክሽን ቅፅበታዊ የለውጥ ፍጥነት (instantaneous rate of change) እና በማንኛውም ነጥብ ላይ የሚሳለው የታንጀንት መስመር ቁልቁለት (slope of the tangent line) ማስላት ነው።',
           'ዴሪቫቲቭ የሚገለፀው በሊሚት (limit) ሲሆን፣ ቀመሩም f\'(x) = lim(h→0) [f(x+h) - f(x)] / h ነው። ይህ መሰረታዊ ህግ የፈንክሽኖችን ባህሪ፣ ከፍተኛ (maximum) እና ዝቅተኛ (minimum) ነጥቦችን ለመረዳት ወሳኝ ነው።',
@@ -157,6 +192,8 @@ export const curriculumAmharic: Subject[] = [
     id: 'physics',
     name: 'ፊዚክስ',
     subName: 'Physics',
+    stream: 'natural',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
     accentColor: '#7C3AED',
     accentLight: '#F5F3FF',
     accentBorder: '#8B5CF6',
@@ -168,6 +205,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '9-10',
         applicableGrades: [9, 10],
         lessonTitle: 'የኃይል እና የእንቅስቃሴ መሰረታዊ መርሆዎች',
+        competencies: [
+          'የኒውተንን ሶስት የእንቅስቃሴ ህጎች በዕለት ተዕለት ህይወት ምሳሌዎች ማብራራት',
+          'የተጣራ ኃይል (Net Force)፣ ክብደት (Mass) እና ማጣደፍ (Acceleration) ስሌቶችን F = ma በመጠቀም መፍታት',
+          'ኢነርሺያን (Inertia) እና የግጭት ኃይልን (Friction) በተግባር መፈተሽ',
+          'የድርጊት እና አፀፋ (Action-Reaction) ጥንዶችን በተለያዩ አካላት ላይ መለየት'
+        ],
+        practicalActivity: {
+          title: 'የኒውተን ሁለተኛ ህግ የላብራቶሪ ሙከራ (Investigating F = ma using Trolleys)',
+          materials: ['ትንሽ ጋሪ (Dynamic Trolley)', 'የተለያዩ መመጠኛ ክብደቶች (Slotted masses)', 'የጊዜ መለኪያ (Ticker Timer ወይም Stopwatch)', 'ተዳፋት ጠረጴዛ (Frictionless track)'],
+          steps: [
+            '1. ጋሪውን በጠረጴዛው ላይ አስቀምጠህ በተለያዩ ኃይሎች (1N, 2N, 3N) እንዲጎተት አድርግ።',
+            '2. የጋሪውን ማጣደፍ (a) በእያንዳንዱ ሙከራ ላይ ለካ።',
+            '3. ኃይል እና ማጣደፍን የሚያሳይ ግራፍ ሳል።'
+          ],
+          observation: 'በጋሪው ላይ የተጫነው ኃይል በእጥፍ ሲጨምር ማጣደፉም በእጥፍ ይጨምራል፤ ይህም F ከ a ጋር ቀጥታ እንደሚመጣጠን ያረጋግጣል።'
+        },
         lessonContent: [
           'ሰር አይዛክ ኒውተን ግዑዝ አካላት በኃይል አማካኝነት የሚያሳዩትን እንቅስቃሴ የሚቆጣጠሩ ሶስት ወሳኝ ህጎችን ቀምሯል። እነዚህ ህጎች የክላሲካል መካኒክስ መሰረት ናቸው።',
           'አንደኛው ህግ (Inertia) ማንኛውም አካል ውጫዊ ያልተመጣጠነ ኃይል እስካልተጫነው ድረስ ባለበት የእረፍት ሁኔታ ወይም በቋሚ ፍጥነት የመቀጠል ዝንባሌ እንዳለው ይገልጻል። ሁለተኛው ህግ ማጣደፍ (Acceleration) ከተጣራው ኃይል ጋር በቀጥታ እንደሚመጣጠን እና ከክብደት (mass) ጋር በተገላቢጦሽ እንደሚዛመድ ያሳያል (F = ma)።',
@@ -237,6 +290,23 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '11-12',
         applicableGrades: [11, 12],
         lessonTitle: 'የኤሌክትሮማግኔቲክ ኢንዳክሽን እና የሞገድ ባህሪያት',
+        competencies: [
+          'የፋራዳይ እና የሌንዝ ህጎችን በመጠቀም የተፈጠረውን የኤሌክትሮሞቲቭ ኃይል (EMF) ማስላት',
+          'የሞገድ እኩልዮሽ (v = f·λ) በመጠቀም የብርሃን እና የድምፅ ፍጥነቶችን መተንተን',
+          'የትራንስፎርመሮችን የአሰራር ቀመር (Vp/Vs = Np/Ns) በሃይል ማስተላለፊያ ስርዓት ውስጥ መተግበር',
+          'የኤሌክትሮማግኔቲክ ስፔክትረምን ክፍሎች እና በህክምናና ኮሙኒኬሽን ውስጥ ያላቸውን ጥቅም መዘርዘር'
+        ],
+        practicalActivity: {
+          title: 'የኤሌክትሮማግኔቲክ ኢንዳክሽን ሙከራ (Faraday\'s Induction with Coils & Magnet)',
+          materials: ['የመዳብ ሽቦ መጠምጠሚያ (Solenoid Coil)', 'ኃይለኛ ባር ማግኔት (Bar Magnet)', 'ጋልቫኖሜትር (Sensitive Galvanometer)'],
+          steps: [
+            '1. የመዳብ ሽቦውን ጫፎች ከጋልቫኖሜትሩ ጋር አገናኝ።',
+            '2. ማግኔቱን በፍጥነት ወደ መጠምጠሚያው ውስጥ አስገባና ጋልቫኖሜትሩ የሚያሳየውን እይ።',
+            '3. ማግኔቱን ሳይንቀሳቀስ በመጠምጠሚያው ውስጥ አቁመህ ተመልከት።',
+            '4. ማግኔቱን በፍጥነት ወደ ውጪ አውጣ።'
+          ],
+          observation: 'ማግኔቱ ሲንቀሳቀስ ብቻ ጋልቫኖሜትሩ ወደ ግራና ቀኝ ይወዛወዛል፤ ሲቆም ግን ዜሮ ይሆናል። ይህም ከረንት የሚፈጠረው ማግኔቲክ ፍላክስ ሲለወጥ ብቻ መሆኑን ያረጋግጣል።'
+        },
         lessonContent: [
           'ኤሌክትሮማግኔቲዝም በኤሌክትሪክ ክፍያዎች እና በማግኔቲክ መስኮች መካከል ያለውን መስተጋብር የሚያጠና ሰፊ የፊዚክስ ዘርፍ ነው። ተንቀሳቃሽ የኤሌክትሪክ ክፍያ በዙሪያው ማግኔቲክ መስክ ይፈጥራል።',
           'የፋራዳይ የኢንዳክሽን ህግ እንደሚገልጸው፣ በተዘጋ ሰርኪውት ውስጥ የሚፈጠረው የኤሌክትሮሞቲቭ ኃይል (EMF) ከማግኔቲክ ፍላክስ ለውጥ ፍጥነት ጋር በቀጥታ ይመጣጠናል። የሌንዝ ህግ ደግሞ የኢንዲዩስድ ከረንቱ አቅጣጫ ለውጡን የሚቃወም እንደሆነ ያስረዳል።',
@@ -308,6 +378,8 @@ export const curriculumAmharic: Subject[] = [
     id: 'chemistry',
     name: 'ኬሚስትሪ',
     subName: 'Chemistry',
+    stream: 'natural',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
     accentColor: '#C2410C',
     accentLight: '#FFF7ED',
     accentBorder: '#EA580C',
@@ -319,6 +391,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '9-10',
         applicableGrades: [9, 10],
         lessonTitle: 'የንዑሳን ቅንጣቶች ባህሪ እና የቦንድ አይነቶች',
+        competencies: [
+          'የአተም ንዑሳን ቅንጣቶች (ፕሮቶን፣ ኒውትሮን፣ ኤሌክትሮን) አቀማመጥ እና ባህሪያትን መለየት',
+          'የቦር እና የኳንተም ሜካኒካል ሞዴልን በመጠቀም የኤሌክትሮን ውቅረትን (Electronic Configuration) መጻፍ',
+          'በአዮኒክ፣ ኮቫለንት እና ሜታሊክ ትስስር መካከል ያለውን ልዩነት በንጥረ ነገሮች ባህሪ ማብራራት',
+          'የፒሪዮዲክ ሰንጠረዥ ወቅታዊ አዝማሚያዎችን (Electronegativity, Ionization Energy) መተንተን'
+        ],
+        practicalActivity: {
+          title: 'የነበልባል ሙከራ ለብረታ ብረት አየኖች (Flame Test for Metal Cations)',
+          materials: ['የኒክሮም ሽቦ (Nichrome wire)', 'የቡንሰን በርነር (Bunsen Burner)', 'የተለያዩ የጨው ውህዶች (NaCl, KCl, CuCl₂, CaCl₂)', 'ቀጭን ሃይድሮክሎሪክ አሲድ (Dilute HCl)'],
+          steps: [
+            '1. ሽቦውን በ HCl በማጠብ በነበልባሉ ላይ አፅዳ።',
+            '2. ሽቦውን በ NaCl ጨው ነክረህ በነበልባሉ አናት ላይ አስቀምጥ፤ የሚታየውን ቀለም መዝግብ።',
+            '3. ለ KCl (ፖታሲየም) እና CuCl₂ (መዳብ) ሙከራውን ድገም፤ ቀለማቸውን ተመልከት።'
+          ],
+          observation: 'ሶዲየም ደማቅ ቢጫ ነበልባል፣ ፖታሲየም ሊላክ (ወይን ጠጅ) ነበልባል፣ እንዲሁም መዳብ አረንጓዴ-ሰማያዊ ነበልባል ይፈጥራሉ። ይህም የኤሌክትሮን ኢነርጂ ሽግግርን ያሳያል።'
+        },
         lessonContent: [
           'አተም የቁስ አካል መሰረታዊ መገንቢያ ሲሆን፣ በውስጡ ፕሮቶን (+ charge) እና ኒውትሮን (ገለልተኛ) የያዘ ኒውክሊየስ፣ እንዲሁም በዙሪያው የሚሽከረከሩ ኤሌክትሮኖችን (- charge) ይዟል።',
           'አተሞች የተረጋጋ የኦክቴት (8 የውጪ ኤሌክትሮኖች) ህግ ለማሟላት እርስ በእርስ ይተሳሰራሉ። ዋና ዋናዎቹ የትስስር አይነቶች፡ አዮኒክ ቦንድ (ኤሌክትሮን በመስጠት/በመቀበል በብረታ ብረት እና ኢ-ብረታ ብረት መካከል)፣ ኮቫለንት ቦንድ (ኤሌክትሮን በመጋራት በኢ-ብረታ ብረቶች መካከል)፣ እና ሜታሊክ ቦንድ ናቸው።',
@@ -388,6 +476,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '11-12',
         applicableGrades: [11, 12],
         lessonTitle: 'የኬሚካላዊ ግብረ-መልሶች ፍጥነት እና ሚዛናዊነት',
+        competencies: [
+          'የኢኩሊብሪየም ቋሚን (Kc እና Kp) ከተሰጡ ሞላሪቲዎች ማስላትና መተንበይ',
+          'የሊ ሻቴሊየርን መርህ በኢንዱስትሪ ኬሚካል ምርቶች (ለምሳሌ የሃበር ሂደት ለአሞኒያ) ላይ መተግበር',
+          'የኢንታልፒ (ΔH)፣ ኢንትሮፒ (ΔS) እና የጊብስ ፍሪ ኢነርጂ (ΔG) ስሌቶችን በመጠቀም የስፖንታኒቲ ሁኔታን መወሰን',
+          'የአሲድ-ቤዝ ኢኩሊብሪየም እና የባፈር (Buffer) መፍትሄዎችን ፒኤች (pH) ማስላት'
+        ],
+        practicalActivity: {
+          title: 'የሊ ሻቴሊየር መርህ ተግባራዊ ማረጋገጫ (Testing Le Chatelier\'s Principle with Cobalt Chloride)',
+          materials: ['የኮባልት ክሎራይድ መፍትሄ [Co(H₂O)₆]²⁺ (ሮዝ)', 'የተከማቸ ሃይድሮክሎሪክ አሲድ (HCl)', 'የሙቅ ውሃ ባዝን (Hot water bath)', 'የበረዶ ባዝን (Ice bath)', 'የሙከራ ቱቦዎች (Test tubes)'],
+          steps: [
+            '1. በሙከራ ቱቦ ውስጥ ሮዝ የሆነውን [Co(H₂O)₆]²⁺ መፍትሄ አፍስስ።',
+            '2. ጥቂት ጠብታ HCl ጨምር፤ መፍትሄው ወደ ሰማያዊ [CoCl₄]²⁻ ሲቀየር እይ።',
+            '3. ቱቦውን በሙቅ ውሃ ውስጥ አስቀምጠው (ሰማያዊነቱ ይጠነክራል)፤ ከዚያም በበረዶ ውሃ ውስጥ አስቀምጠው (ወደ ሮዝ ይመለሳል)።'
+          ],
+          observation: 'የሙቀት መጨመር ኢንዶተርሚክ የሆነውን ወደ ፊት ግብረ-መልስ (ሰማያዊ) ያበረታታል፤ ቅዝቃዜ ደግሞ ወደ ኋላ (ሮዝ) ይመልሰዋል። ይህም የሊ ሻቴሊየርን መርህ ያረጋግጣል።'
+        },
         lessonContent: [
           'ኬሚካላዊ ኢኩሊብሪየም የሚፈጠረው ወደ ፊት የሚሄደው ግብረ-መልስ ፍጥነት ወደ ኋላ ከሚመለሰው ግብረ-መልስ ፍጥነት ጋር እኩል ሲሆን እና የተዋሃጆቹ መጠን ሳይለወጥ ሲቆይ ነው።',
           'የሊ ሻቴሊየር መርህ (Le Chatelier\'s Principle) በሚዛን ላይ ባለው ስርዓት ላይ ጫና (የሙቀት፣ የግፊት ወይም የይዘት ለውጥ) ሲደረግ፣ ስርዓቱ ለውጡን ለመቀነስ በሚረዳ አቅጣጫ ምላሽ እንደሚሰጥ ይደነግጋል።',
@@ -459,6 +563,8 @@ export const curriculumAmharic: Subject[] = [
     id: 'biology',
     name: 'ባዮሎጂ',
     subName: 'Biology',
+    stream: 'natural',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
     accentColor: '#15803D',
     accentLight: '#F0FDF4',
     accentBorder: '#16A34A',
@@ -470,6 +576,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '9-10',
         applicableGrades: [9, 10],
         lessonTitle: 'የህይወት መሰረታዊ አሃድ እና የኦርጋኔሎች ሚና',
+        competencies: [
+          'የህዋስ ንድፈ-ሀሳብን (Cell Theory) ዋና ዋና መርሆዎች መዘርዘር',
+          'በእጽዋት እና እንስሳት ህዋሳት መካከል ያሉትን መዋቅራዊ ልዩነቶች በማይክሮስኮፕ ስር መለየት',
+          'የህዋስ ኦርጋኔሎችን (Mitochondria, Chloroplast, Ribosome) ተግባር መግለጽ',
+          'በህዋስ ሽፋን በኩል የሚካሄዱ የቁስ ዝውውሮችን (Osmosis, Diffusion, Active Transport) መተንተን'
+        ],
+        practicalActivity: {
+          title: 'የሽንኩርት ልጣጭ ህዋስን በማይክሮስኮፕ መመርመር (Microscopic Examination of Onion Epidermal Cells)',
+          materials: ['ቀላል ኮምፓውንድ ማይክሮስኮፕ', 'የሽንኩርት ልጣጭ', 'የአዮዲን መፍትሄ (Iodine stain)', 'የመስታወት ስላይድና ከቨር ስሊፕ (Glass slide & Coverslip)', 'መቆንጠጫ (Forceps)'],
+          steps: [
+            '1. ከመስታወቱ ስላይድ ላይ አንድ ጠብታ ውሃ አድርግና ቀጭኑን የሽንኩርት ልጣጭ በላዩ ላይ አንጥፍ።',
+            '2. አንድ ጠብታ የአዮዲን መፍትሄ ጨምረህ የአየር አረፋ እንዳይገባ በከቨር ስሊፕ በጥንቃቄ ሸፍን።',
+            '3. በዝቅተኛ (4x/10x) እና ከዚያም በከፍተኛ (40x) ማጉያ ስር ተመልከት፤ የህዋስ ግድግዳውንና ኒውክሊየሱን ሳል።'
+          ],
+          observation: 'በአዮዲን ምክንያት ጎልተው የሚታዩ አራት ማዕዘን ቅርፅ ያላቸው የእጽዋት ህዋሶች፣ ወፍራም የህዋስ ግድግዳ እና ደማቅ ክብ ኒውክሊየስ በግልጽ ይታያሉ።'
+        },
         lessonContent: [
           'ህዋስ (Cell) የማንኛውም ህያው ፍጡር መሰረታዊ መዋቅራዊ እና ተግባራዊ አሃድ ነው። በህዋስ ቲዎሪ መሰረት ሁሉም ህያዋን የተሰሩት ከአንድ ወይም ከበርካታ ህዋሳት ሲሆን፣ አዳዲስ ህዋሳት የሚፈጠሩት ቀደም ሲል ከነበሩት ህዋሳት ክፍፍል ነው።',
           'ህዋሳት በሁለት ይከፈላሉ፡ ፕሮካሪዮቲክ (ግልጽ ኒውክሊየስ የሌላቸው፣ ለምሳሌ ባክቴሪያ) እና ዩካሪዮቲክ (በሜምብሬን የተከበበ ኒውክሊየስ ያላቸው፣ ለምሳሌ የእጽዋትና የእንስሳት ህዋስ)።',
@@ -539,6 +661,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '11-12',
         applicableGrades: [11, 12],
         lessonTitle: 'የዘረ-መል ውርስ ህጎች እና ሞለኪውላር ባዮሎጂ',
+        competencies: [
+          'የሜንደልን የውርስ ህጎች (Law of Segregation & Independent Assortment) በፑኔት ካሬ መተንተን',
+          'የዲኤንኤ ድርብ ሄሊክስ መዋቅር እና የናይትሮጅን ቤዝ ማጣመር ህግን (A-T, G-C) መተግበር',
+          'የፕሮቲን ውህደት ሂደቶችን (Transcription እና Translation) ደረጃ በደረጃ ማስረዳት',
+          'የጄኔቲክ ምህንድስና (Genetic Engineering) እና ባዮቴክኖሎጂ በግብርና እና ህክምና ውስጥ ያላቸውን ፋይዳ መገምገም'
+        ],
+        practicalActivity: {
+          title: 'ዲኤንኤን ሙዝ ወይም እንጆሪ በመጠቀም የማውጣት ተግባራዊ ሙከራ (DNA Extraction Experiment)',
+          materials: ['የበሰለ ሙዝ ወይም እንጆሪ', 'ፈሳሽ ሳሙና', 'ጨው (NaCl)', 'ቀዝቃዛ ኤታኖል / አልኮል (Chilled 95% Ethanol)', 'የቡና ማጣሪያ ወረቀት ወይም ጨርቅ'],
+          steps: [
+            '1. ሙዙን በፕላስቲክ ፌስታል ውስጥ ከጨውና ፈሳሽ ሳሙና ጋር በመጨፍለቅ የህዋስ ሽፋኑን ሰባብር።',
+            '2. ድብልቁን በማጣሪያ ወረቀት አጥልለህ ወደ ብርጭቆ ውስጥ አፍስስ።',
+            '3. ቀዝቃዛ አልኮል በብርጭቆው ጠርዝ በኩል ቀስ አድርገህ ጨምር፤ በሁለቱ ፈሳሾች መገናኛ ላይ የሚፈጠረውን ነጭ ክር መሰል ዲኤንኤ በስንጥር አውጣ።'
+          ],
+          observation: 'በአልኮሉ ንብርብር ላይ ነጭ፣ የዝልግልግ ክር መልክ ያለው የሙዙ ኑክሊክ አሲድ (DNA) ተንሳፎ በዓይን ይታያል።'
+        },
         lessonContent: [
           'ጄኔቲክስ የባህሪያት ከአባትና እናት ወደ ልጅ መተላለፍን የሚያጠና ሳይንስ ነው። ግሬጎር ሜንደል የአተር ተክሎችን በማዳቀል የውርስ ህጎችን (የመለያየት እና ራሱን ችሎ የመወረስ ህግጋት) አስቀምጧል።',
           'ዲኤንኤ (DNA) የዘረ-መል መረጃ ተሸካሚ ድርብ ሄሊክስ (double helix) ሞለኪውል ሲሆን፣ የተሰራው ከኒውክሊዮታይዶች ነው። አራቱ የናይትሮጅን ቤዞች አዴኒን (A) ከታይሚን (T) ጋር፣ እንዲሁም ጉዋኒን (G) ከሳይቶሲን (C) ጋር ይጣመራሉ።',
@@ -610,6 +748,8 @@ export const curriculumAmharic: Subject[] = [
     id: 'english',
     name: 'English',
     subName: 'English Language',
+    stream: 'common',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
     accentColor: '#0D9488',
     accentLight: '#F0FDFA',
     accentBorder: '#14B8A6',
@@ -621,6 +761,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '9-10',
         applicableGrades: [9, 10],
         lessonTitle: 'Mastering Voice and Grammatical Accuracy',
+        competencies: [
+          'Transform active sentences into passive voice across various tenses',
+          'Apply the passive voice appropriately in scientific and journalistic reporting',
+          'Demonstrate correct usage of present perfect and past continuous tenses in context',
+          'Write cohesive paragraphs demonstrating grammatical accuracy and varied sentence structure'
+        ],
+        practicalActivity: {
+          title: 'News Report Drafting and Voice Transformation Workshop',
+          materials: ['Sample newspaper excerpt', 'Highlighter pens', 'Writing pad'],
+          steps: [
+            '1. Read a short science report and identify all passive voice constructions.',
+            '2. Rewrite an active event description into formal passive voice.',
+            '3. Exchange drafts with a peer to verify auxiliary "be" verb agreement with subject.'
+          ],
+          observation: 'Passive constructions like "A new solar station was inaugurated..." focus reader attention on the achievement rather than the agent.'
+        },
         lessonContent: [
           'In English grammar, voice indicates whether the subject of a sentence performs or receives the action. In the active voice, the subject acts: "The teacher explained the lesson." In the passive voice, the subject is acted upon: "The lesson was explained by the teacher."',
           'The passive voice is formed using an appropriate tense of the auxiliary verb "to be" followed by the past participle of the main verb (Subject + Be + Past Participle). It is especially useful in scientific and academic writing where the action or result matters more than the actor.',
@@ -705,6 +861,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '11-12',
         applicableGrades: [11, 12],
         lessonTitle: 'Advanced Conditionals and Cohesive Writing',
+        competencies: [
+          'Construct complex conditional sentences (Zero, First, Second, Third, and Mixed)',
+          'Utilize inverted conditionals ("Had I known...") in formal academic discourse',
+          'Deploy varied discourse markers (consequently, nevertheless, moreover) for essay cohesion',
+          'Analyze rhetorical strategies in persuasive and argumentative texts'
+        ],
+        practicalActivity: {
+          title: 'Debate and Argumentative Speech Construction',
+          materials: ['Debate topic prompt cards', 'Discourse marker cheat-sheet', 'Stopwatch'],
+          steps: [
+            '1. Select a stance on an educational policy topic.',
+            '2. Construct a 2-minute argumentative statement incorporating at least two conditional arguments and three formal discourse markers.',
+            '3. Present to peers and evaluate adherence to cohesive flow.'
+          ],
+          observation: 'Using transitions like "Furthermore" and "Had the policy been implemented differently..." enhances rhetorical persuasiveness.'
+        },
         lessonContent: [
           'Conditional sentences express hypothetical situations and their consequences. There are four main types: Zero (general truths), First (real future possibilities), Second (unreal/hypothetical present), and Third Conditional (unreal past counterfactuals).',
           'Third conditional follows the pattern: "If + had + past participle, would have + past participle" (e.g., "If I had studied harder, I would have passed the exam"). Inverted conditionals allow formal variation: "Had I known, I would have helped."',
@@ -781,6 +953,8 @@ export const curriculumAmharic: Subject[] = [
     id: 'amharic',
     name: 'አማርኛ',
     subName: 'Amharic Literature',
+    stream: 'common',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
     accentColor: '#D97706',
     accentLight: '#FFFBEB',
     accentBorder: '#F59E0B',
@@ -792,6 +966,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '9-10',
         applicableGrades: [9, 10],
         lessonTitle: 'የስነ-ጽሁፍ ቅርፆችና የቋንቋ ውበት አጠቃቀም',
+        competencies: [
+          'የስነ-ቃል ዘውጎችን (ተረት፣ ምሳሌያዊ አነጋገር፣ እንቆቅልሽ፣ ሙሾ) መለየትና ማድነቅ',
+          'የልቦለድ አላባውያንን (ጭብጥ፣ ሴራ፣ ገፀ-ባህሪ፣ መቼት) በንባብ ጽሁፍ ውስጥ መተንተን',
+          'የግጥም ቅርጾችን፣ ቤት መድፊያዎችን እና ምት መለየት',
+          'ባህላዊ እሴቶችን እና የታሪክ አሻራዎችን ከስነ-ቃል መረጃዎች ማመንጨት'
+        ],
+        practicalActivity: {
+          title: 'የአካባቢ የስነ-ቃል ቅርሶች ጥንቅር እና የተውኔት ዝግጅት (Oral Tradition Field Collection)',
+          materials: ['የድምጽ መቅረጫ ወይም ደብተር', 'የስነ-ጽሁፍ ማስታወሻ'],
+          steps: [
+            '1. ከአካባቢው አዋቂዎች 3 ምሳሌያዊ አነጋገሮችን እና 1 አጭር ተረት ሰብስብ።',
+            '2. የተሰበሰበውን ተረት ወደ ባለ 2 ገፀ-ባህሪ አጭር መድረክ ተውኔት (Dialogue) ቀይር።',
+            '3. በክፍል ውስጥ የተውኔቱን ንባብ በተገቢው የድምጽ ማስተካከያ አቅርብ።'
+          ],
+          observation: 'ስነ-ቃልን ወደ ተውኔት መቀየር የቋንቋን ተለዋዋጭነትና የገፀ-ባህሪ አሳሳል ክህሎትን ያዳብራል።'
+        },
         lessonContent: [
           'ስነ-ጽሁፍ የሰውን ልጅ አስተሳሰብ፣ ስሜትና ማህበራዊ ህይወት በውብ ቋንቋ አዋዝቶ የሚገልጽ የጥበብ ዘርፍ ነው። ስነ-ጽሁፍ በሁለት ዋና ዋና ክፍሎች ይከፈላል፡ ስነ-ቃል (ቃል በቃል ከትውልድ ወደ ትውልድ የሚተላለፍ) እና ስነ-ጽሁፍ (በፅሁፍ የሰፈረ)።',
           'የስነ-ቃል ዘውጎች መካከል ተረትና ምሳሌ፣ እንቆቅልሽ፣ ሙሾ፣ የሰርግና የጀግንነት ዘፈኖች፣ እና ቀረርቶ ተጠቃሾች ናቸው። እነዚህም የህዝቡን ታሪክ፣ ባህልና ፍልስፍና ይዘው ይቆያሉ።',
@@ -861,6 +1051,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '11-12',
         applicableGrades: [11, 12],
         lessonTitle: 'የጥልቅ ንግግር እና የምስጢር ፍቺ ስልቶች',
+        competencies: [
+          'የሰምና ወርቅ ጽንሰ-ሀሳብንና የህብረ-ቃልን ወሳኝ ሚና መተንተን',
+          'ባህላዊ የቅኔ ስንኞችን ሰምና ወርቅ ለይቶ መተርጎም',
+          'የቋንቋ ምስጢራዊና ውበታዊ አጠቃቀምን በማህበራዊ ሂስ ጽሁፎች ውስጥ ማጎልበት',
+          'የግዕዝ እና የአማርኛ ቅኔያዊ ቅርሶችን ታሪካዊ ፋይዳ መገምገም'
+        ],
+        practicalActivity: {
+          title: 'የሰምና ወርቅ ግጥም ቅንብር አውደ ጥናት (Wax and Gold Composition Workshop)',
+          materials: ['የቅኔ ማመሳከሪያ መጽሐፍ', 'ደብተርና እስክሪብቶ'],
+          steps: [
+            '1. ባለ ሁለት ትርጉም ያለውን አንድ ህብረ-ቃል ምረጥ (ለምሳሌ፡ "ተከበረ" ወይም "አለቀሰ")።',
+            '2. ህብረ-ቃሉን መሰረት በማድረግ ግልጽ ሰም ያለው ባለ ሁለት ስንኝ ግጥም ጻፍ።',
+            '3. የጓደኛህን ግጥም አንብበህ የተሰወረውን ወርቅ ፈልገህ አውጣ።'
+          ],
+          observation: 'ህብረ-ቃሉ በዐውደ-ጽሁፉ ላይ ተመስርቶ አንዱን ቃል ወደ ሁለት ፍጹም የተለያዩ ትርጉሞች የመቀየር ከፍተኛ ምናባዊ ኃይል አለው።'
+        },
         lessonContent: [
           'ሰምና ወርቅ የኢትዮጵያ አንጋፋ የስነ-ግጥምና የንግግር ጥበብ ሲሆን፣ የቋንቋን ባለሁለት ገጽታ ውበት ይገልጻል። ሰም ላይ ላዩን የሚታየውና በቀላሉ የሚሰማው ቀጥተኛ ትርጉም ሲሆን፣ ወርቁ ደግሞ ውስጠ-ወይራ የሆነው ጥልቅና የተሰወረው እውነተኛ ፍቺ ነው።',
           'ሰምና ወርቅ ለመፍጠር ህብረ-ቃል (የሰሙና የወርቁ መገናኛ ድልድይ) ቁልፍ ሚና ይጫወታል። ቅኔ ማህበራዊ ሂስን፣ ፍቅርን፣ ፖለቲካዊ መልዕክትን እና መንፈሳዊ ምስጢራትን በጥበብ ለመግለጽ ያገለግላል።',
@@ -932,6 +1138,8 @@ export const curriculumAmharic: Subject[] = [
     id: 'social-studies',
     name: 'ማህበራዊ ሳይንስ',
     subName: 'History & Social Studies',
+    stream: 'social',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
     accentColor: '#B91C1C',
     accentLight: '#FEF2F2',
     accentBorder: '#DC2626',
@@ -943,6 +1151,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '9-10',
         applicableGrades: [9, 10],
         lessonTitle: 'የአክሱም ስልጣኔ፣ ቴክኖሎጂ እና የንግድ መስመሮች',
+        competencies: [
+          'የአክሱም ስልጣኔ የፖለቲካ፣ ኢኮኖሚና ቴክኖሎጂ እድገት ደረጃዎችን መተንተን',
+          'የቀይ ባህር እና የህንድ ውቅያኖስ ጥንታዊ የንግድ መስመሮችን በካርታ ላይ ማሳየት',
+          'የሳንቲም ቀረጻ፣ ሀውልቶች ግንባታ እና የውሃ ማቆሪያ ግድቦችን ኢንጂነሪንግ ማድነቅ',
+          'የውጭ ግንኙነቶች እና የአክሱም መዳከም ምክንያቶችን መገምገም'
+        ],
+        practicalActivity: {
+          title: 'የጥንታዊ ንግድ መስመሮች እና የአክሱም ግዛት ታሪካዊ ካርታ ስራ (Historical Map Drawing)',
+          materials: ['የአፍሪካ ቀንድ እና መካከለኛው ምስራቅ ረቂቅ ካርታ', 'የቀለም እርሳሶች', 'የታሪክ አትላስ'],
+          steps: [
+            '1. አዱሊስን፣ አክሱምን፣ እና የቀይ ባህር ወደቦችን በካርታው ላይ ለይተህ ምልክት አድርግ።',
+            '2. ከአዱሊስ ወደ ሮማ፣ ህንድ እና ባይዛንታይን የሚወስዱ የባህር መስመሮችን በቀይ ቀለም፣ የየብስ መስመሮችን በአረንጓዴ ቀለም አስምር።',
+            '3. ወደ ውጭ የሚላኩ ዋና ዋና የንግድ ቁሳቁሶችን (ዝሆን ጥርስ፣ ወርቅ፣ ከርቤ) በምስል መልክ አስቀምጥ።'
+          ],
+          observation: 'አክሱም በጂኦግራፊያዊ አቀማመጧ ምክንያት የአለም የንግድ እና የባህል መገናኛ ማዕከል እንደነበረች በካርታው ላይ በግልጽ ይታያል።'
+        },
         lessonContent: [
           'የአክሱም ስልጣኔ በሰሜን ምስራቅ አፍሪካ እና በቀይ ባህር ቀጠና ውስጥ ከነበሩት ታላላቅ ጥንታዊ ስልጣኔዎች አንዱ ነበር። ከአንደኛው እስከ ሰባተኛው ክፍለ ዘመን በነበረው ዘመን አክሱም በግብርና፣ በብረታ ብረት ስራ፣ በድንጋይ ቅርጽ እና በንግድ ከፍተኛ ደረጃ ደርሳ ነበር።',
           'አክሱም የራሷን የሳንቲም መገበያያ የቀረፀች የመጀመሪያዋ የአፍሪካ ስልጣኔ ስትሆን፣ በአዱሊስ ወደብ በኩል ከሮማ፣ ግሪክ፣ ህንድ እና ባይዛንታይን ጋር ሰፊ የባህር እና የየብስ ንግድ ታካሂድ ነበር። ዝሆኖችን፣ ወርቅን፣ የዝሆን ጥርስን እና ቅመማ ቅመሞችን ትልክ ነበር።',
@@ -1012,6 +1236,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '11-12',
         applicableGrades: [11, 12],
         lessonTitle: 'የሉዓላዊነት ጥበቃ እና የአድዋ ፀረ-ቅኝ አገዛዝ ድል',
+        competencies: [
+          'የአድዋ ጦርነት ታሪካዊ መንስኤዎችን (የውጫሌ ውል አንቀጽ 17) በሰነድ ማስረጃ መተንተን',
+          'የዳግማዊ ምኒልክ እና የእቴጌ ጣይቱ ብጡል ወታደራዊ እና ዲፕሎማሲያዊ ስልቶችን መገምገም',
+          'የመላው ኢትዮጵያውያን ህብረት ለአድዋ ድል ያስገኘውን ፋይዳ ማድነቅ',
+          'የአድዋ ድል ለአለም አቀፉ የጥቁር ህዝቦች የነጻነት ንቅናቄ (Pan-Africanism) የፈጠረውን ተነሳሽነት ማብራራት'
+        ],
+        practicalActivity: {
+          title: 'የታሪክ ሰነድ ትንተና እና የአድዋ ጦርነት የታክቲክ ሞዴል (Treaty Analysis & Tactical Simulation)',
+          materials: ['የውጫሌ ውል የአማርኛ እና የጣሊያንኛ ቅጂዎች ንጽጽር ጽሁፍ', 'የአድዋ ተራሮች ካርታ'],
+          steps: [
+            '1. በአንቀጽ 17 ላይ "ይችላሉ" እና "ይገባቸዋል (dovere)" የሚሉትን ቃላት የትርጉም ልዩነት መርምር።',
+            '2. የጣሊያንን ሶስት አምዶች (Columns) እና የኢትዮጵያን አቀማመጥ በተራሮቹ ካርታ ላይ አስቀምጥ።',
+            '3. የእቴጌ ጣይቱ የመቀሌውን የውሃ መስመር የመዝጋት ስልታዊ ውሳኔ ውጤት ተወያዩበት።'
+          ],
+          observation: 'የቋንቋ ትርጉም ተንኮል እንዴት ወደ ሉዓላዊነት ጥያቄ እንደተቀየረና በወታደራዊ አንድነት እንደተቀለበሰ በግልጽ ይመሰክራል።'
+        },
         lessonContent: [
           'የአድዋ ድል (የካቲት 23 ቀን 1888 ዓ.ም / March 1, 1896) መላው የኢትዮጵያ ህዝብ በአንድነት ተባብሮ የጣሊያንን ቅኝ ገዢ ጦር ድል ያደረገበት ታሪካዊ ክስተት ነው። ይህ ድል ለአፍሪካና ለመላው ጥቁር ህዝቦች የነፃነት ፋና ወጊ ሆኗል።',
           'የጦርነቱ መነሻ የውጫሌ ውል አንቀጽ 17 የትርጉም ልዩነት ነበር። የጣሊያንኛው ቅጂ ኢትዮጵያ የውጭ ግንኙነቷን በጣሊያን በኩል ማድረግ "አለባት" ሲል፣ የአማርኛው ግን "ትችላለች" በሚል ሉዓላዊነትን የሚያስከብር ነበር።',
@@ -1083,6 +1323,8 @@ export const curriculumAmharic: Subject[] = [
     id: 'ict',
     name: 'ICT',
     subName: 'Information Technology',
+    stream: 'common',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
     accentColor: '#475569',
     accentLight: '#F8FAFC',
     accentBorder: '#64748B',
@@ -1094,6 +1336,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '9-10',
         applicableGrades: [9, 10],
         lessonTitle: 'የኮምፒውተር ስርዓት እና የኔትወርክ መሰረቶች',
+        competencies: [
+          'የኮምፒውተር ሃርድዌር አሃዶችን (CPU, RAM, Storage, I/O) መለየትና ተግባራቸውን መግለጽ',
+          'የሲስተም እና አፕሊኬሽን ሶፍትዌሮችን ልዩነት መተንተን',
+          'ቀላል የኮምፒውተር ኔትወርክ (LAN) አወቃቀርና የአይፒ አድራሻ (IP Addressing) መርሆዎችን መረዳት',
+          'ደህንነቱ የተጠበቀ የኢንተርኔት እና የዲጂታል መሳሪያዎች አጠቃቀምን መተግበር'
+        ],
+        practicalActivity: {
+          title: 'ቀላል የኔትወርክ ግንኙነት እና የአይፒ አድራሻ ማዋቀር (Network Configuration Workshop)',
+          materials: ['ኮምፒውተር ከ Command Prompt/Terminal ጋር', 'የኔትወርክ ገመድ (Ethernet Cable)'],
+          steps: [
+            '1. Command Prompt በመክፈት "ipconfig" (ወይም ifconfig) በመተየብ የኮምፒውተርህን IP እና MAC Address መዝግብ።',
+            '2. "ping 8.8.8.8" ወይም የትምህርት ቤቱን ራውተር አይፒ በመፃፍ የኔትወርክ መዘግየትን (Packet Loss & Latency) ተመልከት።',
+            '3. በፋይል ኤክስፕሎረር ውስጥ አንድ ፎልደር ለኔትወርክ ተጠቃሚዎች ሼር (Share) አድርግ።'
+          ],
+          observation: 'ትክክለኛ አይፒ ሲዋቀር መሳሪያዎች መረጃን በከፍተኛ ፍጥነት ያለ ገመድ ወይም በገመድ መለዋወጥ ይችላሉ።'
+        },
         lessonContent: [
           'የኮምፒውተር ሲስተም በሁለት ዋና ዋና ክፍሎች የተዋቀረ ነው፡ ሃርድዌር (የሚዳሰሱ አካላት - CPU, RAM, Storage, Input/Output) እና ሶፍትዌር (ኮምፒውተሩ የሚሰራባቸው ፕሮግራሞችና መመሪያዎች)።',
           'ሲፒዩ (CPU) የኮምፒውተሩ አንጎል ሲሆን መመሪያዎችን ያሰላል። ራም (RAM) ጊዜያዊ ማስታወሻ ሲሆን ኮምፒውተሩ ሲጠፋ መረጃው ይጠፋል፤ ሮም (ROM) እና ሃርድ ድራይቭ ግን ቋሚ ማከማቻ ናቸው።',
@@ -1163,6 +1421,22 @@ export const curriculumAmharic: Subject[] = [
         gradeTier: '11-12',
         applicableGrades: [11, 12],
         lessonTitle: 'ሪሌሽናል ዳታቤዝ እና የዲጂታል ደህንነት ጥበቃ',
+        competencies: [
+          'የሪሌሽናል ዳታቤዝ ጽንሰ-ሀሳቦችን (Tables, Primary Key, Foreign Key) መተንተን',
+          'መሰረታዊ የ SQL ትዕዛዞችን (SELECT, INSERT, UPDATE, DELETE) በመጠቀም መረጃ ማስተዳደር',
+          'የሳይበር ደህንነት ስጋቶችን (Phishing, Ransomware, Social Engineering) መለየት እና መከላከል',
+          'የመረጃ ኢንክሪፕሽን (Data Encryption) እና ባለሁለት ደረጃ ማረጋገጫ (2FA) አሰራርን መተግበር'
+        ],
+        practicalActivity: {
+          title: 'የ SQL ዳታቤዝ ሰንጠረዥ እና ኩዌሪ ዝግጅት (Hands-on SQL Database Creation)',
+          materials: ['ኮምፒውተር ከ SQLite ወይም የመስመር ላይ SQL Playground ጋር', 'የተማሪዎች መረጃ ናሙና'],
+          steps: [
+            '1. "CREATE TABLE Students (id INT PRIMARY KEY, name TEXT, grade INT);" የሚለውን ትዕዛዝ አስፈጽም።',
+            '2. ሶስት የተማሪዎችን ሪከርዶች በ "INSERT INTO" ትዕዛዝ አስገባ።',
+            '3. "SELECT name FROM Students WHERE grade >= 10;" በማለት የተመረጡ ተማሪዎችን ዝርዝር አውጣ።'
+          ],
+          observation: 'በ SQL አማካኝነት በሺዎች የሚቆጠሩ መረጃዎችን በሰከንዶች ውስጥ ማጣራት፣ መፈለግ እና ማደራጀት ይቻላል።'
+        },
         lessonContent: [
           'የመረጃ ቋት (Database) የተደራጀና ተያያዥነት ያለው መረጃን በስርዓት ለማከማቸት፣ ለማሻሻልና ለመፈለግ የሚያስችል ሲስተም ነው። በብዛት የምንጠቀመው Relational Database (RDBMS) መረጃዎችን በሰንጠረዦች (Tables - Rows & Columns) መልክ ያስቀምጣል።',
           'SQL (Structured Query Language) ዳታቤዝን ለማዘዝ የምንጠቀምበት ቋንቋ ሲሆን፣ SELECT፣ INSERT፣ UPDATE እና DELETE መሰረታዊ ትዕዛዞች ናቸው። ፕራይማሪ ኪይ (Primary Key) በእያንዳንዱ ረድፍ ያለን መረጃ በልዩነት ለመለየት ያገለግላል።',
@@ -1198,7 +1472,7 @@ export const curriculumAmharic: Subject[] = [
         quizQuestions: [
           {
             id: 'i2-q1',
-            question: 'በ SQL ውስጥ አዲስ መረጃ ወደ ሰንጠረዥ ለማስገባት የምንጠቀመው ትዕዛዝ የትኛው ነው?',
+            question: 'በ SQL ውስጥ አዲስ መረጃ ወደ ሰንጠረዥ ለማስገባት የምንጠቀመው ትዕዛዝ የየትኛው ነው?',
             options: ['INSERT INTO', 'SELECT', 'UPDATE', 'CREATE ROW'],
             correctIndex: 0,
             explanation: 'INSERT INTO አዳዲስ ሪከርዶችን ወደ ዳታቤዝ ቴብል ለማስገባት ያገለግላል።'
@@ -1238,6 +1512,279 @@ export const curriculumAmharic: Subject[] = [
             ],
             correctIndex: 0,
             explanation: 'ፋየርዎል የተፈቀደና ያልተፈቀደ የኔትወርክ ግንኙነትን የሚቆጣጠር የደህንነት ጋሻ ነው።'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 9. የዜግነት ትምህርት (Citizenship Education)
+  {
+    id: 'citizenship',
+    name: 'የዜግነት ትምህርት',
+    subName: 'Citizenship Education',
+    stream: 'social',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
+    accentColor: '#7C3AED',
+    accentLight: '#F5F3FF',
+    accentBorder: '#8B5CF6',
+    accentBadge: '#6D28D9',
+    topics: [
+      {
+        id: 'cit-9-10',
+        title: 'ዴሞክራሲ፣ የህግ የበላይነት እና የዜጎች መብትና ግዴታ',
+        gradeTier: '9-10',
+        applicableGrades: [9, 10],
+        lessonTitle: 'የዴሞክራሲያዊ ስርዓት ምሰሶዎች እና ሰብዓዊ መብቶች',
+        competencies: [
+          'የህገ-መንግስታዊ ዴሞክራሲ መሰረታዊ መርሆዎችን (የህግ የበላይነት፣ ተጠያቂነት፣ ግልጽነት) መተንተን',
+          'የሰብዓዊ እና የዴሞክራሲያዊ መብቶችን ልዩነት እና ትስስር መለየት',
+          'የዜጎችን ማህበራዊ፣ ኢኮኖሚያዊ እና ፖለቲካዊ ሀላፊነቶች መረዳት',
+          'የሰላማዊ ግጭት አፈታት (Peaceful Conflict Resolution) እና የውይይት ባህልን ማዳበር'
+        ],
+        practicalActivity: {
+          title: 'የትምህርት ቤት የክርክር እና የሙግት ችሎት (Mock Democratic Parliament & Debate)',
+          materials: ['የህገ-መንግስት ሰነድ አጭር ማጠቃለያ', 'የክርክር አጀንዳ (ለምሳሌ፡ የት/ቤት የዲሲፕሊን ህግ)'],
+          steps: [
+            '1. ተማሪዎችን ወደ ህግ አውጪ (ተወካዮች) እና ዜጎች መድብ።',
+            '2. የቀረበውን የህግ ረቂቅ በዴሞክራሲያዊ መንገድ በመወያየት ማሻሻያ ሀሳብ አቅርብ።',
+            '3. በድምጽ ብልጫ በማፅደቅ የውሳኔ አሰጣጥ ሂደቱን ተግብር።'
+          ],
+          observation: 'ውይይት እና ድርድር የልዩነቶችን መፍትሄ በማምጣት የጋራ ስምምነትን ለመፍጠር ወሳኝ ናቸው።'
+        },
+        lessonContent: [
+          'የዜግነት ትምህርት ዜጎች ስለ መብቶቻቸው፣ ግዴታዎቻቸው እና ስለ ሀገራቸው አስተዳደር ግንዛቤ እንዲኖራቸው የሚያስችል ወሳኝ የትምህርት ዘርፍ ነው።',
+          'የህግ የበላይነት (Rule of Law) ማለት ማንም ሰው፣ ባለስልጣንም ሆነ ተራ ዜጋ ከህግ በላይ ሊሆን እንደማይችል እና ሁሉም በህግ ፊት እኩል መሆኑን የሚያረጋግጥ የዴሞክራሲ መሰረት ነው።',
+          'ሰብዓዊ መብቶች የተፈጥሮ ጸጋ ሲሆኑ፣ ማንም ሰው በሰውነቱ ብቻ የሚያገኛቸው የማይገፈፉ (Inalienable) መብቶች ናቸው። የዴሞክራሲ መብቶች ደግሞ በህገ-መንግስት ዋስትና የተሰጣቸው የመምረጥ፣ የመመረጥ እና ሀሳብን በነፃነት የመግለጽ መብቶች ናቸው።'
+        ],
+        keyPoints: [
+          'የህግ የበላይነት፡ ማንም ከህግ በላይ አይደለም',
+          'ሰብዓዊ መብቶች የማይገፈፉ የተፈጥሮ መብቶች ናቸው',
+          'የዜግነት ግዴታዎች፡ ግብር መክፈል፣ ህግ ማክበር እና ሀገርን መጠበቅ'
+        ],
+        flashcards: [
+          {
+            id: 'c1-fc1',
+            front: 'የህግ የበላይነት (Rule of Law) ምን ማለት ነው?',
+            back: 'ሁሉም ዜጎችና ባለስልጣናት ለህግ ተገዢ የሆኑበትና ማንም ከህግ በላይ ያልሆነበት ስርዓት ነው።'
+          },
+          {
+            id: 'c1-fc2',
+            front: 'ሰብዓዊ መብቶች እና የዴሞክራሲ መብቶች ልዩነታቸው?',
+            back: 'ሰብዓዊ መብት በተፈጥሮ የሚገኝ ሲሆን፣ የዴሞክራሲ መብት ደግሞ በህገ-መንግስት እውቅና የሚያገኝ የፖለቲካ መብት ነው።'
+          },
+          {
+            id: 'c1-fc3',
+            front: 'የዴሞክራሲ ዋና ዋና መርሆዎች ምን ምን ናቸው?',
+            back: 'የህዝብ ሉዓላዊነት፣ ተጠያቂነት፣ ግልጽነት፣ የብዙሃን ውሳኔ እና የአናሳዎች መብት ጥበቃ።'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 'c1-q1',
+            question: 'ከሚከተሉት ውስጥ የማይገፈፍ ሰብዓዊ መብት የሆነው የትኛው ነው?',
+            options: ['የህይወት የመኖር መብት', 'የመምረጥ መብት', 'የመኪና ማሽከርከር ፈቃድ', 'የንግድ ድርጅት ባለቤት መሆን'],
+            correctIndex: 0,
+            explanation: 'የህይወት የመኖር መብት የተፈጥሮ እና የማይገፈፍ ሰብዓዊ መብት ነው።'
+          },
+          {
+            id: 'c1-q2',
+            question: 'የዜጎች ዋነኛ ህገ-መንግስታዊ ግዴታ የትኛው ነው?',
+            options: ['ህገ-መንግስቱንና የሀገሪቱን ህጎች ማክበር', 'ውጭ ሀገር መጓዝ', 'መኪና መግዛት', 'በየቀኑ ዜና መስማት'],
+            correctIndex: 0,
+            explanation: 'ህግን ማክበር፣ ግብር በወቅቱ መክፈል እና ሀገርን መጠበቅ የዜጎች ዋና ግዴታዎች ናቸው።'
+          }
+        ]
+      },
+      {
+        id: 'cit-11-12',
+        title: 'የመልካም አስተዳደር፣ ፍትህ እና የብዝሃነት አያያዝ',
+        gradeTier: '11-12',
+        applicableGrades: [11, 12],
+        lessonTitle: 'ብሄራዊ መግባባት፣ ፌዴራሊዝም እና አለም አቀፍ ግንኙነት',
+        competencies: [
+          'የመልካም አስተዳደር (Good Governance) አመልካቾችን በህዝባዊ ተቋማት ውስጥ መገምገም',
+          'በኢትዮጵያ ውስጥ የብዝሃነትን (ባህላዊ፣ ቋንቋዊ፣ ሃይማኖታዊ) ውበት እና አያያዝ መተንተን',
+          'ሙስናን እና ብልሹ አሰራርን የመዋጋት የህግ ማዕቀፎችን መረዳት',
+          'የኢትዮጵያን የዲፕሎማሲ ታሪክ እና በአፍሪካ ህብረት ውስጥ ያላትን ሚና መገንዘብ'
+        ],
+        practicalActivity: {
+          title: 'የማህበረሰብ ግጭት አፈታት እና የሽምግልና አስመስሎ መስራት (Community Mediation Simulation)',
+          materials: ['የግጭት መነሻ መግለጫ (Case Study)', 'የሽምግልና ደንብ መመሪያ'],
+          steps: [
+            '1. ተማሪዎችን ወደ ሶስት ቡድን መድብ (ከሳሽ፣ ተከሳሽ እና አደራዳሪ ሽማግሌዎች)።',
+            '2. የባህላዊ የኢትዮጵያ ሽምግልና እሴቶችን (እርቅ፣ እውነት፣ ይቅርታ) በመጠቀም የጋራ ስምምነት ፍጠር።',
+            '3. የሽምግልናውን ሰነድ በጋራ ፊርማ አጽድቁ።'
+          ],
+          observation: 'ባህላዊ የግጭት አፈታት ስልቶች ፈጣንና ዘላቂ ማህበራዊ ሰላምን ለማስፈን ትልቅ አቅም አላቸው።'
+        },
+        lessonContent: [
+          'መልካም አስተዳደር (Good Governance) ማለት የመንግስት ስልጣን በግልጽነት፣ በተጠያቂነት፣ በፍትሃዊነት እና በህዝብ ተሳትፎ የሚመራበት አሰራር ነው።',
+          'ኢትዮጵያ የበርካታ ብሄር ብሄረሰቦች፣ ባህሎችና እምነቶች መኖሪያ በመሆኗ ብዝሃነትን እንደ ውበትና ጥንካሬ መቀበል ለሀገራዊ አንድነት ወሳኝ ነው።',
+          'በአለም አቀፍ መድረክ ኢትዮጵያ የመንግስታቱ ድርጅት (UN) እና የአፍሪካ ህብረት (AU) መስራች በመሆን የፀረ-ቅኝ አገዛዝ እና የቀጣናው ሰላም ጠባቂ ሆና አገልግላለች።'
+        ],
+        keyPoints: [
+          'የመልካም አስተዳደር ምሶሶዎች፡ ግልጽነት፣ ተጠያቂነት እና ፍትሃዊነት',
+          'ብዝሃነት የአንድነትና የውበት መሰረት ነው',
+          'ኢትዮጵያ የአፍሪካ ህብረት መቀመጫ እና የዲፕሎማሲ ማዕከል ናት'
+        ],
+        flashcards: [
+          {
+            id: 'c2-fc1',
+            front: 'መልካም አስተዳደር (Good Governance) ምንድን ነው?',
+            back: 'የተቋማት አሰራር ግልጽ፣ ተጠያቂ፣ ፍትሃዊ እና ውጤታማ ሆኖ የህዝብን ጥቅም የሚያስቀድምበት ስርዓት ነው።'
+          },
+          {
+            id: 'c2-fc2',
+            front: 'የአፍሪካ ህብረት (AU) ዋና መቀመጫ የት ነው?',
+            back: 'አዲስ አበባ፣ ኢትዮጵያ።'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 'c2-q1',
+            question: 'የመልካም አስተዳደር ዋና ጠላት የሆነው የትኛው ነው?',
+            options: ['ሙስና እና አድልዎ (Corruption & Nepotism)', 'ግልጽነት', 'የህዝብ ተሳትፎ', 'ተጠያቂነት'],
+            correctIndex: 0,
+            explanation: 'ሙስና እና አድልዎ ፍትሃዊነትን በማዛባት የተቋማትን ታማኝነት ያጠፋሉ።'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 10. ጂኦግራፊ (Geography)
+  {
+    id: 'geography',
+    name: 'ጂኦግራፊ',
+    subName: 'Geography',
+    stream: 'social',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
+    accentColor: '#0284C7',
+    accentLight: '#F0F9FF',
+    accentBorder: '#0EA5E9',
+    accentBadge: '#0369A1',
+    topics: [
+      {
+        id: 'geo-9-10',
+        title: 'የኢትዮጵያ እና የአፍሪካ ቀንድ መልክአ-ምድር',
+        gradeTier: '9-10',
+        applicableGrades: [9, 10],
+        lessonTitle: 'የመሬት አቀማመጥ፣ የስምጥ ሸለቆ አፈጣጠር እና የውሃ ሀብት',
+        competencies: [
+          'የኢትዮጵያን ከፍተኛ እና ዝቅተኛ ቦታዎች (Topography) በካርታ ላይ መለየት',
+          'የታላቁን የምስራቅ አፍሪካ ስምጥ ሸለቆ (Rift Valley) አፈጣጠር እና ተፅዕኖ መተንተን',
+          'የኢትዮጵያን ዋና ዋና የወንዝ ተፋሰሶች (አባይ፣ አዋሽ፣ ዋቢ ሸበሌ፣ ጊቤ) መዘርዘር',
+          'የአየር ንብረት ክልሎችን (በረሃ፣ ቆላ፣ ወይና ደጋ፣ ደጋ፣ ውርጭ) መለየት'
+        ],
+        practicalActivity: {
+          title: 'የኢትዮጵያ እፎይታ እና የወንዞች ተፋሰስ ካርታ ስራ (Topographical & River Basin Mapping)',
+          materials: ['የኢትዮጵያ ኮንቱር ካርታ', 'የቀለም እርሳሶች (ቡናማ፣ አረንጓዴ፣ ሰማያዊ)'],
+          steps: [
+            '1. ከ 1500 ሜትር በላይ የሆኑትን ደጋማ ቦታዎች በቡናማ ቀለም አድምቅ።',
+            '2. የስምጥ ሸለቆውን መስመር እና ሀይቆችን (ዝዋይ፣ ሻላ፣ አባያ) ለይተህ አስቀምጥ።',
+            '3. ዋና ዋና ወንዞችን እና የሚፈሱበትን አቅጣጫ በቀስት አመልክት።'
+          ],
+          observation: 'ኢትዮጵያ "የምስራቅ አፍሪካ የውሃ ማማ" በመባል የምትታወቀው ወንዞቿ ወደ ጎረቤት ሀገራት በከፍተኛ መጠን ስለሚፈሱ ነው።'
+        },
+        lessonContent: [
+          'የኢትዮጵያ መልክአ ምድር በተራሮች፣ ሸለቆዎች እና ሜዳማ ቦታዎች የተዋቀረ አስደናቂ ስብጥር አለው። የሀገሪቱ ከፍታ ከዳሎል (125 ሜትር ከባህር ወለል በታች) እስከ ራስ ዳሸን ተራራ (4550 ሜትር ከባህር ወለል በላይ) ይደርሳል።',
+          'የምስራቅ አፍሪካ ስምጥ ሸለቆ ሀገሪቱን በሰያፍ ለሁለት የሚከፍል ሲሆን፣ በርካታ ሀይቆችን እና የፍልውሃ ምንጮችን ይዟል።',
+          'ኢትዮጵያ 12 ዋና ዋና የወንዝ ተፋሰሶች ያሏት ሲሆን፣ አባይ (Blue Nile)፣ ተከዜ፣ ባሮ፣ አዋሽ እና ዋቢ ሸበሌ ለሀገር ውስጥ እርሻና ለሃይል ማመንጫ ከፍተኛ አስተዋጽኦ ያደርጋሉ።'
+        ],
+        keyPoints: [
+          'ከፍተኛው ቦታ፡ ራስ ዳሸን (4550 ሜትር)፤ ዝቅተኛው፡ ዳሎል (-125 ሜትር)',
+          'ኢትዮጵያ "የምስራቅ አፍሪካ የውሃ ማማ" ትባላለች',
+          'አምስቱ ባህላዊ የአየር ንብረት ዞኖች፡ በረሃ፣ ቆላ፣ ወይና ደጋ፣ ደጋ እና ውርጭ'
+        ],
+        flashcards: [
+          {
+            id: 'g1-fc1',
+            front: 'በኢትዮጵያ ከፍተኛው ተራራ የትኛው ነው?',
+            back: 'ራስ ዳሸን ተራራ (4,550 ሜትር ከባህር ወለል በላይ)።'
+          },
+          {
+            id: 'g1-fc2',
+            front: 'ኢትዮጵያ ለምን "የምስራቅ አፍሪካ የውሃ ማማ" ትባላለች?',
+            back: 'በርካታ አለም አቀፍ ወንዞች ከደጋማ ቦታዎቿ ተነስተው ወደ ጎረቤት ሀገራት ስለሚፈሱ።'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 'g1-q1',
+            question: 'ከሚከተሉት ውስጥ በኢትዮጵያ ዝቅተኛው የመሬት ክፍል የትኛው ነው?',
+            options: ['ዳሎል (አፋር ድብልቅ)', 'ባሌ ተራሮች', 'የደብረ ሊባኖስ ገደል', 'የጣና ሀይቅ ዳርቻ'],
+            correctIndex: 0,
+            explanation: 'ዳሎል ከባህር ጠለል በታች 125 ሜትር ዝቅ ብሎ የሚገኝ እጅግ ሞቃታማ ስፍራ ነው።'
+          }
+        ]
+      }
+    ]
+  },
+
+  // 11. ግብርና እና አግሮ-ቴክኖሎጂ (Agriculture)
+  {
+    id: 'agriculture',
+    name: 'ግብርና',
+    subName: 'Agriculture & Agri-Tech',
+    stream: 'natural',
+    curriculumBadge: 'አዲሱ ስርዓተ-ትምህርት',
+    accentColor: '#16A34A',
+    accentLight: '#F0FDF4',
+    accentBorder: '#22C55E',
+    accentBadge: '#15803D',
+    topics: [
+      {
+        id: 'agr-9-10',
+        title: 'ዘመናዊ የሰብል ሳይንስ እና የአፈር ለምነት አያያዝ',
+        gradeTier: '9-10',
+        applicableGrades: [9, 10],
+        lessonTitle: 'የአፈር ጤና፣ የመስኖ ቴክኖሎጂ እና የተሻሻሉ ዝርያዎች',
+        competencies: [
+          'የአፈር አይነቶችን (ሸክላ፣ አሸዋ፣ ለም አፈር) እና የፒኤች (pH) መጠን መለካት',
+          'የተፈጥሮ ማዳበሪያ (ኮምፖስት) ዝግጅት እና የአፈር መሸርሸር መከላከያ ስልቶችን መተግበር',
+          'ዘመናዊ የመስኖ ዘዴዎችን (ጠብታ መስኖ፣ ረጭ መስኖ) መገምገም',
+          'የአየር ንብረት ለውጥን የሚቋቋሙ የሰብል ዝርያዎችን የመምረጥ ክህሎት ማዳበር'
+        ],
+        practicalActivity: {
+          title: 'የተፈጥሮ ማዳበሪያ (ኮምፖስት) ዝግጅት ተግባራዊ ልምምድ (Compost Making Project)',
+          materials: ['የደረቁ ቅጠሎች (ካርቦን)', 'አረንጓዴ የእፅዋት ተረፈ-ምርቶች (ናይትሮጅን)', 'ውሃ', 'አፈር'],
+          steps: [
+            '1. በት/ቤቱ የአትክልት ስፍራ 1 ሜትር በ 1 ሜትር ጉድጓድ ቆፍር።',
+            '2. የደረቁ ቅጠሎችንና አረንጓዴ ተረፈ-ምርቶችን በንብርብር (Layer) አስቀምጥ፤ በየመሃሉ አፈርና ውሃ ጨምር።',
+            '3. በየሳምንቱ በማገላበጥ ከ 4-6 ሳምንታት በኋላ ጥቁርና ለም ኮምፖስት አዘጋጅ።'
+          ],
+          observation: 'ኦርጋኒክ ተረፈ-ምርቶች ረቂቅ ተህዋሲያን በሚያካሂዱት መበስበስ ወደ ከፍተኛ የተፈጥሮ ማዳበሪያነት ይቀየራሉ።'
+        },
+        lessonContent: [
+          'ግብርና የኢትዮጵያ ኢኮኖሚ የጀርባ አጥንት ሲሆን፣ ከ 70% በላይ የሚሆነውን የስራ እድል እና አብዛኛውን የውጭ ምንዛሬ ገቢ ያስገኛል።',
+          'አፈር ለሰብል ምርታማነት መሰረት ሲሆን፣ አፈሩን ከመሸርሸር መጠበቅ (ለምሳሌ እርከን በመስራት እና ዛፍ በመትከል) ወሳኝ ተግባር ነው።',
+          'በአዲሱ ስርዓተ ትምህርት ዘመናዊ የግብርና ቴክኖሎጂዎች ማለትም ጠብታ መስኖ (Drip Irrigation)፣ የተሻሻሉ ምርጥ ዘሮች እና የግሪን ሀውስ (Greenhouse) ቴክኖሎጂዎች ልዩ ትኩረት ተሰጥቷቸዋል።'
+        ],
+        keyPoints: [
+          'ግብርና የኢትዮጵያ ኢኮኖሚ ዋነኛ ምሰሶ ነው',
+          'የኮምፖስት ዝግጅት የአፈርን ለምነት በተፈጥሮ መንገድ ይጠብቃል',
+          'ዘመናዊ መስኖ በበጋ ወቅትም ቀጣይነት ያለው ምርት ለማግኘት ያስችላል'
+        ],
+        flashcards: [
+          {
+            id: 'ag1-fc1',
+            front: 'ኮምፖስት (Compost) ምንድን ነው?',
+            back: 'ከእፅዋትና እንስሳት ተረፈ-ምርቶች የሚዘጋጅ ኦርጋኒክ የተፈጥሮ ማዳበሪያ ነው።'
+          },
+          {
+            id: 'ag1-fc2',
+            front: 'የጠብታ መስኖ (Drip Irrigation) ዋና ጠቀሜታ ምንድን ነው?',
+            back: 'ውሃን በቀጥታ ወደ ተክሉ ስር በማድረስ እስከ 70% የውሃ ብክነትን መቆጠብ።'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 'ag1-q1',
+            question: 'የአፈር መሸርሸርን ለመከላከል በጣም ውጤታማ የሆነው ዘዴ የትኛው ነው?',
+            options: ['እርከን መስራትና ዛፎችን መትከል (Terracing & Afforestation)', 'ከመጠን በላይ ማገድ', 'የደን ምንጣሮ', 'ሳር ማቃጠል'],
+            correctIndex: 0,
+            explanation: 'እርከን መስራት የውሃ ፍጥነትን ይቀንሳል፤ የዛፍ ስሮች ደግሞ አፈርን አጥብቀው ይይዛሉ።'
           }
         ]
       }
