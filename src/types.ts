@@ -134,6 +134,7 @@ export interface SubjectTextbook {
   totalUnits: number;
   description: string;
   units: TextbookUnit[];
+  officialPdfUrl?: string;
 }
 
 export interface SupplementaryBookChapter {

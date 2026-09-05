@@ -19,6 +19,7 @@ import {
   LogOut,
   ListOrdered,
   ListFilter,
+  ExternalLink,
 } from 'lucide-react';
 import { Grade, Subject, LanguageCode } from '../types';
 import { useLanguage } from '../context/LanguageContext';
@@ -180,6 +181,30 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
             <ListOrdered className="w-4 h-4" />
             <span>📋 ማውጫ (Table of Contents)</span>
           </button>
+
+          {/* Official Ministry of Education PDF Button or Summarized Badge */}
+          {currentTextbook.officialPdfUrl ? (
+            <a
+              id="view-official-pdf-btn"
+              href={currentTextbook.officialPdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold font-serif-ethiopic bg-[#047857] hover:bg-[#065F46] text-white border-[1.5px] border-[#064E3B] shadow-sm transition-all active:scale-95 cursor-pointer no-underline"
+              title="የትምህርት ሚኒስቴር ኦፊሴላዊ የተማሪ መጽሐፍ (PDF) በአዲስ ገጽ ክፈት"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span>📘 ኦፊሴላዊ መጽሐፍ (PDF)</span>
+            </a>
+          ) : (
+            <span
+              id="summarized-note-badge"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium font-serif-ethiopic bg-[#F2ECE0] text-[#5C5346] border border-[#BFB29E] select-none"
+              title="ይህ ክፍል የተጠቃለለ ዲጂታል ማስታወሻ ይዟል"
+            >
+              <FileText className="w-3.5 h-3.5 text-[#8C806E]" />
+              <span>የተጠቃለለ ዲጂታል ማስታወሻ</span>
+            </span>
+          )}
 
           {onExit && (
             <button

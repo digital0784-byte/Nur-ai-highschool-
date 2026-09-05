@@ -1163,86 +1163,329 @@ export const curriculumEnglish: Subject[] = [
         ]
       },
       {
-        id: 'ict-11-12',
-        title: 'Relational Databases & Cybersecurity',
+        id: 'it-11-u1',
+        title: 'Unit 1: Information Systems and Applications',
         gradeTier: '11-12',
-        applicableGrades: [11, 12],
-        lessonTitle: 'Database Design, SQL Queries, and Digital Defense',
+        applicableGrades: [11],
+        lessonTitle: 'DIKW Hierarchy, IS Components, Classification & E-Services',
         lessonContent: [
-          'A Database is an organized collection of structured data for efficient storage, retrieval, and modification. Relational Database Management Systems (RDBMS) structure data into tables of rows (records) and columns (attributes).',
-          'Structured Query Language (SQL) manages data using core operations: SELECT (query), INSERT (add), UPDATE (modify), and DELETE (remove). A Primary Key uniquely identifies each row record.',
-          'Cybersecurity protects systems, networks, and data from digital attacks (Malware, Phishing, Ransomware). Defenses revolve around the CIA Triad: Confidentiality, Integrity, and Availability.'
+          'The DIKW Hierarchy tracks data evolution: Data is raw unprocessed facts (e.g. 35mm rain); Information provides context (35mm rain fell in Awash); Knowledge synthesizes actionable understanding (Teff seeds require planting within 48 hours); Wisdom provides ethical, strategic foresight (activate regional irrigation to prevent future crop failure).',
+          'An Information System integrates 5 core components: Hardware, Software, Data, People, and Procedures. Organizational systems span operational TPS (Transaction Processing Systems like telebirr), tactical MIS (Management Information Systems), analytical DSS (Decision Support Systems), and strategic ESS (Executive Support Systems).',
+          'E-Services transform society through E-Government (Fayda digital ID, online tax portals), FinTech (mobile banking, cashless payment), and digital entrepreneurship. Bridging the Digital Divide remains vital for rural educational equity.'
         ],
         keyPoints: [
-          'SQL Commands: SELECT, INSERT INTO, UPDATE, DELETE',
-          'Primary Key: Unique identifier for each table record',
-          'CIA Triad: Confidentiality, Integrity, and Availability'
+          'DIKW Pyramid: Data -> Information -> Knowledge -> Wisdom',
+          '5 Components: Hardware, Software, Data, People, Procedures',
+          'System Classification: TPS (Operational), MIS (Tactical), DSS (Analytical), ESS (Strategic)',
+          'Digital Divide: Socio-economic gap in ICT infrastructure and digital literacy'
         ],
         flashcards: [
           {
-            id: 'i2-fc1',
-            front: 'What is a Primary Key in relational database design?',
-            back: 'A column or set of columns uniquely identifying each table record.'
+            id: 'it11-u1-fc1',
+            front: 'What is the primary difference between Data and Information?',
+            back: 'Data consists of raw, unprocessed facts lacking context; Information is structured data with meaning and purpose.'
           },
           {
-            id: 'i2-fc2',
-            front: 'What is a Phishing attack?',
-            back: 'A deceptive message tricking users into revealing passwords or sensitive data.'
+            id: 'it11-u1-fc2',
+            front: 'Which type of information system is used for routine daily operations like retail checkouts or mobile transfers?',
+            back: 'Transaction Processing System (TPS).'
           },
           {
-            id: 'i2-fc3',
-            front: 'Which SQL command retrieves data from a database?',
-            back: 'The SELECT command (e.g. SELECT * FROM Students;).'
+            id: 'it11-u1-fc3',
+            front: 'What are the 5 core components of any Information System?',
+            back: 'Hardware, Software, Data, People, and Procedures.'
           },
           {
-            id: 'i2-fc4',
-            front: 'What is Encryption?',
-            back: 'Encoding data so only authorized parties possessing a key can read it.'
+            id: 'it11-u1-fc4',
+            front: 'What does the term "Digital Divide" denote?',
+            back: 'The economic, educational, and social gap between demographics who have access to modern ICT and those who do not.'
           }
         ],
         quizQuestions: [
           {
-            id: 'i2-q1',
-            question: 'Which SQL statement is used to insert new records into a table?',
-            options: ['INSERT INTO', 'SELECT', 'UPDATE', 'ADD RECORD'],
+            id: 'it11-u1-q1',
+            question: 'In the DIKW pyramid, which tier represents raw, unorganized facts without contextual meaning?',
+            options: ['Data', 'Information', 'Knowledge', 'Wisdom'],
             correctIndex: 0,
-            explanation: 'INSERT INTO adds new data rows to specified tables.'
+            explanation: 'Data represents the foundation of raw facts, figures, and symbols before contextual structuring.'
           },
           {
-            id: 'i2-q2',
-            question: 'What does the CIA Triad represent in information security?',
-            options: [
-              'Confidentiality, Integrity, Availability',
-              'Computer, Internet, Access',
-              'Code, Information, Authentication',
-              'Control, Input, Automation'
-            ],
+            id: 'it11-u1-q2',
+            question: 'Which information system is tailored to assist middle managers with structured, scheduled summary reports?',
+            options: ['Management Information System (MIS)', 'Transaction Processing System (TPS)', 'Executive Support System (ESS)', 'Supervisory Control and Data Acquisition (SCADA)'],
             correctIndex: 0,
-            explanation: 'The CIA Triad forms the foundational model for security policy.'
+            explanation: 'MIS produces periodic summary reports from operational data for tactical managers.'
           },
           {
-            id: 'i2-q3',
-            question: 'What is the security advantage of Two-Factor Authentication (2FA)?',
-            options: [
-              'Requires a second verification step, keeping accounts secure even if passwords leak',
-              'Increases download bandwidth',
-              'Reduces battery consumption',
-              'Removes the need for passwords'
-            ],
+            id: 'it11-u1-q3',
+            question: 'Which component of an Information System represents the documented policies, rules, and operational guidelines?',
+            options: ['Procedures', 'Software', 'Middleware', 'Firmware'],
             correctIndex: 0,
-            explanation: '2FA enforces dual-step authentication, blocking unauthorized password use.'
+            explanation: 'Procedures are the operational rules, documentation, and user policies governing system behavior.'
+          }
+        ]
+      },
+      {
+        id: 'it-11-u2',
+        title: 'Unit 2: Emerging Technologies',
+        gradeTier: '11-12',
+        applicableGrades: [11],
+        lessonTitle: 'AI, AR/VR, Big Data Science, IoT & Cloud Computing',
+        lessonContent: [
+          'Artificial Intelligence (AI) simulates human intelligence. Machine Learning (ML) allows computers to learn patterns directly from empirical training datasets without explicit programming. Narrow AI solves specialized tasks (e.g. coffee plant disease detection), while AGI aims for generalized intellect.',
+          'Virtual Reality (VR) immerses the user in a 100% digital simulated environment using headsets, whereas Augmented Reality (AR) overlays digital computer graphics and data onto the physical world.',
+          'Big Data is characterized by the 5 Vs: Volume (sheer size), Velocity (generation speed), Variety (diverse formats), Veracity (truthfulness/integrity), and Value. The Internet of Things (IoT) interconnects smart physical devices with sensors and actuators.',
+          'Cloud Computing provides on-demand computing services via three primary service models: IaaS (raw virtual servers and storage), PaaS (development runtime environments), and SaaS (ready-to-use software like Google Docs).'
+        ],
+        keyPoints: [
+          'AI vs Machine Learning: Machine learning is a data-driven subset of AI',
+          'AR vs VR: AR overlays graphics on physical reality; VR completely immerses in virtual worlds',
+          '5 Vs of Big Data: Volume, Velocity, Variety, Veracity, Value',
+          'Cloud Service Models: IaaS (Infrastructure), PaaS (Platform), SaaS (Software)'
+        ],
+        flashcards: [
+          {
+            id: 'it11-u2-fc1',
+            front: 'What are the 5 Vs of Big Data?',
+            back: 'Volume (size), Velocity (speed), Variety (formats), Veracity (trustworthiness), and Value (business usefulness).'
           },
           {
-            id: 'i2-q4',
-            question: 'What is the primary function of a network Firewall?',
-            options: [
-              'Filtering and inspecting incoming/outgoing network traffic to block unauthorized access',
-              'Cooling down server processors',
-              'Formatting corrupted hard drives',
-              'Regulating power supply voltage'
-            ],
+            id: 'it11-u2-fc2',
+            front: 'What is the main operational difference between AR and VR?',
+            back: 'AR overlays digital elements on the real world; VR isolates the user in an entirely synthetic digital environment.'
+          },
+          {
+            id: 'it11-u2-fc3',
+            front: 'Under which cloud service model does Google Docs or Microsoft 365 fall?',
+            back: 'Software as a Service (SaaS).'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 'it11-u2-q1',
+            question: 'Which V of Big Data deals specifically with data accuracy, quality, and reliability?',
+            options: ['Veracity', 'Velocity', 'Volume', 'Variety'],
             correctIndex: 0,
-            explanation: 'Firewalls enforce security boundaries by inspecting packets against defined rules.'
+            explanation: 'Veracity refers to the trustworthiness, noise level, and authenticity of collected data.'
+          },
+          {
+            id: 'it11-u2-q2',
+            question: 'Which cloud service model provides virtual machines, networking routers, and disk storage for configuration?',
+            options: ['IaaS (Infrastructure as a Service)', 'SaaS (Software as a Service)', 'PaaS (Platform as a Service)', 'BaaS (Backend as a Service)'],
+            correctIndex: 0,
+            explanation: 'IaaS delivers core computing and storage hardware infrastructure.'
+          }
+        ]
+      },
+      {
+        id: 'it-11-u3',
+        title: 'Unit 3: Database Management & SQL',
+        gradeTier: '11-12',
+        applicableGrades: [11],
+        lessonTitle: 'Relational Database Model, ERDs, Keys, Integrity & SQL Queries',
+        lessonContent: [
+          'Database Management Systems (DBMS) overcome file-system pitfalls like data redundancy, inconsistency, and unauthorized access. Entity-Relationship Diagrams (ERDs) model real-world concepts with Entities, Attributes, and Relationships (1:1, 1:N, M:N).',
+          'Relational databases organize data into tables (relations) of rows (tuples) and columns (attributes). A Primary Key uniquely identifies each row and cannot be NULL (Entity Integrity). A Foreign Key links to a primary key in another table, guaranteeing Referential Integrity. Domain Integrity ensures valid data types and ranges.',
+          'SQL (Structured Query Language) comprises DDL (Data Definition: CREATE, ALTER, DROP TABLE) and DML (Data Manipulation: INSERT INTO, SELECT, UPDATE, DELETE). Queries use WHERE filters, ORDER BY sorting, and aggregate functions (COUNT, SUM, AVG, MIN, MAX).'
+        ],
+        keyPoints: [
+          'Primary Key: Unique, non-null identifier enforcing Entity Integrity',
+          'Foreign Key: References primary key of another table, enforcing Referential Integrity',
+          'SQL DDL: CREATE, ALTER, DROP; SQL DML: SELECT, INSERT, UPDATE, DELETE',
+          'ER Cardinality: One-to-One (1:1), One-to-Many (1:N), Many-to-Many (M:N)'
+        ],
+        flashcards: [
+          {
+            id: 'it11-u3-fc1',
+            front: 'What does Entity Integrity mandate in a relational database?',
+            back: 'No component of a Primary Key may contain a NULL value; each record must be uniquely identifiable.'
+          },
+          {
+            id: 'it11-u3-fc2',
+            front: 'Which SQL clause is used to filter records based on a specific boolean condition?',
+            back: 'The WHERE clause (e.g. SELECT * FROM Students WHERE Grade = 11;).'
+          },
+          {
+            id: 'it11-u3-fc3',
+            front: 'What is a Foreign Key?',
+            back: 'An attribute in one table that references the primary key of another table to link records.'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 'it11-u3-q1',
+            question: 'Which constraint ensures that a Foreign Key value must match an existing Primary Key in the referenced table?',
+            options: ['Referential Integrity', 'Entity Integrity', 'Domain Integrity', 'Key Constraint'],
+            correctIndex: 0,
+            explanation: 'Referential Integrity prevents orphan foreign records by enforcing valid referenced keys.'
+          },
+          {
+            id: 'it11-u3-q2',
+            question: 'Which SQL statement updates existing data values inside a database table?',
+            options: ['UPDATE', 'MODIFY', 'ALTER', 'REPLACE'],
+            correctIndex: 0,
+            explanation: 'The UPDATE command modifies existing attribute values in matching rows.'
+          }
+        ]
+      },
+      {
+        id: 'it-11-u4',
+        title: 'Unit 4: Web Development',
+        gradeTier: '11-12',
+        applicableGrades: [11],
+        lessonTitle: 'Web Architecture, HTML5 Semantic Markup, Forms & CSS Styling',
+        lessonContent: [
+          'The World Wide Web functions through a client-server architecture where web browsers request HTML documents via HTTP/HTTPS protocols. DNS translates friendly domain names into numeric IP addresses.',
+          'HTML5 defines document structure with <!DOCTYPE html>, <html>, <head>, <title>, and <body>. Content uses headings (<h1>-<h6>), paragraphs (<p>), links (<a href="...">), images (<img src="..." alt="...">), lists (<ol>, <ul>, <li>), and tables (<table>, <tr>, <th>, <td>).',
+          'Interactive user input is captured using HTML <form> containers with <input> elements (text, password, radio, checkbox), <select> dropdowns, and submit buttons.',
+          'Cascading Style Sheets (CSS) style web layouts via Inline, Internal, or External stylesheets. The CSS Box Model governs spacing with Content, Padding, Border, and Margin.'
+        ],
+        keyPoints: [
+          'Client-Server Model: Browsers request, servers serve over HTTP/HTTPS',
+          'HTML5 Skeleton: <!DOCTYPE html>, <html>, <head>, <title>, <body>',
+          'Forms: <form>, <input>, <select>, <textarea>, <button type="submit">',
+          'CSS Box Model: Content, Padding, Border, Margin'
+        ],
+        flashcards: [
+          {
+            id: 'it11-u4-fc1',
+            front: 'What are the four components of the CSS Box Model?',
+            back: 'Content (interior), Padding (inner clearance), Border (boundary line), and Margin (outer clearance).'
+          },
+          {
+            id: 'it11-u4-fc2',
+            front: 'Which HTML tag creates a numbered list?',
+            back: '<ol> (Ordered List), containing <li> (List Item) tags.'
+          },
+          {
+            id: 'it11-u4-fc3',
+            front: 'What is the function of the DNS (Domain Name System)?',
+            back: 'Translating human-readable domain names (e.g. moe.gov.et) into computer IP addresses.'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 'it11-u4-q1',
+            question: 'In the CSS box model, what is the clearance space immediately inside the border surrounding the content?',
+            options: ['Padding', 'Margin', 'Outline', 'Gutter'],
+            correctIndex: 0,
+            explanation: 'Padding provides interior clearance between content and border.'
+          },
+          {
+            id: 'it11-u4-q2',
+            question: 'Which tag is used to create a clickable hyperlink to another web page?',
+            options: ['<a>', '<link>', '<href>', '<hyperlink>'],
+            correctIndex: 0,
+            explanation: 'The anchor tag <a> with an href attribute defines hyperlinks.'
+          }
+        ]
+      },
+      {
+        id: 'it-11-u5',
+        title: 'Unit 5: Hardware Troubleshooting & Maintenance',
+        gradeTier: '11-12',
+        applicableGrades: [11],
+        lessonTitle: 'Lab Safety, ESD Protection, 6 Troubleshooting Steps & Diagnostics',
+        lessonContent: [
+          'Computer laboratory safety requires ESD (Electrostatic Discharge) prevention because static charges as low as 100 volts can silently melt microscopic silicon chip circuits. Technicians must wear antistatic wrist straps, use grounding mats, and unplug power cords. Never open a Power Supply Unit (PSU) due to lethal capacitor charges.',
+          'Systematic Troubleshooting follows 6 standard steps: 1. Identify the problem (question user, observe symptoms); 2. Establish a theory of probable cause; 3. Test the theory to determine cause; 4. Establish a plan of action and implement the fix; 5. Verify full system functionality; 6. Document findings, actions, and outcomes.',
+          'Common hardware faults: Continuous POST BIOS beep codes indicate RAM or display card initialization failure; sudden thermal shutdowns indicate dried thermal paste or clogged CPU fans; random Blue Screen of Death (BSOD) crashes often point to memory faults; software utilities include Disk Cleanup and Defragmentation.'
+        ],
+        keyPoints: [
+          'ESD Safety: Antistatic wrist strap, grounding mat, unplug power cord',
+          'PSU Safety: Never open or service internal capacitors of a Power Supply Unit',
+          '6-Step Troubleshooting: Identify -> Theory -> Test -> Fix -> Verify -> Document',
+          'POST Diagnostics: BIOS beep codes identify hardware faults before screen initializes'
+        ],
+        flashcards: [
+          {
+            id: 'it11-u5-fc1',
+            front: 'What does ESD stand for and why is it dangerous to computer hardware?',
+            back: 'Electrostatic Discharge; static electricity that can permanently destroy microprocessors and memory chips.'
+          },
+          {
+            id: 'it11-u5-fc2',
+            front: 'What is the very first step in the systematic troubleshooting methodology?',
+            back: 'Identify the problem by gathering information from users and observing system symptoms.'
+          },
+          {
+            id: 'it11-u5-fc3',
+            front: 'What does POST stand for in computer startup diagnostics?',
+            back: 'Power-On Self-Test; the initial hardware diagnostic routine executed by BIOS/UEFI.'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 'it11-u5-q1',
+            question: 'What should a computer technician wear to prevent ESD damage when reseating RAM chips?',
+            options: ['Antistatic wrist strap', 'Rubber surgical gloves', 'Magnetic bracelet', 'Woolen armband'],
+            correctIndex: 0,
+            explanation: 'Antistatic wrist straps safely discharge static electricity to ground.'
+          },
+          {
+            id: 'it11-u5-q2',
+            question: 'What is the typical hardware cause when a computer shuts down automatically after 10 minutes of heavy processing?',
+            options: ['CPU overheating due to dust or dry thermal paste', 'Monitor refresh rate mismatch', 'Corrupted desktop wallpaper', 'Fragmented keyboard driver'],
+            correctIndex: 0,
+            explanation: 'Thermal sensors shut down systems to prevent catastrophic CPU meltdown.'
+          }
+        ]
+      },
+      {
+        id: 'it-11-u6',
+        title: 'Unit 6: Fundamentals of Programming (Python)',
+        gradeTier: '11-12',
+        applicableGrades: [11],
+        lessonTitle: 'Algorithms, Flowcharts, Python Syntax, Conditionals, Loops & Functions',
+        lessonContent: [
+          'An algorithm is a finite, ordered sequence of unambiguous instructions to solve a problem. Flowcharts use standard symbols: Oval (Start/End), Parallelogram (Input/Output), Rectangle (Process), and Diamond (Decision). Translators convert code: Compilers translate whole programs before execution, while Interpreters (like Python) translate and execute line-by-line.',
+          'Python is a dynamically-typed language. Identifiers must begin with a letter or underscore. Fundamental types include int (integers), float (decimals), str (text), and bool (True/False). The input() function reads strings; explicit type casting int() or float() is required for math. Operators include +, -, *, /, // (floor division), % (modulus), and ** (exponentiation).',
+          'Python enforces 4-space indentation to define blocks. Conditionals use if, elif, and else with comparison (==, !=, >, <, >=, <=) and logical (and, or, not) operators. Iteration uses while loops (condition-based) and for loops with range(start, stop, step). Reusable functions are defined with def name(parameters): and return statements.'
+        ],
+        keyPoints: [
+          'Algorithm vs Flowchart: Step-by-step logic vs visual diagram of symbols',
+          'Compiler vs Interpreter: Whole translation vs line-by-line runtime execution',
+          'Python Types & Casting: int, float, str, bool; int(input()) for numeric inputs',
+          'Control Structures: if-elif-else branching, for/while loops, def keyword for functions'
+        ],
+        flashcards: [
+          {
+            id: 'it11-u6-fc1',
+            front: 'What does an oval symbol represent in a standard flowchart?',
+            back: 'The Start or End (Terminal) of an algorithm.'
+          },
+          {
+            id: 'it11-u6-fc2',
+            front: 'Why does Python enforce strict 4-space indentation?',
+            back: 'Indentation defines code block scope instead of curly braces {} used in other languages.'
+          },
+          {
+            id: 'it11-u6-fc3',
+            front: 'What is the difference between / and // operators in Python?',
+            back: '/ performs floating-point division (e.g. 7 / 2 = 3.5); // performs floor integer division (e.g. 7 // 2 = 3).'
+          }
+        ],
+        quizQuestions: [
+          {
+            id: 'it11-u6-q1',
+            question: 'What is the output of the Python expression: 17 % 5?',
+            options: ['2', '3', '3.4', '1'],
+            correctIndex: 0,
+            explanation: 'The modulus operator (%) returns the remainder of integer division: 17 = (5 * 3) + 2.'
+          },
+          {
+            id: 'it11-u6-q2',
+            question: 'Which flowchart symbol is used to represent a conditional branch decision?',
+            options: ['Diamond', 'Rectangle', 'Parallelogram', 'Circle'],
+            correctIndex: 0,
+            explanation: 'The Diamond symbol evaluates boolean conditions (Yes/No or True/False branches).'
+          },
+          {
+            id: 'it11-u6-q3',
+            question: 'Which keyword is used to define a custom reusable function in Python?',
+            options: ['def', 'function', 'create', 'func'],
+            correctIndex: 0,
+            explanation: 'The def keyword defines a function header in Python.'
           }
         ]
       }

@@ -32,6 +32,7 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
       description: string;
       unitsCount: number;
       curriculumBadge: string;
+      officialPdfUrl?: string;
     }[] = [];
 
     subjects.forEach((subj) => {
@@ -44,6 +45,7 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
           description: book.description,
           unitsCount: book.units.length || book.totalUnits,
           curriculumBadge: book.curriculumBadge,
+          officialPdfUrl: book.officialPdfUrl,
         });
       });
     });
@@ -185,11 +187,31 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-[#E3D8C7]">
+                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#E3D8C7]">
+                    {item.officialPdfUrl ? (
+                      <a
+                        href={item.officialPdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-1 py-2 px-2.5 text-xs font-bold font-serif-ethiopic bg-[#047857] hover:bg-[#065F46] text-white border border-[#064E3B] transition-colors cursor-pointer no-underline"
+                        title="የትምህርት ሚኒስቴር ኦፊሴላዊ መጽሐፍ (PDF) በአዲስ ገጽ ክፈት"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>📘 ኦፊሴላዊ (PDF)</span>
+                      </a>
+                    ) : (
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-serif-ethiopic bg-[#F2ECE0] text-[#6B5E4D] border border-[#BFB29E] select-none"
+                        title="ይህ ክፍል የተጠቃለለ ዲጂታል ማስታወሻ ይዟል"
+                      >
+                        <span>📄 የተጠቃለለ ማስታወሻ</span>
+                      </span>
+                    )}
+
                     <button
                       onClick={() => handleDownload(item.subject, item.grade)}
                       disabled={isDownloading}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 text-xs font-bold font-serif-ethiopic bg-[#2E6B4A] hover:bg-[#235338] text-white border border-[#1D4A32] transition-colors cursor-pointer disabled:opacity-50"
+                      className="flex-1 min-w-[100px] flex items-center justify-center gap-1.5 py-2 px-2.5 text-xs font-bold font-serif-ethiopic bg-[#2E6B4A] hover:bg-[#235338] text-white border border-[#1D4A32] transition-colors cursor-pointer disabled:opacity-50"
                       title="Download PDF"
                     >
                       <Download className="w-3.5 h-3.5" />

@@ -721,15 +721,406 @@ export const textbooksDataEnglish: SubjectTextbookCollection = {
       subjectId: 'it',
       grade: 11,
       title: 'Information Technology Student Textbook - Grade 11',
-      curriculumBadge: 'FDRE Ministry of Education New Curriculum',
-      totalUnits: 5,
-      description: 'Python programming, algorithms, flowcharts, data structures.',
+      curriculumBadge: 'FDRE Ministry of Education New Curriculum (168 Pages)',
+      totalUnits: 6,
+      description: 'Grade 11 Information Technology New Curriculum (168 Pages) - 6 Units: Information Systems & Applications, Emerging Technologies (AI, AR/VR, Big Data, IoT, Cloud), Database Management (Relational Model & SQL), Web Development (HTML5 & CSS), Hardware Troubleshooting & Preventive Maintenance, and Fundamentals of Programming in Python.',
       units: [
         {
           unitNumber: 1,
-          title: 'Unit 1: Introduction to Python Programming',
-          summary: 'Variables, data types, conditional branching (if-else), and loops (for, while).',
-          sections: [{ title: '1.1 Python Syntax', content: ['Python uses clean syntax and indentation to build efficient algorithmic logic.'] }],
+          title: 'Unit 1: Information Systems and Its Applications (pp. 1–28)',
+          summary: 'Basics of Information Systems, the DIKW hierarchy, components (Hardware, Software, Data, People, Procedures), classification (TPS, MIS, DSS, ESS), e-services (E-Government, E-Banking, E-Learning), IT entrepreneurship, and bridging the Ethiopian digital divide.',
+          sections: [
+            {
+              title: '1.1 Basics of Information Systems & DIKW Hierarchy',
+              content: [
+                'Data consists of raw, unprocessed facts, numbers, and symbols lacking context.',
+                'Information is processed data that has been organized with structure and meaning.',
+                'Knowledge represents actionable information combined with understanding, experience, and rules.',
+                'Wisdom represents the ethical evaluation and strategic foresight to make sound decisions based on knowledge.',
+              ],
+              keyTerms: [
+                { term: 'Data', definition: 'Raw, unorganized facts and figures lacking context.' },
+                { term: 'Information', definition: 'Data structured with relevance, context, and purpose.' },
+                { term: 'Knowledge', definition: 'Information synthesized with experience and contextual understanding.' },
+                { term: 'Wisdom', definition: 'The capacity to make sound, ethical, and forward-looking judgments.' },
+              ],
+              workedExamples: [
+                {
+                  question: 'Example 1: Trace the DIKW hierarchy for weather readings in the Awash agricultural basin.',
+                  solution: 'Data: 35mm rain, 28°C. Information: Awash received 35mm rainfall in 24 hours. Knowledge: Teff seedlings require planting within 48 hours under these moisture levels. Wisdom: Activate regional irrigation reserves early to protect against the forecasted seasonal dry spell.',
+                },
+              ],
+              exercises: ['1. Explain the differences between Data and Information with two examples.', '2. Describe how Knowledge transforms into Wisdom.'],
+            },
+            {
+              title: '1.2 Components & Classification of Information Systems',
+              content: [
+                'The five core components of an Information System are Hardware, Software, Data, People, and Procedures.',
+                'Transaction Processing Systems (TPS) handle operational routine transactions (e.g., POS checkout, telebirr payments).',
+                'Management Information Systems (MIS) provide scheduled summary reports for tactical managers.',
+                'Decision Support Systems (DSS) use analytical models to assist in semi-structured decision-making.',
+                'Executive Support Systems (ESS) support strategic, non-routine corporate decision-making for senior leadership.',
+              ],
+              keyTerms: [
+                { term: 'TPS', definition: 'Transaction Processing System tracking daily routine operational business transactions.' },
+                { term: 'DSS', definition: 'Decision Support System combining data and analytical models to support complex decisions.' },
+                { term: 'Procedures', definition: 'Documented operational policies and rules governing system use and security.' },
+              ],
+              exercises: ['1. List the five components of an IS.', '2. Compare TPS and DSS by primary users and decision scope.'],
+            },
+            {
+              title: '1.3 E-Services, Entrepreneurship & The Digital Divide',
+              content: [
+                'E-Government delivers transparent public administrative services online (e.g., e-tax, digital ID Fayda, passport portals).',
+                'Digital banking and mobile money (telebirr, CBE Birr) drive financial inclusion across urban and rural communities.',
+                'IT lowers startup barriers for entrepreneurs through e-commerce, global market reach, and digital freelancing.',
+                'The Digital Divide represents the socio-economic gap in ICT access, infrastructure, and digital literacy.',
+              ],
+              keyTerms: [
+                { term: 'Digital Divide', definition: 'The gap between individuals and communities who have access to modern ICT and those who do not.' },
+                { term: 'E-Government', definition: 'The use of digital technologies to provide public services to citizens and businesses.' },
+              ],
+              exercises: ['1. What is the goal of Ethiopia\'s Digital 2025 Strategy?', '2. Propose two strategies to bridge the digital divide in rural schools.'],
+            },
+          ],
+          unitReviewQuestions: [
+            '1. Differentiate between Data, Information, Knowledge, and Wisdom.',
+            '2. Explain how the five components of an information system interact in a national hospital.',
+            '3. Contrast operational-level TPS with executive-level ESS.',
+            '4. Discuss the socio-economic benefits and challenges of mobile money in Ethiopia.',
+          ],
+        },
+        {
+          unitNumber: 2,
+          title: 'Unit 2: Emerging Technologies (pp. 29–54)',
+          summary: 'The Fourth Industrial Revolution (4IR), Artificial Intelligence (AI) and Machine Learning, Augmented Reality (AR) vs. Virtual Reality (VR), Data Science and the 5 Vs of Big Data, Internet of Things (IoT), and Cloud Computing architecture (IaaS, PaaS, SaaS).',
+          sections: [
+            {
+              title: '2.1 Artificial Intelligence & Machine Learning',
+              content: [
+                'Artificial Intelligence (AI) simulates human cognitive abilities such as learning, pattern recognition, and problem-solving.',
+                'Machine Learning (ML) enables algorithms to learn patterns from empirical data without being explicitly programmed.',
+                'Narrow AI performs dedicated single tasks (e.g., speech recognition, disease detection in coffee plants), whereas General AI (AGI) aims to match human multi-domain intellect.',
+                'Computer Vision processes visual inputs, while Natural Language Processing (NLP) interprets human languages.',
+              ],
+              keyTerms: [
+                { term: 'Artificial Intelligence', definition: 'Computer systems designed to perform tasks requiring human-like intelligence.' },
+                { term: 'Machine Learning', definition: 'A branch of AI that learns patterns from data to make autonomous predictions.' },
+              ],
+              workedExamples: [
+                {
+                  question: 'Example: How does an AI smartphone camera diagnose plant diseases?',
+                  solution: 'The camera captures a leaf image, computer vision extracts visual features (discoloration, spots), and a trained convolutional neural network classifies the symptom against a database of coffee leaf rust.',
+                },
+              ],
+              exercises: ['1. Distinguish between Narrow AI and General AI.', '2. What is the role of training data in Machine Learning?'],
+            },
+            {
+              title: '2.2 AR, VR, Big Data & IoT',
+              content: [
+                'Virtual Reality (VR) immerses the user in a 100% digital simulated environment using headsets.',
+                'Augmented Reality (AR) overlays computer-generated digital imagery, sounds, and text onto the physical real world.',
+                'Big Data is defined by the 5 Vs: Volume (size), Velocity (speed), Variety (formats), Veracity (accuracy/trust), and Value (actionable business insight).',
+                'The Internet of Things (IoT) connects everyday physical devices embedded with sensors and actuators to share data over networks.',
+              ],
+              keyTerms: [
+                { term: 'VR (Virtual Reality)', definition: 'A fully immersive digital simulation isolating the user from the physical environment.' },
+                { term: 'AR (Augmented Reality)', definition: 'An interactive view where digital computer graphics overlay physical reality.' },
+                { term: 'IoT', definition: 'A network of physical devices with sensors and connectivity exchanging data autonomously.' },
+              ],
+              exercises: ['1. Compare AR and VR in medical training.', '2. List and explain the 5 Vs of Big Data.'],
+            },
+            {
+              title: '2.3 Cloud Computing Architecture',
+              content: [
+                'Cloud computing delivers on-demand computing services (servers, storage, databases, networking) over the internet.',
+                'Infrastructure as a Service (IaaS) provides virtualized computing and raw storage infrastructure.',
+                'Platform as a Service (PaaS) provides development runtimes, APIs, and hosting environments.',
+                'Software as a Service (SaaS) delivers complete end-user applications over the web (e.g., Google Workspace, Microsoft 365).',
+              ],
+              keyTerms: [
+                { term: 'Cloud Computing', definition: 'On-demand delivery of IT resources over the internet with pay-as-you-go pricing.' },
+                { term: 'SaaS', definition: 'Software applications hosted centrally and accessible through web browsers.' },
+              ],
+              exercises: ['1. Classify Google Drive into IaaS, PaaS, or SaaS.', '2. Contrast Public and Private cloud deployments.'],
+            },
+          ],
+          unitReviewQuestions: [
+            '1. Explain the role of Emerging Technologies in driving the Fourth Industrial Revolution.',
+            '2. Compare Augmented Reality and Virtual Reality with practical educational use cases.',
+            '3. Explain how IoT sensors and Big Data analytics can optimize Ethiopian agriculture.',
+            '4. Differentiate between IaaS, PaaS, and SaaS cloud service models.',
+          ],
+        },
+        {
+          unitNumber: 3,
+          title: 'Unit 3: Database Management (pp. 55–84)',
+          summary: 'File-based systems vs. DBMS, Relational Database model, Entity-Relationship (ER) modeling, Primary/Foreign keys, integrity constraints (Entity, Referential, Domain), and Structured Query Language (SQL DDL and DML operations).',
+          sections: [
+            {
+              title: '3.1 Database Concepts & Entity-Relationship Modeling',
+              content: [
+                'A Database is an organized collection of structured, logically related data.',
+                'A Database Management System (DBMS) eliminates data redundancy, prevents data inconsistency, and enforces security.',
+                'An Entity is a distinguishable real-world person, place, or concept.',
+                'Attributes describe properties of entities; relationships represent associations between entities.',
+                'Cardinality ratios define structural constraints: One-to-One (1:1), One-to-Many (1:N), and Many-to-Many (M:N).',
+              ],
+              keyTerms: [
+                { term: 'Database', definition: 'An organized, persistent collection of logically related data.' },
+                { term: 'DBMS', definition: 'Software enabling users to define, create, maintain, and query databases.' },
+                { term: 'Entity', definition: 'A distinct real-world object or concept about which data is maintained.' },
+              ],
+              workedExamples: [
+                {
+                  question: 'Example: Determine the cardinality between SCHOOL and PRINCIPAL, and between STUDENT and COURSE.',
+                  solution: 'SCHOOL to PRINCIPAL is One-to-One (1:1), as a school has one principal and a principal leads one school. STUDENT to COURSE is Many-to-Many (M:N), since a student enrolls in multiple courses and a course has many students.',
+                },
+              ],
+              exercises: ['1. List three disadvantages of file-based storage systems.', '2. Draw an ER diagram for a library with BOOK, BORROWER, and LOAN.'],
+            },
+            {
+              title: '3.2 Relational Model, Keys & Integrity Rules',
+              content: [
+                'In the relational model, data is organized into tables (relations) of rows (tuples) and columns (attributes).',
+                'A Primary Key uniquely identifies each tuple in a table and cannot contain NULL values (Entity Integrity).',
+                'A Foreign Key links a record to the primary key of another table, ensuring Referential Integrity.',
+                'Domain Integrity requires that all column values conform to defined data types, formats, and ranges.',
+              ],
+              keyTerms: [
+                { term: 'Primary Key', definition: 'A column or combination of columns that uniquely identifies each record in a table.' },
+                { term: 'Foreign Key', definition: 'A column referencing the primary key of another table to maintain relational integrity.' },
+                { term: 'Entity Integrity', definition: 'The rule requiring that primary keys must be unique and cannot contain NULL values.' },
+              ],
+              exercises: ['1. Explain the purpose of a Foreign Key.', '2. What happens when Referential Integrity is violated?'],
+            },
+            {
+              title: '3.3 Structured Query Language (SQL)',
+              content: [
+                'Data Definition Language (DDL) commands define table schemas: CREATE TABLE, ALTER TABLE, DROP TABLE.',
+                'Data Manipulation Language (DML) manages table records: INSERT INTO, SELECT, UPDATE, DELETE.',
+                'The SELECT command retrieves data using WHERE clauses, ORDER BY sorting, and GROUP BY aggregation.',
+                'Aggregate functions perform statistical calculations: COUNT(), SUM(), AVG(), MIN(), MAX().',
+              ],
+              keyTerms: [
+                { term: 'SQL', definition: 'Structured Query Language; standard declarative language used to manage relational databases.' },
+                { term: 'DDL', definition: 'Data Definition Language commands used to define database structures.' },
+                { term: 'DML', definition: 'Data Manipulation Language commands used to insert, modify, and query records.' },
+              ],
+              workedExamples: [
+                {
+                  question: 'Example: Write the SQL query to find all students in Grade 11 who scored above 80.',
+                  solution: 'SELECT StudentID, FullName, Score FROM Students WHERE Grade = 11 AND Score > 80 ORDER BY Score DESC;',
+                },
+              ],
+              exercises: ['1. Write SQL to create a Teacher table with ID, Name, and Subject.', '2. Write SQL to count total registered students.'],
+            },
+          ],
+          unitReviewQuestions: [
+            '1. Compare file processing systems with Relational Database Management Systems.',
+            '2. Explain the difference between Candidate Keys, Primary Keys, and Alternate Keys.',
+            '3. State and explain the three fundamental database integrity constraints.',
+            '4. Write the SQL DML statements to insert a record, update an address, and delete an inactive record.',
+          ],
+        },
+        {
+          unitNumber: 4,
+          title: 'Unit 4: Web Development (pp. 85–114)',
+          summary: 'Foundations of the World Wide Web, client-server architecture, HTTP/HTTPS, HTML document hierarchy, text formatting, hyperlinks, images, multimedia, tables, forms, and introductory CSS styling.',
+          sections: [
+            {
+              title: '4.1 Foundations of the Web & HTML Structure',
+              content: [
+                'The World Wide Web relies on client-server architecture: browsers request resources over HTTP/HTTPS from web servers.',
+                'Domain Name System (DNS) translates user-friendly domain names (e.g., www.edu.et) into numeric IP addresses.',
+                'HTML (HyperText Markup Language) structures web content using semantic tags: <!DOCTYPE html>, <html>, <head>, <title>, <body>.',
+                'Headings are defined using <h1> to <h6>; text paragraphs are wrapped in <p> tags.',
+              ],
+              keyTerms: [
+                { term: 'HTML', definition: 'Standard markup language used for structuring web pages.' },
+                { term: 'DNS', definition: 'Domain Name System; internet directory translating domain names to IP addresses.' },
+                { term: 'HTTP/HTTPS', definition: 'Hypertext Transfer Protocol (Secure); protocol used for transmitting web resources.' },
+              ],
+              exercises: ['1. What is the role of a web browser?', '2. Write the standard HTML5 skeleton code.'],
+            },
+            {
+              title: '4.2 Hyperlinks, Lists, Tables & Forms',
+              content: [
+                'Hyperlinks are created using the anchor tag: <a href="URL">link text</a>, supporting internal and external navigation.',
+                'Images are embedded using <img src="image.jpg" alt="description"> with required alt accessibility attributes.',
+                'Ordered lists (<ol>) create numbered items; unordered lists (<ul>) create bullet points.',
+                'Tables use <table>, <tr> (rows), <th> (headers), and <td> (data cells) with colspan and rowspan formatting.',
+                'HTML forms collect user input via <form>, <input> (text, password, radio, checkbox), <select>, and <button type="submit">.',
+              ],
+              keyTerms: [
+                { term: 'Hyperlink', definition: 'An HTML reference link directing users to another document or section.' },
+                { term: 'Form', definition: 'An interactive HTML container used to collect and submit user data to a server.' },
+              ],
+              workedExamples: [
+                {
+                  question: 'Example: Write an HTML form collecting a student\'s Name and Grade.',
+                  solution: '<form action="/submit" method="post">\n  <label for="name">Name:</label>\n  <input type="text" id="name" name="name" required><br>\n  <label for="grade">Grade:</label>\n  <input type="number" id="grade" name="grade" min="9" max="12"><br>\n  <button type="submit">Submit</button>\n</form>',
+                },
+              ],
+              exercises: ['1. Write HTML code for a 3-row, 3-column table.', '2. Differentiate between GET and POST form methods.'],
+            },
+            {
+              title: '4.3 Introduction to Cascading Style Sheets (CSS)',
+              content: [
+                'CSS (Cascading Style Sheets) controls the visual presentation, styling, and layout of HTML web pages.',
+                'CSS can be applied via three methods: Inline (style attribute), Internal (<style> in head), and External (<link rel="stylesheet">).',
+                'The CSS Box Model consists of Margins (outer space), Borders, Padding (interior space), and Content.',
+                'Selectors target elements by tag name (p), class (.highlight), or unique identifier (#header).',
+              ],
+              keyTerms: [
+                { term: 'CSS', definition: 'Style sheet language specifying fonts, colors, spacing, and layouts for HTML documents.' },
+                { term: 'Box Model', definition: 'Design model defining the spacing around an HTML element: Margin, Border, Padding, Content.' },
+              ],
+              exercises: ['1. Describe the four components of the CSS Box Model.', '2. Why is External CSS preferred in professional websites?'],
+            },
+          ],
+          unitReviewQuestions: [
+            '1. Describe the complete client-server lifecycle when opening a web page.',
+            '2. Explain the purpose of HTML semantic tags and their importance for accessibility.',
+            '3. Write the HTML code for a student registration form containing text, radio, dropdown, and submit elements.',
+            '4. Contrast Inline, Internal, and External CSS styling methods with respect to maintainability.',
+          ],
+        },
+        {
+          unitNumber: 5,
+          title: 'Unit 5: Hardware Troubleshooting and Maintenance (pp. 115–138)',
+          summary: 'Laboratory safety precautions, Electrostatic Discharge (ESD) prevention, preventive maintenance routines, 6-step systematic troubleshooting methodology, common computer hardware faults (POST beep codes, RAM, power supply, overheating, BSOD), and disk maintenance utilities.',
+          sections: [
+            {
+              title: '5.1 Safety Precautions & Preventive Maintenance',
+              content: [
+                'Electrostatic Discharge (ESD) is the rapid transfer of static charge that can destroy microprocessors and memory chips.',
+                'Technicians must wear antistatic wrist straps, use grounding mats, and unplug power cords before servicing computers.',
+                'Never open or service a computer Power Supply Unit (PSU) or CRT monitor due to dangerous high-voltage capacitors.',
+                'Routine preventive maintenance includes cleaning dust from fans and heat sinks, organizing cables, and inspecting thermal paste.',
+              ],
+              keyTerms: [
+                { term: 'ESD', definition: 'Electrostatic Discharge; static electricity that damages sensitive silicon computer components.' },
+                { term: 'Preventive Maintenance', definition: 'Scheduled inspection and cleaning to extend hardware life and prevent breakdowns.' },
+              ],
+              exercises: ['1. What precautions prevent ESD damage?', '2. Why must technicians never open a power supply unit?'],
+            },
+            {
+              title: '5.2 Systematic Troubleshooting Methodology',
+              content: [
+                'Professional troubleshooting follows 6 systematic steps:',
+                'Step 1: Identify the problem (gather information from users and observe symptoms).',
+                'Step 2: Establish a theory of probable cause (test simple theories first).',
+                'Step 3: Test the theory to determine the exact cause.',
+                'Step 4: Establish a plan of action and implement the corrective solution.',
+                'Step 5: Verify full system functionality and implement preventive measures.',
+                'Step 6: Document findings, actions taken, and outcomes for future reference.',
+              ],
+              keyTerms: [
+                { term: 'Troubleshooting', definition: 'A systematic method for locating and resolving computer hardware and software faults.' },
+                { term: 'POST', definition: 'Power-On Self-Test; hardware diagnostic test run by BIOS/UEFI firmware upon powering on.' },
+              ],
+              workedExamples: [
+                {
+                  question: 'Example: A desktop turns on, cooling fans spin, but the screen is black and emits repeating beep codes.',
+                  solution: '1. Diagnose symptom: POST beeps indicate RAM or display card initialization failure. 2. Action: Unplug power, ground yourself, remove and clean RAM contacts with an eraser, reseat RAM securely into slot until clips snap in. 3. Restart to verify display.',
+                },
+              ],
+              exercises: ['1. List the 6 steps of computer troubleshooting.', '2. What do continuous BIOS beep codes indicate during startup?'],
+            },
+            {
+              title: '5.3 Diagnosing Common Faults & Disk Utilities',
+              content: [
+                'Overheating causes sudden unexpected shutdowns; caused by dried thermal paste or dust-clogged CPU heat sink fans.',
+                'RAM failures often cause random Blue Screen of Death (BSOD) crashes or memory parity error screens.',
+                'Software maintenance tools include Disk Cleanup (removes temporary files) and Defragmentation (reorders fragmented hard disk sectors).',
+              ],
+              keyTerms: [
+                { term: 'BSOD', definition: 'Blue Screen of Death; critical Windows stop error caused by hardware faults or corrupted drivers.' },
+                { term: 'Defragmentation', definition: 'Rearranging fragmented file data on magnetic hard drives for faster read/write speeds.' },
+              ],
+              exercises: ['1. What are common symptoms of an overheating processor?', '2. When should Disk Cleanup and Defragmentation be executed?'],
+            },
+          ],
+          unitReviewQuestions: [
+            '1. Why is an antistatic wrist strap mandatory when handling RAM modules or motherboards?',
+            '2. Detail all 6 steps of the standard diagnostic troubleshooting methodology.',
+            '3. Explain the meaning and diagnostic purpose of the Power-On Self-Test (POST).',
+            '4. Describe three hardware symptoms indicating that a computer power supply is failing.',
+          ],
+        },
+        {
+          unitNumber: 6,
+          title: 'Unit 6: Fundamentals of Programming (pp. 139–168)',
+          summary: 'Algorithm design, standard flowchart symbols, language translators (assemblers, compilers, interpreters), Python environment setup, identifiers, dynamic data types, arithmetic/logical operators, input/output, conditional branching (if, elif, else), iteration loops (while, for with range), and custom functions.',
+          sections: [
+            {
+              title: '6.1 Algorithms, Flowcharts & Translators',
+              content: [
+                'An algorithm is a finite, step-by-step sequence of unambiguous instructions designed to solve a specific problem.',
+                'Flowcharts visually represent algorithms using standard ISO symbols: Oval (Start/End), Parallelogram (Input/Output), Rectangle (Process), Diamond (Decision).',
+                'Language translators convert high-level code to machine binary: Compilers translate the entire source program before execution; Interpreters translate and execute line-by-line.',
+                'Python is an interpreted, high-level, dynamically-typed language known for clean syntax and readability.',
+              ],
+              keyTerms: [
+                { term: 'Algorithm', definition: 'A step-by-step procedure of well-defined instructions to solve a problem.' },
+                { term: 'Flowchart', definition: 'A graphical diagram representing the logical flow of an algorithm.' },
+                { term: 'Compiler', definition: 'A translator converting an entire program into machine language before execution.' },
+                { term: 'Interpreter', definition: 'A translator that analyzes and executes code line-by-line at runtime.' },
+              ],
+              workedExamples: [
+                {
+                  question: 'Example: Write pseudocode to determine if a student has passed (mark >= 50) or failed.',
+                  solution: '1. START\n2. INPUT mark\n3. IF mark >= 50 THEN\n     PRINT "Passed"\n   ELSE\n     PRINT "Failed"\n4. END',
+                },
+              ],
+              exercises: ['1. Draw the 4 basic flowchart symbols and state their functions.', '2. Compare compilers and interpreters.'],
+            },
+            {
+              title: '6.2 Python Variables, Data Types & Operators',
+              content: [
+                'Variables are named memory locations holding values; variable names must start with a letter or underscore.',
+                'Fundamental Python data types: int (whole numbers), float (decimals), str (text in quotes), and bool (True/False).',
+                'The type() function checks data types; type casting functions include int(), float(), and str().',
+                'Arithmetic operators include addition (+), subtraction (-), multiplication (*), division (/), floor division (//), modulus (%), and exponentiation (**).',
+                'The input() function returns user input as a string; use type casting for numeric calculations.',
+              ],
+              keyTerms: [
+                { term: 'Variable', definition: 'A named memory container whose value can change during program execution.' },
+                { term: 'Type Casting', definition: 'Explicitly converting a value from one data type to another (e.g., int("25")).' },
+              ],
+              exercises: ['1. Why does age = input("Enter age: ") require int() casting for math?', '2. Evaluate: 17 // 3 and 17 % 3.'],
+            },
+            {
+              title: '6.3 Control Structures: Conditionals, Loops & Functions',
+              content: [
+                'Python uses mandatory indentation (4 spaces) to define code blocks instead of curly brackets.',
+                'Conditional statements: if condition:, elif condition:, and else: for multi-way branching.',
+                'Comparison operators: ==, !=, >, <, >=, <=; Logical operators: and, or, not.',
+                'The while loop repeats statements as long as a condition evaluates to True.',
+                'The for loop iterates over sequences, commonly using range(start, stop, step).',
+                'Functions are defined using the def keyword with parameters and return statements for code reusability.',
+              ],
+              keyTerms: [
+                { term: 'Indentation', definition: 'Leading whitespace used in Python to delimit blocks of code.' },
+                { term: 'Iteration', definition: 'Repetitive execution of a block of instructions via while or for loops.' },
+                { term: 'Function', definition: 'A named, reusable block of code that performs a specific task and optionally returns a result.' },
+              ],
+              workedExamples: [
+                {
+                  question: 'Example: Write a Python function that returns the square of a number and test it in a loop for numbers 1 to 5.',
+                  solution: 'def square(n):\n    return n * n\n\nfor i in range(1, 6):\n    print(f"The square of {i} is {square(i)}")',
+                },
+              ],
+              exercises: ['1. Write a Python script to print even numbers between 2 and 20.', '2. Write a function to calculate the average of three numbers.'],
+            },
+          ],
+          unitReviewQuestions: [
+            '1. Explain the characteristics of an effective algorithm (finiteness, definiteness, input, output, effectiveness).',
+            '2. Why is indentation strictly enforced in Python syntax, and what occurs if indentation is inconsistent?',
+            '3. Write a Python program that prompts a user for their score and prints "Distinction" (>=85), "Pass" (>=50), or "Fail".',
+            '4. Write a Python program using a while loop that calculates the sum of all integers from 1 to 100.',
+          ],
         },
       ],
     },

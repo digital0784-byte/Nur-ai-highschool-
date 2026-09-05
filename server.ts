@@ -977,6 +977,9 @@ ${langInstruction}`;
     }
   });
 
+  // Serve static textbooks directly
+  app.use('/textbooks', express.static(path.join(process.cwd(), 'public', 'textbooks')));
+
   // Vite Middleware for Development or Static Files for Production
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
