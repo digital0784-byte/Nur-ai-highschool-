@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Subject, Grade, SupplementaryBook, SupplementaryBookChapter, LanguageCode } from '../types';
 import { getSupplementaryBooks } from '../data/supplementaryData';
+import { normalizeSubjectId } from '../data/textbooksData';
 import { useLanguage } from '../context/LanguageContext';
 import {
   Library,
@@ -47,8 +48,10 @@ export const SupplementaryBooksView: React.FC<SupplementaryBooksViewProps> = ({
   }, [language]);
 
   const filteredBooks = useMemo(() => {
+    const normSubjectId = normalizeSubjectId(subject.id);
     return currentBooksList.filter((b) => {
-      const matchesSubject = b.subjectId === subject.id || b.subjectId === 'all';
+      const normBookSubjectId = normalizeSubjectId(b.subjectId);
+      const matchesSubject = b.subjectId === 'all' || normBookSubjectId === 'all' || normSubjectId === normBookSubjectId;
       const matchesCategory = selectedCategory === 'all' || b.category === selectedCategory;
       const matchesSearch =
         !searchQuery ||

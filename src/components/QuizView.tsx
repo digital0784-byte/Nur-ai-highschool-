@@ -57,7 +57,7 @@ export const QuizView: React.FC<QuizViewProps> = ({ topic, subject }) => {
       const correctCount = userAnswers.reduce((count: number, answer, idx) => {
         return answer === questions[idx]?.correctIndex ? count + 1 : count;
       }, 0);
-      recordQuizResult(topic.id, correctCount, questions.length);
+      recordQuizResult(topic.id, correctCount, questions.length, subject.id);
     }
   };
 

@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isTeacher() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isTeacher();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+
+      match /progress/{progressDoc} {
+        allow read: if isOwner(userId) || isTeacher();
+        allow write: if isOwner(userId);
+      }
+
+      match /quizRecords/{recordId} {
+        allow read: if isOwner(userId) || isTeacher();
+        allow write: if isOwner(userId);
+      }
+
+      match /reviews/{reviewDoc} {
+        allow read: if isOwner(userId) || isTeacher();
+        allow write: if isOwner(userId);
+      }
+    }
+
+    // Top-level collections for direct per-student scoping
+    match /reviews/{userId} {
+      allow read: if isOwner(userId) || isTeacher();
+      allow write: if isOwner(userId);
+    }
+
+    match /progress/{userId} {
+      allow read: if isOwner(userId) || isTeacher();
+      allow write: if isOwner(userId);
+    }
+
+    match /quizHistory/{userId}/{document=**} {
+      allow read: if isOwner(userId) || isTeacher();
+      allow write: if isOwner(userId);
+    }
+
+    match /youtubeCache/{cacheKey} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://raw.githubusercontent.com/firebase/firebase-tools/master/schema/blueprint.json",
+  "version": "1.0.0",
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access for students and teachers",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "Full name of the user" },
+        "role": { "type": "string", "enum": ["student", "teacher"], "description": "Role determining access permissions" },
+        "grade": { "type": "number", "description": "High school grade level (9, 10, 11, 12)" },
+        "createdAt": { "type": "string", "description": "Account creation ISO timestamp" },
+        "updatedAt": { "type": "string", "description": "Last update ISO timestamp" }
+      },
+      "required": ["uid", "email", "displayName", "role"]
+    },
+    "UserProgress": {
+      "title": "UserProgress",
+      "description": "Student learning progress across subjects and topics",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "User UID" },
+        "progressMap": { "type": "object", "description": "Map of topicId to TopicProgressItem" },
+        "overall": { "type": "object", "description": "Overall percentage and completion summary" },
+        "lastUpdated": { "type": "string", "description": "Last sync ISO timestamp" }
+      },
+      "required": ["uid", "progressMap"]
+    },
+    "QuizRecord": {
+      "title": "QuizRecord",
+      "description": "Historical quiz attempt log",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "topicId": { "type": "string" },
+        "score": { "type": "number" },
+        "total": { "type": "number" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["userId", "topicId", "score", "total", "timestamp"]
+    }
+  },
+  "firestore": {
+    "collections": {
+      "users": {
+        "entity": "User",
+        "documentId": "{userId}",
+        "subcollections": {
+          "progress": {
+            "entity": "UserProgress",
+            "documentId": "{progressDoc}"
+          },
+          "quizRecords": {
+            "entity": "QuizRecord",
+            "documentId": "{recordId}"
+          }
+        }
+      }
+    }
+  }
+}

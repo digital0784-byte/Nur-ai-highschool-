@@ -397,4 +397,101 @@ export const textbooksDataSomali: SubjectTextbookCollection = {
       units: [{ unitNumber: 1, title: 'Cutubka 1aad: Ganacsiga Beeraha iyo Kordhinta Qiimaha (Value Chain)', summary: 'Suuq-geynta wax soo saarka beeraha, warshadaynta iyo qorshe ganacsi.', sections: [{ title: '1.1 Silsiladda Qiimaha Beeraha', content: ['Warshadaynta wax soo saarka aasaasiga ahi waxay kordhisaa dakhliga beeraleyda.'] }] }],
     },
   },
+  amharic: {
+    9: {
+      subjectId: 'amharic',
+      grade: 9,
+      title: 'Buugga Ardayga ee Luuqadda iyo Suugaanta Axmaariga Fasalka 9aad',
+      curriculumBadge: 'Manhajka Cusub ee Itoobiya',
+      totalUnits: 5,
+      description: 'Aasaaska suugaanta, barashada suugaanta afka ah (sheeko-xariiro, maahmaahyo, xujooyin), naxwaha iyo xarakaynta luuqadda Axmaariga.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Cutubka 1aad: Noocyada Suugaanta iyo Suugaanta Afka ah (Literature & Folklore)',
+          summary: 'Laamaha suugaanta afka, hidaha iyo dhaqanka faca ka fac loo kala dhaxlo iyo aasaaska sheekooyinka.',
+          sections: [
+            {
+              title: '1.1 Nuxurka Suugaanta Afka ah iyo Qaybaheeda',
+              content: [
+                'Suugaanta afka ahi waa kayd nool oo dhaqan iyo taariikheed oo jiilba jiilka kale afka uga gudbiyo.',
+                'Qaybaha ugu muhiimsan waxaa ka mid ah: sheeko-xariiro, maahmaahyo, xujooyin, geeraarro iyo heeso dhaqameed.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    10: {
+      subjectId: 'amharic',
+      grade: 10,
+      title: 'Buugga Ardayga ee Luuqadda iyo Suugaanta Axmaariga Fasalka 10aad',
+      curriculumBadge: 'Manhajka Cusub ee Itoobiya',
+      totalUnits: 5,
+      description: 'Qaybaha sheekada (dulucda, dhagarta, jilayaasha, goobta iyo waqtiga), fanka riwaayadaha iyo curinta maqaallada.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Cutubka 1aad: Qaybaha Sheekada iyo Fanka Riwaayadda (Fiction & Drama)',
+          summary: 'Dhismaha jilayaasha, kobcinta dhagarta sheekada, riwaayadaha masraxa iyo adeegsiga suugaanta sarbeebta ah.',
+          sections: [
+            {
+              title: '1.1 Aasaaska Dhismaha Sheekada',
+              content: [
+                'Sheekadu waa farshaxan suugaaneed ka unkama male-awaalka qoraaga oo ku dhisan duluc, jilayaal iyo khilaaf.',
+                'Riwaayadu waa fan masrax ku nool oo matalayaal ku soo bandhigaan hadal iyo ficil toos ah.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    11: {
+      subjectId: 'amharic',
+      grade: 11,
+      title: 'Buugga Ardayga ee Luuqadda iyo Suugaanta Axmaariga Fasalka 11aad',
+      curriculumBadge: 'Manhajka Cusub ee Itoobiya',
+      totalUnits: 5,
+      description: 'Fanka Qinee iyo "Duxda iyo Dahabka" (Sam-na-Warq), qawaaniinta gabayada, sarbeebta qotoda dheer iyo macnaha qarsoon.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Cutubka 1aad: Fanka Gabayada iyo Sam-na-Warq (Wax and Gold Poetics)',
+          summary: 'Sam-na-Warq (Duxda iyo Dahabka), erayga furaha ah (hibre-qal) iyo falsafadda suugaanta Itoobiya.',
+          sections: [
+            {
+              title: '1.1 Mabaadi\'da Sam-na-Warq',
+              content: [
+                'Sam-na-Warq waa fanka gabayada iyo hadal-karka ee Itoobiya oo caan ku ah macnaha laba-wajiilaha ah.',
+                'Duxda (sami) waxay taagan tahay macnaha muuqda ee tooska ah, halka Dahabku (warqeen) muujinayo nuxurka qoto dheer ee dhabta ah.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    12: {
+      subjectId: 'amharic',
+      grade: 12,
+      title: 'Buugga Ardayga ee Luuqadda iyo Suugaanta Axmaariga Fasalka 12aad',
+      curriculumBadge: 'Manhajka Cusub ee Itoobiya',
+      totalUnits: 5,
+      description: 'Naqdiga suugaanta (Literary Criticism), hababka cilmi-baarista luuqadda, taariikhda kobaca luuqadaha iyo diyaarinta imtixaanka ESSLCE.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Cutubka 1aad: Naqdiga Suugaanta iyo Cilmi-baarista Luuqadda (Literary Criticism & Research)',
+          summary: 'Aragtiyaha suugaanta, qiimeynta qotoda dheer ee qoraallada iyo diyaarinta cilmi-baarista qoran.',
+          sections: [
+            {
+              title: '1.1 Aasaaska Naqdiga Suugaanta',
+              content: [
+                'Naqdiga suugaantu waa hab cilmiyeysan oo lagu falanqeeyo lana ogaado awoodda iyo tayada faneed ee qoraalka suugaanta.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
 };

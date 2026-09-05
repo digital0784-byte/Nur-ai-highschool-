@@ -194,6 +194,125 @@ export const supplementaryBooksEnglish: SupplementaryBook[] = [
     ],
   },
   {
+    id: 'supp-amharic-extreme-11-12',
+    title: 'Extreme Series: Amharic Literature & Language (Grades 11-12)',
+    amharicTitle: 'Extreme Series: Amharic Literature, Wax & Gold Poetics (Grades 11-12)',
+    authorOrSeries: 'Extreme Educational Series',
+    category: 'extreme',
+    categoryLabel: 'Extreme Series',
+    subjectId: 'amharic',
+    grades: [11, 12],
+    badge: 'ESSLCE Amharic Top Score',
+    description: 'Comprehensive Grades 11-12 Amharic language guide, "Wax and Gold" (Sam-na-Warq) poetics, literary criticism, and ESSLCE model question analyses.',
+    highlights: [
+      'Decoding techniques for "Wax and Gold" (Sam-na-Warq) and Qinee poetry',
+      'Elements of fiction, drama, and narrative prose analysis',
+      'Grammar, morphology, and punctuation rules',
+      'Past ESSLCE national exam Amharic questions with full explanations',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Wax and Gold (Sam-na-Warq) Poetics and Double Meanings',
+        summary: 'Wax (apparent meaning), Gold (hidden meaning), pivot phrase (hibre-qal), and philosophical dualism in Ethiopian literature.',
+        keyFormulasAndRules: [
+          'Wax (Sam) = Surface, literal meaning perceptible to any listener',
+          'Gold (Warq) = Hidden, profound underlying meaning intended by the poet',
+          'Pivot (Hibre-qal) = The key word or phonetic phrase connecting both meanings',
+        ],
+        sampleExamProblems: [
+          {
+            problem: 'In the classic couplet: "My ox was slaughtered, yet I ate no meat; Having filled my belly, I drank with my jar/friend." Identify the hibre-qal and the wax and gold.',
+            solution: 'Pivot (Hibre-qal): "ጠጅ ጋ" (Tej ga). Wax: Drank honey-wine with a clay jar (ጋን). Gold: Rested peacefully with my beloved companion (ወዳጄ ጋር).',
+            tip: 'Look for phonetic puns and split syllabic wordplay that yield alternative interpretations.',
+          },
+        ],
+        fullContent: [
+          'Sam-na-Warq is the quintessential hallmark of Ethiopian poetic subtlety and rhetorical eloquence, frequently tested on university entrance examinations.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'supp-social-extreme-11-12',
+    title: 'Extreme Series: History & Social Studies (Grades 11-12)',
+    amharicTitle: 'Extreme Series: History & Social Studies National Exam Prep (Grades 11-12)',
+    authorOrSeries: 'Extreme Educational Series',
+    category: 'extreme',
+    categoryLabel: 'Extreme Series',
+    subjectId: 'social-studies',
+    grades: [11, 12],
+    badge: 'Comprehensive Social Studies & History',
+    description: 'Ethiopian and world history, ancient civilizations of Aksum and Lalibela, the historic Battle of Adwa, Pan-Africanism, and global alliances.',
+    highlights: [
+      'Chronological matrix of Aksumite, Zagwe, and Gondarine civilizations',
+      'Strategic analysis of the Battle of Adwa (1896) and anti-colonial resistance',
+      'Founding of the Organization of African Unity (OAU/AU) and Ethiopian diplomacy',
+      'Worked past ESSLCE history questions and conceptual timelines',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Ancient Ethiopian Civilizations and the Victory of Adwa',
+        summary: 'Aksumite maritime trade routes, coinage, and the diplomatic and military dynamics of the Battle of Adwa.',
+        keyFormulasAndRules: [
+          'Battle of Adwa: March 1, 1896 (Yekatit 23, 1888 E.C.)',
+          'Treaty of Wuchale (Article XVII): The deliberate discrepancy between Italian and Amharic versions caused the conflict',
+        ],
+        sampleExamProblems: [
+          {
+            problem: 'Which article of the 1889 Treaty of Wuchale led directly to the outbreak of the Battle of Adwa?',
+            solution: 'Article XVII (Article 17).',
+            tip: 'The Amharic version stated Ethiopia "may" utilize Italian diplomatic channels, whereas the Italian text falsely made it obligatory, creating an illegitimate protectorate.',
+          },
+        ],
+        fullContent: [
+          'The Victory of Adwa affirmed Ethiopian sovereignty and served as a beacon of anti-colonial resistance across the African continent and the diaspora.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'supp-ict-extreme-11-12',
+    title: 'Extreme Series: Information & Communication Technology (Grades 11-12)',
+    amharicTitle: 'Extreme Series: ICT, Networking & Python Programming (Grades 11-12)',
+    authorOrSeries: 'Extreme Educational Series',
+    category: 'extreme',
+    categoryLabel: 'Extreme Series',
+    subjectId: 'ict',
+    grades: [11, 12],
+    badge: 'Networking & Coding Guide',
+    description: 'Computer networking protocols, Python programming fundamentals, relational database management (SQL), and cybersecurity essentials.',
+    highlights: [
+      'Python data structures, loops, functions, and algorithm complexity',
+      'OSI 7-Layer and TCP/IP networking models and IP addressing',
+      'Relational databases and essential SQL queries (SELECT, JOIN, GROUP BY)',
+      'Cybersecurity principles, encryption algorithms, and network defenses',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'Computer Networking and the OSI 7-Layer Model',
+        summary: 'Layer functionalities, standard protocols (HTTP, HTTPS, TCP, UDP, IP, DNS), and subnetting fundamentals.',
+        keyFormulasAndRules: [
+          'OSI 7 Layers: Physical, Data Link, Network, Transport, Session, Presentation, Application',
+          'IPv4: 32-bit address (4 octets), IPv6: 128-bit hexadecimal address',
+          'TCP = Connection-oriented reliable delivery; UDP = Connectionless lightweight transmission',
+        ],
+        sampleExamProblems: [
+          {
+            problem: 'Which layer of the OSI model handles logical packet routing across interconnected networks?',
+            solution: 'The Network Layer (Layer 3).',
+            tip: 'Remember: Routers operate at Layer 3 (Network Layer), whereas standard switches operate at Layer 2 (Data Link Layer).',
+          },
+        ],
+        fullContent: [
+          'Computer networks enable distributed resource sharing and communication across local and global communication topologies.',
+        ],
+      },
+    ],
+  },
+  {
     id: 'supp-national-exam-past-papers',
     title: 'ESSLCE National Exam Solved Past Papers (2010 - 2024)',
     amharicTitle: 'Ethiopian University Entrance Examination Past Papers Archive',

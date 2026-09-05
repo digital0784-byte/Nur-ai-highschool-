@@ -816,4 +816,101 @@ export const textbooksDataEnglish: SubjectTextbookCollection = {
       ],
     },
   },
+  amharic: {
+    9: {
+      subjectId: 'amharic',
+      grade: 9,
+      title: 'Amharic Language & Literature Student Textbook - Grade 9',
+      curriculumBadge: 'FDRE Ministry of Education New Curriculum',
+      totalUnits: 5,
+      description: 'Foundations of literature, oral literature and folklore (proverbs, riddles, fables), grammar, and sentence structure.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Unit 1: Literature Foundations & Oral Tradition (Folklore)',
+          summary: 'Oral genres, folk traditions, cultural preservation, and elements of storytelling.',
+          sections: [
+            {
+              title: '1.1 Concept of Oral Literature & Genres',
+              content: [
+                'Oral literature is a vibrant cultural repository transmitted by word of mouth across generations.',
+                'Major genres include fables, proverbs, traditional riddles, wedding chants, dirges, and heroic ballads.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    10: {
+      subjectId: 'amharic',
+      grade: 10,
+      title: 'Amharic Language & Literature Student Textbook - Grade 10',
+      curriculumBadge: 'FDRE Ministry of Education New Curriculum',
+      totalUnits: 5,
+      description: 'Elements of fiction (theme, plot, characters, setting), drama and theatrical arts, essay composition, and stylistic devices.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Unit 1: Elements of Fiction and Dramatic Arts',
+          summary: 'Characterization, plot progression, stage drama, and figurative language in prose.',
+          sections: [
+            {
+              title: '1.1 Core Components of Fiction',
+              content: [
+                'Fiction explores human experiences through creative imagination, structured by plot, character development, conflict, and theme.',
+                'Drama translates text into live performance through dialogue and action.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    11: {
+      subjectId: 'amharic',
+      grade: 11,
+      title: 'Amharic Language & Literature Student Textbook - Grade 11',
+      curriculumBadge: 'FDRE Ministry of Education New Curriculum',
+      totalUnits: 5,
+      description: 'The art of "Wax and Gold" (Sem-na-Worq) poetics, classical verse structure, rhetorical devices, and allegorical interpretation.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Unit 1: Wax and Gold Poetics (Sem-na-Worq)',
+          summary: 'Surface meaning (wax), hidden meaning (gold), pivot words (hibre-qal), and traditional philosophical verse.',
+          sections: [
+            {
+              title: '1.1 Principles of Wax and Gold',
+              content: [
+                'Wax and Gold is an esteemed Ethiopian poetic and rhetorical tradition celebrating multi-layered semantic depth.',
+                'The wax represents the apparent, overt literal meaning, while the gold reveals the profound, veiled inner truth.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    12: {
+      subjectId: 'amharic',
+      grade: 12,
+      title: 'Amharic Language & Literature Student Textbook - Grade 12',
+      curriculumBadge: 'FDRE Ministry of Education New Curriculum',
+      totalUnits: 5,
+      description: 'Literary criticism, academic research methodology, historical development of Ethiopian languages, and ESSLCE readiness.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Unit 1: Literary Criticism & Linguistic Research',
+          summary: 'Critical theories, textual analysis, sociolinguistic dynamics, and national examination review.',
+          sections: [
+            {
+              title: '1.1 Critical Analysis of Literary Works',
+              content: [
+                'Literary criticism systematically examines literary texts, their artistic merit, cultural context, and aesthetic resonance.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
 };

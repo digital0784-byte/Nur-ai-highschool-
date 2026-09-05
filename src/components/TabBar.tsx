@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab, Subject } from '../types';
-import { BookOpen, Layers, HelpCircle, Award, Video, Library } from 'lucide-react';
+import { BookOpen, Layers, HelpCircle, Award, Video, Library, Bot } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 interface TabBarProps {
@@ -20,7 +20,8 @@ export const TabBar: React.FC<TabBarProps> = ({
     { id: 'lesson', label: t.tabLesson, icon: <BookOpen className="w-4 h-4" /> },
     { id: 'textbook', label: t.tabTextbook || 'የተማሪ መጽሐፍ', icon: <BookOpen className="w-4 h-4 text-emerald-700" /> },
     { id: 'objectives_exam', label: t.tabObjectivesExam || 'የቻፕተር ፈተና', icon: <Award className="w-4 h-4 text-amber-700" />, badge: 'AI' },
-    { id: 'video_learning', label: t.tabVideoLearning || 'ቪዲዮ ትምህርት', icon: <Video className="w-4 h-4 text-rose-700" /> },
+    { id: 'video_learning', label: t.tabVisualLearning || 'ምስላዊ ትምህርት (Visual Learning)', icon: <Video className="w-4 h-4 text-rose-700" /> },
+    { id: 'student_review', label: t.tabStudentReview || 'የእኔ የመማሪያ ግምገማ (My Review)', icon: <Bot className="w-4 h-4 text-purple-700" />, badge: 'AI' },
     { id: 'supplementary', label: t.tabSupplementary || 'አጋዥ መጽሐፍት', icon: <Library className="w-4 h-4 text-indigo-700" /> },
     { id: 'flashcards', label: t.tabFlashcards, icon: <Layers className="w-4 h-4" /> },
     { id: 'quiz', label: t.tabQuiz, icon: <HelpCircle className="w-4 h-4" /> },

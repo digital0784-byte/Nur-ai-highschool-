@@ -18,7 +18,7 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
   subjects,
   onSelectSubjectAndGrade,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [selectedGradeFilter, setSelectedGradeFilter] = useState<Grade | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
     }[] = [];
 
     subjects.forEach((subj) => {
-      const subjectBooks = getAllTextbooksForSubject(subj.id);
+      const subjectBooks = getAllTextbooksForSubject(subj.id, language);
       subjectBooks.forEach((book) => {
         list.push({
           subject: subj,
@@ -49,7 +49,7 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
     });
 
     return list;
-  }, [subjects]);
+  }, [subjects, language]);
 
   // Filtered books
   const filteredBooks = useMemo(() => {
@@ -73,7 +73,7 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
     const key = `${subject.id}-${grade}`;
     setDownloadingKey(key);
     try {
-      const textbook = getTextbook(subject.id, grade);
+      const textbook = getTextbook(subject.id, grade, language);
       if (textbook) {
         generateTextbookPdf(textbook, subject.name, grade);
       }

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Grade, ActiveTab, Topic, SubjectStream } from './types';
 import { getCurriculum } from './data/curriculumData';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProgressProvider, useProgress } from './context/ProgressContext';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -19,10 +20,15 @@ import { CompletionCertificateModal } from './components/CompletionCertificateMo
 import { AllTextbooksModal } from './components/AllTextbooksModal';
 import { NewCurriculumModal } from './components/NewCurriculumModal';
 import { AIChapterTutorModal } from './components/AIChapterTutorModal';
+import { AuthModal } from './components/AuthModal';
+import { TeacherDashboardModal } from './components/TeacherDashboardModal';
+import { StudentLearningReviewView } from './components/StudentLearningReviewView';
+import { AuthGate } from './components/AuthGate';
 
 function TutorialAppContent() {
   const { language, t } = useLanguage();
   const { getOverallProgress } = useProgress();
+  const { userProfile } = useAuth();
 
   // Application State
   const [selectedGrade, setSelectedGrade] = useState<Grade>(9);
@@ -35,6 +41,7 @@ function TutorialAppContent() {
   const [isCertificateOpen, setIsCertificateOpen] = useState<boolean>(false);
   const [isAllTextbooksOpen, setIsAllTextbooksOpen] = useState<boolean>(false);
   const [isNewCurriculumOpen, setIsNewCurriculumOpen] = useState<boolean>(false);
+  const [isTeacherDashboardOpen, setIsTeacherDashboardOpen] = useState<boolean>(false);
 
   // AI Tutor / Deep-Dive Modal State
   const [aiTutorState, setAiTutorState] = useState<{
@@ -134,6 +141,7 @@ function TutorialAppContent() {
           onOpenCertificate={() => setIsCertificateOpen(true)}
           onOpenAllTextbooks={() => setIsAllTextbooksOpen(true)}
           onOpenNewCurriculum={() => setIsNewCurriculumOpen(true)}
+          onOpenTeacherDashboard={() => setIsTeacherDashboardOpen(true)}
         />
 
         {/* Workspace: Sidebar + Content */}
@@ -209,6 +217,19 @@ function TutorialAppContent() {
                     onExit={() => setActiveTab('lesson')}
                   />
                 </div>
+              )}
+
+              {activeTab === 'student_review' && (
+                <StudentLearningReviewView
+                  subject={currentSubject}
+                  grade={selectedGrade}
+                  onOpenAITutor={handleOpenAITutor}
+                  onGoToVisualLearning={() => setActiveTab('video_learning')}
+                  onGoToTopic={(topicId) => {
+                    setSelectedTopicId(topicId);
+                    setActiveTab('lesson');
+                  }}
+                />
               )}
 
               {activeTab === 'supplementary' && (
@@ -300,6 +321,18 @@ function TutorialAppContent() {
         completedCount={overall.completedTopics}
         totalTopics={overall.totalTopics}
       />
+
+      {/* User Authentication Modal */}
+      <AuthModal />
+
+      {/* Teacher / Educator Students Analytics Dashboard */}
+      {userProfile?.role === 'teacher' && (
+        <TeacherDashboardModal
+          isOpen={isTeacherDashboardOpen}
+          onClose={() => setIsTeacherDashboardOpen(false)}
+          teacherProfile={userProfile}
+        />
+      )}
     </div>
   );
 }
@@ -307,9 +340,13 @@ function TutorialAppContent() {
 export default function App() {
   return (
     <LanguageProvider>
-      <ProgressProvider>
-        <TutorialAppContent />
-      </ProgressProvider>
+      <AuthProvider>
+        <ProgressProvider>
+          <AuthGate>
+            <TutorialAppContent />
+          </AuthGate>
+        </ProgressProvider>
+      </AuthProvider>
     </LanguageProvider>
   );
 }

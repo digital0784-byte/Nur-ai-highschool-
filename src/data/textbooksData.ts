@@ -25,24 +25,50 @@ export const textbooksByLanguage: Record<LanguageCode, SubjectTextbookCollection
   so: textbooksDataSomali,
 };
 
+export function normalizeSubjectId(subjectId: string): string {
+  const s = subjectId ? subjectId.toLowerCase().trim() : '';
+  if (s === 'civics' || s === 'citizenship') return 'citizenship';
+  if (s === 'social' || s === 'social-studies' || s === 'history') return 'history';
+  if (s === 'ict' || s === 'it' || s === 'information-technology') return 'it';
+  if (s === 'amharic' || s === 'amh') return 'amharic';
+  if (s === 'geography' || s === 'geo') return 'geography';
+  if (s === 'agriculture' || s === 'agri') return 'agriculture';
+  if (s === 'chemistry' || s === 'chem') return 'chemistry';
+  if (s === 'physics' || s === 'phy') return 'physics';
+  if (s === 'biology' || s === 'bio') return 'biology';
+  if (s === 'math' || s === 'mathematics') return 'math';
+  if (s === 'english' || s === 'eng') return 'english';
+  return s;
+}
+
 export function getTextbook(subjectId: string, grade: Grade, language: LanguageCode = 'am'): SubjectTextbook {
-  // Normalize subjectId aliases
-  let mappedId = subjectId;
-  if (subjectId === 'civics') mappedId = 'citizenship';
-  if (subjectId === 'social') mappedId = 'history';
+  // Normalize subjectId aliases (e.g., social-studies -> history, ict -> it, civics -> citizenship)
+  const mappedId = normalizeSubjectId(subjectId);
 
   // Get textbook collection for the specified language, falling back to Amharic, then English
   const langCollection = textbooksByLanguage[language] || textbooksDataAmharic;
-  let subjectGroup = langCollection[mappedId] || langCollection[subjectId];
+  let subjectGroup =
+    langCollection[mappedId] ||
+    langCollection[subjectId] ||
+    (mappedId === 'history' ? langCollection['social-studies'] : undefined) ||
+    (mappedId === 'it' ? langCollection['ict'] : undefined);
 
   // If not found in current language, fallback to Amharic collection
   if (!subjectGroup && langCollection !== textbooksDataAmharic) {
-    subjectGroup = textbooksDataAmharic[mappedId] || textbooksDataAmharic[subjectId];
+    subjectGroup =
+      textbooksDataAmharic[mappedId] ||
+      textbooksDataAmharic[subjectId] ||
+      (mappedId === 'history' ? textbooksDataAmharic['social-studies'] : undefined) ||
+      (mappedId === 'it' ? textbooksDataAmharic['ict'] : undefined);
   }
 
   // If still not found, fallback to English collection
   if (!subjectGroup && langCollection !== textbooksDataEnglish) {
-    subjectGroup = textbooksDataEnglish[mappedId] || textbooksDataEnglish[subjectId];
+    subjectGroup =
+      textbooksDataEnglish[mappedId] ||
+      textbooksDataEnglish[subjectId] ||
+      (mappedId === 'history' ? textbooksDataEnglish['social-studies'] : undefined) ||
+      (mappedId === 'it' ? textbooksDataEnglish['ict'] : undefined);
   }
 
   if (subjectGroup && subjectGroup[grade]) {
@@ -63,15 +89,29 @@ export function getTextbook(subjectId: string, grade: Grade, language: LanguageC
 }
 
 export function getAllTextbooksForSubject(subjectId: string, language: LanguageCode = 'am'): SubjectTextbook[] {
-  let mappedId = subjectId;
-  if (subjectId === 'civics') mappedId = 'citizenship';
-  if (subjectId === 'social') mappedId = 'history';
+  const mappedId = normalizeSubjectId(subjectId);
 
   const langCollection = textbooksByLanguage[language] || textbooksDataAmharic;
-  let subjectGroup = langCollection[mappedId] || langCollection[subjectId];
+  let subjectGroup =
+    langCollection[mappedId] ||
+    langCollection[subjectId] ||
+    (mappedId === 'history' ? langCollection['social-studies'] : undefined) ||
+    (mappedId === 'it' ? langCollection['ict'] : undefined);
 
   if (!subjectGroup && langCollection !== textbooksDataAmharic) {
-    subjectGroup = textbooksDataAmharic[mappedId] || textbooksDataAmharic[subjectId];
+    subjectGroup =
+      textbooksDataAmharic[mappedId] ||
+      textbooksDataAmharic[subjectId] ||
+      (mappedId === 'history' ? textbooksDataAmharic['social-studies'] : undefined) ||
+      (mappedId === 'it' ? textbooksDataAmharic['ict'] : undefined);
+  }
+
+  if (!subjectGroup && langCollection !== textbooksDataEnglish) {
+    subjectGroup =
+      textbooksDataEnglish[mappedId] ||
+      textbooksDataEnglish[subjectId] ||
+      (mappedId === 'history' ? textbooksDataEnglish['social-studies'] : undefined) ||
+      (mappedId === 'it' ? textbooksDataEnglish['ict'] : undefined);
   }
 
   if (!subjectGroup) return [];

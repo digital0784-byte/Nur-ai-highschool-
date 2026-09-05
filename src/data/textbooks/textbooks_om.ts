@@ -463,4 +463,101 @@ export const textbooksDataOromo: SubjectTextbookCollection = {
       units: [{ unitNumber: 1, title: 'Boqonnaa 1: Agiriibizinasii fi Hojii Uumuu Qonnaa', summary: 'Walitti hidhamiinsa gabaa qonnaa fi qophii karoora daldalaa.', sections: [{ title: '1.1 Gatii Dabaluu (Value Chain)', content: ['Oomisha qonnaa processing gochuun galii qonnaan bultootaa guddisa.'] }] }],
     },
   },
+  amharic: {
+    9: {
+      subjectId: 'amharic',
+      grade: 9,
+      title: 'Kitaaba Barataa Afaan fi Og-barruu Amaaraa Kutaa 9',
+      curriculumBadge: 'Sirna Barnootaa Haaraa DFRI',
+      totalUnits: 5,
+      description: 'Bu\'uura og-barruu, qo\'annoo og-afaanii (mammaaksa, durdurii, hiibboo), caasluga Amaariffaa fi sirna tuqaalee.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Boqonnaa 1: Gosoota Og-barruu fi Qo\'annoo Og-afaanii (Literature & Folklore)',
+          summary: 'Dhimma dameewwan og-afaanii, dhaalmaya aadaa afaaniin darban fi bu\'uuraalee asoosamaa.',
+          sections: [
+            {
+              title: '1.1 Yaadrimee Og-afaanii fi Gosoota Isaa',
+              content: [
+                'Og-afaan afaaniin dhalootaa dhalootatti kan darbu dhaalmaya aadaa fi seenaa jiraataadha.',
+                'Gosoota og-afaanii gurguddoon: mammaaksa, durdurii, hiibboo, geerarsa, weedduu fi sirboota aadaati.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    10: {
+      subjectId: 'amharic',
+      grade: 10,
+      title: 'Kitaaba Barataa Afaan fi Og-barruu Amaaraa Kutaa 10',
+      curriculumBadge: 'Sirna Barnootaa Haaraa DFRI',
+      totalUnits: 5,
+      description: 'Qaamolee asoosamaa (dhaamsa, ijaarsa jaargochaa, qooddattoota, bakka fi yeroo), aartii tiyaatiraa fi barreeffama asoosamaa.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Boqonnaa 1: Qaamolee Asoosamaa fi Aartii Tiyaatiraa (Fiction & Drama)',
+          summary: 'Boca qooddattootaa, adeemsa jaargochaa, tiyaatira waltajjii fi afaan qolaa og-barruu.',
+          sections: [
+            {
+              title: '1.1 Bu\'uuraalee Asoosamaa',
+              content: [
+                'Asoosamni yaada uumamaa barreessaatiin dhiyaatee kan jaargocha, qooddattoota fi waldiddaan ijaaramudha.',
+                'Tiyaatirri waltajjii irratti taatonni dubbii fi gochaan kan dhiyeessan aartii jiraataadha.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    11: {
+      subjectId: 'amharic',
+      grade: 11,
+      title: 'Kitaaba Barataa Afaan fi Og-barruu Amaaraa Kutaa 11',
+      curriculumBadge: 'Sirna Barnootaa Haaraa DFRI',
+      totalUnits: 5,
+      description: 'Aartii Qinee fi "Dhadhaa fi Warqee" (Sam-na-Warq), seera og-walaloo, hiika qoolaa fi ergaa dhokataa.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Boqonnaa 1: Aartii Qinee fi Sam-na-Warq (Wax and Gold Poetics)',
+          summary: 'Sam-na-Warq (Dhadhaa fi Warqee), jecha furtuu (hibre-qal) fi falaasama og-barruu Itoophiyaa.',
+          sections: [
+            {
+              title: '1.1 Qajeeltoo Sam-na-Warq',
+              content: [
+                'Sam-na-Warq aartii walaloo fi dubbii Itoophiyaa beekkamaa hiika dachaa calaqqisiisudha.',
+                'Gubbaan (sami) hiika ifa ta\'e yoo ta\'u, keessi (warqeen) immoo hiika gadi fageenya qabu fi ergaa dhugaa dhokatedha.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    12: {
+      subjectId: 'amharic',
+      grade: 12,
+      title: 'Kitaaba Barataa Afaan fi Og-barruu Amaaraa Kutaa 12',
+      curriculumBadge: 'Sirna Barnootaa Haaraa DFRI',
+      totalUnits: 5,
+      description: 'Qeeqa og-barruu (Literary Criticism), mala qorannoo afaanii, guddina seenaa afaanotaa fi qophii qormaata ESSLCE.',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'Boqonnaa 1: Qeeqa Og-barruu fi Qorannoo Afaanii (Literary Criticism & Research)',
+          summary: 'Yaadrimee og-barruu, hojiiwwan og-barruu ija qeeqatiin gamaggamuu fi qophii barreeffama qorannoo.',
+          sections: [
+            {
+              title: '1.1 Bu\'uuraalee Qeeqa Og-barruu',
+              content: [
+                'Qeeqni og-barruu hojii og-barruu tokko gadi fageenyaan xiinxaluun ciminaa fi hanqina isaa madaaluudha.',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
 };

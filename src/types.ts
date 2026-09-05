@@ -35,6 +35,29 @@ export interface PracticalActivity {
 export type SubjectStream = 'natural' | 'social' | 'common';
 export type StreamFilter = 'all' | 'natural' | 'social';
 
+export type VisualizationType = 'graph2d' | 'graph3d' | 'integral' | 'simulation' | 'diagram';
+
+export interface VisualizationConfig {
+  type?: string;
+  functionType?: 'quadratic' | 'linear' | 'polynomial' | 'trigonometric' | 'exponential' | 'logarithmic' | 'riemann_integral' | 'surface3d';
+  defaultParams?: Record<string, number>;
+  paramBounds?: Record<string, { min: number; max: number; step: number; label: string }>;
+  formulaDisplay?: string;
+  integralConfig?: {
+    fn: string;
+    a: number;
+    b: number;
+    defaultRectangles?: number;
+  };
+  surfaceConfig?: {
+    fnType: 'saddle' | 'wave' | 'paraboloid' | 'sombrero';
+    formula: string;
+  };
+  simulationType?: 'projectile' | 'pendulum' | 'circuit';
+  simulationParams?: Record<string, number>;
+  [key: string]: any;
+}
+
 export interface Topic {
   id: string;
   title: string;
@@ -47,6 +70,8 @@ export interface Topic {
   practicalActivity?: PracticalActivity; // Hands-on laboratory or practical project
   flashcards: Flashcard[]; // 4 flashcards
   quizQuestions: QuizQuestion[]; // 4 questions
+  visualizationType?: VisualizationType;
+  visualizationConfig?: VisualizationConfig;
 }
 
 export interface Subject {
@@ -67,6 +92,7 @@ export type ActiveTab =
   | 'textbook'
   | 'objectives_exam'
   | 'video_learning'
+  | 'student_review'
   | 'supplementary'
   | 'flashcards'
   | 'quiz';
@@ -116,6 +142,8 @@ export interface SupplementaryBookChapter {
   summary: string;
   keyFormulasAndRules?: string[];
   sampleExamProblems?: { problem: string; solution: string; tip: string }[];
+  workedProblems?: { problem: string; solution: string; tip?: string }[];
+  examTipsAndTraps?: string[];
   fullContent: string[];
 }
 
@@ -319,5 +347,88 @@ export interface UITranslations {
   practicalObservationLabel: string;
   twentyFirstCenturySkillsTitle: string;
   esslcePrepBadge: string;
+  tabStudentReview?: string;
+  tabVisualLearning?: string;
+  studentReviewTitle?: string;
+  studentReviewSubtitle?: string;
+  refreshReviewBtn?: string;
+  curatedVideosTitle?: string;
+  liveVideosTitle?: string;
+}
+
+export interface StudentWeakArea {
+  topicId: string;
+  topicTitle: string;
+  subjectName: string;
+  scoreSummary?: string;
+  missingConcept: string; // Inferred from wrong-answer pattern
+  remedy: string;
+}
+
+export interface StudentNextStep {
+  stepNumber: number;
+  title: string;
+  action: string;
+  reason: string;
+}
+
+export interface StudentReviewData {
+  uid?: string;
+  generatedAt: string;
+  masteryPercentage: number;
+  overallGradeLetter?: string;
+  strengths: string[];
+  weakAreas: StudentWeakArea[];
+  nextSteps: StudentNextStep[];
+  encouragement: string;
+  summaryText?: string;
+}
+
+export interface YouTubeVideoItem {
+  id: string;
+  title: string;
+  channelTitle: string;
+  description: string;
+  thumbnailUrl: string;
+  videoUrl: string;
+  publishedAt?: string;
+}
+
+export type UserRole = 'student' | 'teacher';
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  role: UserRole;
+  grade?: Grade;
+  schoolName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QuizAttemptRecord {
+  id?: string;
+  userId: string;
+  topicId: string;
+  subjectId?: string;
+  score: number;
+  total: number;
+  percentage?: number;
+  timestamp: string;
+}
+
+export interface StudentProgressRecord {
+  user: UserProfile;
+  progressMap: CourseProgressMap;
+  overall?: {
+    completedTopics: number;
+    totalTopics: number;
+    percentage: number;
+    completedSubjects: number;
+    totalSubjects: number;
+    isAllComplete: boolean;
+  };
+  lastUpdated?: string;
 }
 

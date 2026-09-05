@@ -1,8 +1,25 @@
 import React from 'react';
 import { Grade, Subject } from '../types';
-import { BookOpen, GraduationCap, Globe, CheckCircle2, Award, ListChecks, FileText, Sparkles } from 'lucide-react';
+import {
+  BookOpen,
+  GraduationCap,
+  Globe,
+  CheckCircle2,
+  Award,
+  ListChecks,
+  FileText,
+  Sparkles,
+  LogIn,
+  LogOut,
+  User,
+  Users,
+  CloudCheck,
+  ShieldCheck,
+  Cloud,
+} from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useProgress } from '../context/ProgressContext';
+import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   selectedGrade: Grade;
@@ -12,6 +29,7 @@ interface HeaderProps {
   onOpenCertificate: () => void;
   onOpenAllTextbooks?: () => void;
   onOpenNewCurriculum?: () => void;
+  onOpenTeacherDashboard?: () => void;
 }
 
 const grades: Grade[] = [9, 10, 11, 12];
@@ -24,9 +42,11 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCertificate,
   onOpenAllTextbooks,
   onOpenNewCurriculum,
+  onOpenTeacherDashboard,
 }) => {
   const { language, setLanguage, t, languages } = useLanguage();
-  const { getOverallProgress } = useProgress();
+  const { getOverallProgress, isSyncing, isCloudSynced } = useProgress();
+  const { user, userProfile, logout, openAuthModal } = useAuth();
 
   const overall = getOverallProgress(subjects);
 
@@ -139,6 +159,60 @@ export const Header: React.FC<HeaderProps> = ({
               })}
             </div>
           </div>
+
+          {/* User Account / Auth Section */}
+          <div className="flex items-center gap-1.5 pl-1 sm:pl-2 sm:border-l border-[#38332D]/30">
+            {!user ? (
+              <button
+                id="header-signin-btn"
+                onClick={() => openAuthModal('login')}
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2E6B4A] hover:bg-[#235338] text-white text-xs font-bold border border-[#1D4A32] rounded cursor-pointer transition-colors shadow-xs"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span className="font-serif-ethiopic">ግባ / ተመዝገብ (Sign In)</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                {/* Role and User Badge */}
+                <div className="flex items-center gap-1.5 bg-[#EAE2CE] border border-[#38332D]/40 px-2 py-0.5 rounded">
+                  <span className="text-xs font-bold font-serif-ethiopic text-[#1E1B18] flex items-center gap-1">
+                    {userProfile?.role === 'teacher' ? (
+                      <span className="text-[#1D4ED8] font-bold">👨‍🏫 መምህር</span>
+                    ) : (
+                      <span className="text-emerald-700 font-bold">🎓 ተማሪ</span>
+                    )}
+                    <span className="font-semibold text-[11px] truncate max-w-[90px] sm:max-w-[120px]">
+                      {userProfile?.displayName || user.email?.split('@')[0]}
+                    </span>
+                  </span>
+                </div>
+
+                {/* If Teacher, prominent button in top bar */}
+                {userProfile?.role === 'teacher' && onOpenTeacherDashboard && (
+                  <button
+                    id="header-teacher-dashboard-btn"
+                    onClick={onOpenTeacherDashboard}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white text-xs font-bold border border-[#1E3A8A] rounded cursor-pointer transition-all shadow-xs"
+                    title="የተማሪዎችን የትምህርት እድገት መከታተያ ዳሽቦርድ"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span className="font-serif-ethiopic hidden sm:inline">የተማሪዎች ዳሽቦርድ</span>
+                    <span className="font-serif-ethiopic sm:hidden">ዳሽቦርድ</span>
+                  </button>
+                )}
+
+                {/* Logout button */}
+                <button
+                  id="header-logout-btn"
+                  onClick={logout}
+                  className="p-1 text-[#665C4D] hover:text-red-700 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                  title="ውጣ (Sign Out)"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -164,10 +238,39 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="text-xs font-mono font-bold text-[#1E1B18] whitespace-nowrap">
             {overall.completedTopics}/{overall.totalTopics} ({overall.percentage}%)
           </span>
+
+          {/* Cloud Sync Status Indicator */}
+          {user && (
+            <div className="hidden md:flex items-center pl-2 text-[11px] font-serif-ethiopic">
+              {isSyncing ? (
+                <span className="text-blue-700 flex items-center gap-1">
+                  <Cloud className="w-3 h-3 animate-pulse" />
+                  <span>በማመሳሰል ላይ...</span>
+                </span>
+              ) : isCloudSynced ? (
+                <span className="text-emerald-800 flex items-center gap-1" title="በደመና ተቀምጧል">
+                  <CloudCheck className="w-3 h-3 text-emerald-700" />
+                  <span>ደመና ተመሳስሏል</span>
+                </span>
+              ) : null}
+            </div>
+          )}
         </div>
 
         {/* Interactive Buttons for Textbooks, Checklist & Certificate */}
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          {/* Prominent Teacher Dashboard Button in second row too if Teacher */}
+          {userProfile?.role === 'teacher' && onOpenTeacherDashboard && (
+            <button
+              id="header-teacher-dashboard-prominent-btn"
+              onClick={onOpenTeacherDashboard}
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white text-xs font-bold border border-[#172554] rounded cursor-pointer transition-colors shadow-xs"
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span className="font-serif-ethiopic">👥 የተማሪዎች ዳሽቦርድ (Students)</span>
+            </button>
+          )}
+
           {onOpenNewCurriculum && (
             <button
               id="header-curriculum-guide-btn"

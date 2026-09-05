@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Subject, Grade } from '../types';
+import { Subject, Grade, StudentWeakArea } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { useProgress } from '../context/ProgressContext';
 import { Bot, Sparkles, Send, Loader2, X, BookOpen, Lightbulb, RefreshCw, MessageSquare, AlertCircle } from 'lucide-react';
 
 interface AIChapterTutorModalProps {
@@ -12,6 +13,7 @@ interface AIChapterTutorModalProps {
   chapterNumber?: number;
   chapterSummary?: string;
   initialMode?: 'analysis' | 'chat';
+  weakAreas?: StudentWeakArea[];
 }
 
 interface ChatMessage {
@@ -29,8 +31,10 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
   chapterNumber = 1,
   chapterSummary = '',
   initialMode = 'analysis',
+  weakAreas: propWeakAreas,
 }) => {
   const { language, t } = useLanguage();
+  const { studentReview } = useProgress();
   const [activeMode, setActiveMode] = useState<'analysis' | 'chat'>(initialMode);
   const [analysis, setAnalysis] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
@@ -41,12 +45,50 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
   const [isChatLoading, setIsChatLoading] = useState<boolean>(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
-  // Sync mode when prop changes
+  // Match relevant weak area from student review or prop
+  const activeWeakAreas: StudentWeakArea[] = propWeakAreas || studentReview?.weakAreas || [];
+  const relevantWeakArea = activeWeakAreas.find(
+    (w) =>
+      w.subjectName?.toLowerCase().includes(subject.name.toLowerCase()) ||
+      w.topicTitle?.toLowerCase().includes(chapterTitle.toLowerCase()) ||
+      chapterTitle.toLowerCase().includes(w.topicTitle?.toLowerCase() || '')
+  ) || activeWeakAreas[0];
+
+  // Sync mode when prop changes and initialize proactive personalized greeting
   useEffect(() => {
     if (isOpen) {
       setActiveMode(initialMode);
+      if (messages.length === 0) {
+        if (relevantWeakArea && relevantWeakArea.missingConcept) {
+          const proactiveGreeting =
+            language === 'en'
+              ? `Hello! As your personal AI teacher, I've analyzed your learning records. In **${relevantWeakArea.topicTitle || chapterTitle}**, I noticed: *"${relevantWeakArea.missingConcept}"*. Would you like us to review this specific concept step-by-step right now?`
+              : `ሰላም! እንደ ግል AI አስተማሪህ የመማር ግምገማህን ተመልክቻለሁ። በ**${relevantWeakArea.topicTitle || chapterTitle}** ላይ፡ *"${relevantWeakArea.missingConcept}"* ዙሪያ ክፍተት እንዳለ አስተውያለሁ። ይህንን ፅንሰ-ሀሳብ በቀላል ምሳሌ እና በደረጃ በደረጃ ስሌት አብረን እንድናብራራው ትፈልጋለህ?`;
+
+          setMessages([
+            {
+              role: 'assistant',
+              content: proactiveGreeting,
+              timestamp: new Date(),
+            },
+          ]);
+        } else {
+          const standardGreeting =
+            language === 'en'
+              ? `Hello! I am your personal AI teacher for **${subject.name} - Grade ${grade} (${chapterTitle})**. Ask me any question, ask for step-by-step problem derivations, or let's test your understanding!`
+              : `ሰላም! እኔ የ**${subject.name} ክፍል ${grade} (${chapterTitle})** የግል AI አስተማሪህ ነኝ። ማንኛውንም ያልገባህን ፅንሰ-ሀሳብ፣ ፎርሙላ ወይም የፈተና ጥያቄ ጠይቀኝ፤ ደረጃ በደረጃ አብረን እንሰራለን!`;
+
+          setMessages([
+            {
+              role: 'assistant',
+              content: standardGreeting,
+              timestamp: new Date(),
+            },
+          ]);
+        }
+      }
     }
-  }, [isOpen, initialMode]);
+  }, [isOpen, initialMode, relevantWeakArea, chapterTitle, subject.name, grade, language]);
 
   // Fetch AI Analysis when modal opens
   useEffect(() => {
@@ -108,14 +150,14 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
     }
   };
 
-  const handleSendMessage = async (e?: React.FormEvent) => {
+  const handleSendMessage = async (e?: React.FormEvent, customText?: string) => {
     if (e) e.preventDefault();
-    if (!inputMessage.trim() || isChatLoading) return;
+    const textToSend = (customText || inputMessage).trim();
+    if (!textToSend || isChatLoading) return;
 
-    const userText = inputMessage.trim();
     const newMessages: ChatMessage[] = [
       ...messages,
-      { role: 'user', content: userText, timestamp: new Date() },
+      { role: 'user', content: textToSend, timestamp: new Date() },
     ];
     setMessages(newMessages);
     setInputMessage('');
@@ -137,6 +179,8 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
           topicTitle: chapterTitle,
           messages: apiMessages,
           language,
+          weakAreas: activeWeakAreas,
+          studentReview,
         }),
       });
 
@@ -373,8 +417,53 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
                 <div ref={chatBottomRef} />
               </div>
 
+              {/* Quick Diagnostic Study Chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 pb-1">
+                {relevantWeakArea && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSendMessage(
+                        undefined,
+                        `በ${relevantWeakArea.topicTitle || chapterTitle} ላይ የከበደኝን ፅንሰ-ሀሳብ (${relevantWeakArea.missingConcept || 'ቀመሩን'}) በቀላል ምሳሌ አብራራልኝ።`
+                      )
+                    }
+                    className="text-[11px] px-2.5 py-1 rounded-full bg-rose-100 text-rose-900 border border-rose-300 hover:bg-rose-200 transition-colors font-serif-ethiopic whitespace-nowrap flex items-center gap-1 shrink-0"
+                  >
+                    <Sparkles className="w-3 h-3 text-rose-600" />
+                    <span>🎯 የደካማ ርዕሴን ክፍተት አብራራልኝ</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleSendMessage(
+                      undefined,
+                      `የዚህን ምዕራፍ ዋና ቀመር ወይም ህግ በደረጃ በደረጃ ስሌትና ምሳሌ አብራራልኝ።`
+                    )
+                  }
+                  className="text-[11px] px-2.5 py-1 rounded-full bg-[#EDE6D4] text-[#1E1B18] border border-[#38332D]/40 hover:bg-[#E3DAC4] transition-colors font-serif-ethiopic whitespace-nowrap flex items-center gap-1 shrink-0"
+                >
+                  <Lightbulb className="w-3 h-3 text-amber-600" />
+                  <span>💡 ደረጃ በደረጃ ምሳሌ ስራኝ</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleSendMessage(
+                      undefined,
+                      `ለዚህ ምዕራፍ የሚሆን የብቃት መመዘኛ 1 የፈተና ጥያቄ ጠይቀኝና መልሴን ገምግምልኝ።`
+                    )
+                  }
+                  className="text-[11px] px-2.5 py-1 rounded-full bg-[#EDE6D4] text-[#1E1B18] border border-[#38332D]/40 hover:bg-[#E3DAC4] transition-colors font-serif-ethiopic whitespace-nowrap flex items-center gap-1 shrink-0"
+                >
+                  <MessageSquare className="w-3 h-3 text-indigo-600" />
+                  <span>📝 የፈተና ጥያቄ ጠይቀኝ</span>
+                </button>
+              </div>
+
               {/* Chat Input Field */}
-              <form onSubmit={handleSendMessage} className="mt-3 flex gap-2 pt-2 border-t border-[#38332D]">
+              <form onSubmit={handleSendMessage} className="mt-1 flex gap-2 pt-2 border-t border-[#38332D]">
                 <input
                   type="text"
                   value={inputMessage}

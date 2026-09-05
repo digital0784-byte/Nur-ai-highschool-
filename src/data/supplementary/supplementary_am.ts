@@ -194,6 +194,125 @@ export const supplementaryBooksAmharic: SupplementaryBook[] = [
     ],
   },
   {
+    id: 'supp-amharic-extreme-11-12',
+    title: 'Extreme Series: Amharic Literature & Language (Grades 11-12)',
+    amharicTitle: 'ኤክስትሪም ተከታታይ፡ የአማርኛ ቋንቋ እና ስነ-ጽሁፍ የፈተና ዝግጅት (ክፍል 11-12)',
+    authorOrSeries: 'Extreme Educational Series',
+    category: 'extreme',
+    categoryLabel: 'Extreme Series',
+    subjectId: 'amharic',
+    grades: [11, 12],
+    badge: 'ለ ESSLCE አማርኛ ከፍተኛ ውጤት',
+    description: 'የ11ኛ እና 12ኛ ክፍል የአማርኛ ቋንቋ፣ የሰምና ወርቅ ቅኔዎች፣ የስነ-ጽሁፍ ሂስ፣ እና የ ESSLCE የፈተና ጥያቄዎች ትንታኔ።',
+    highlights: [
+      'የሰምና ወርቅ እና የቅኔ ምስጢራት ፍቺ ስልቶች',
+      'የልቦለድ እና የተውኔት አላባውያን ፈጣን ማጠቃለያ',
+      'የሰዋሰው እና የስርዓተ-ነጥብ ህጎች',
+      'ያለፉት ዓመታት የ ESSLCE የአማርኛ ፈተና ጥያቄዎች',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'የሰምና ወርቅ ቅኔ ጥበብ እና የህብረ-ቃል ፍቺ',
+        summary: 'ሰም፣ ወርቅ፣ ህብረ-ቃል፣ ባለ ሁለት ገጽታ ስነ-ጽሁፋዊ ፍልስፍና እና የፈተና አሰራር ዘዴዎች።',
+        keyFormulasAndRules: [
+          'ሰም = ቀጥተኛው፣ ላይ ላዩን የሚታየው ትርጉም',
+          'ወርቅ = ውስጠ-ወይራው፣ የተሰወረው እውነተኛ ቁምነገር',
+          'ህብረ-ቃል = ሁለቱንም ትርጉሞች የሚያዛምደው ቁልፍ ቃል ወይም ሀረግ',
+        ],
+        sampleExamProblems: [
+          {
+            problem: '"በሬዬ ታረደ አልበላም ስጋ፤ የሆዴን በልቼ ጠጣሁኝ ጠጅ ጋ።" የዚህ ስንኝ ህብረ-ቃል እና ሰምና ወርቁ ምንድን ነው?',
+            solution: 'ህብረ-ቃል፡ "ጠጅ ጋ"። ሰም፡ ጠጅ ከጋን ጋር ጠጣሁ። ወርቅ፡ የሆዴን በልቼ አረፍኩኝ ጠጀ ጋ (ጠጄ ጋ - ወዳጄ ጋር)።',
+            tip: 'ህብረ-ቃሉ በድምፅ ወይም በፊደል አጣጣል የሚመሳሰልበትን መንገድ ፈልግ።',
+          },
+        ],
+        fullContent: [
+          'ሰምና ወርቅ የኢትዮጵያ አንጋፋ የስነ-ግጥም እና የንግግር ጥበብ ሲሆን በብሔራዊ ፈተና ላይ ተደጋጋሚ ጥያቄዎች ይወጡበታል።',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'supp-social-extreme-11-12',
+    title: 'Extreme Series: History & Social Studies (Grades 11-12)',
+    amharicTitle: 'ኤክስትሪም ተከታታይ፡ የታሪክና ማህበራዊ ሳይንስ የፈተና ዝግጅት (ክፍል 11-12)',
+    authorOrSeries: 'Extreme Educational Series',
+    category: 'extreme',
+    categoryLabel: 'Extreme Series',
+    subjectId: 'social-studies',
+    grades: [11, 12],
+    badge: 'የታሪክና ማህበራዊ ሳይንስ ማጠቃለያ',
+    description: 'የኢትዮጵያ እና የአለም ታሪክ፣ ጥንታዊ ስልጣኔዎች፣ የአድዋ ድል፣ የቅኝ አገዛዝ ተቃውሞ እና አለም አቀፍ ድርጅቶች።',
+    highlights: [
+      'የአክሱም፣ ላሊበላ እና ጎንደር ስልጣኔዎች ቁልፍ የታሪክ ሰሌዳ',
+      'የአድዋ ድል እና የፀረ-ፋሽስት ተጋድሎ ዝርዝር ትንታኔ',
+      'የአፍሪካ አንድነት ድርጅት (OAU/AU) ምስረታ እና የኢትዮጵያ ዲፕሎማሲ',
+      'የ ESSLCE ተደጋጋሚ የታሪክ ጥያቄዎች ማብራሪያ',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'የኢትዮጵያ ጥንታዊ ስልጣኔዎች እና የአድዋ ታሪካዊ ድል',
+        summary: 'የአክሱም ስልጣኔ የንግድ መስመሮች፣ ሳንቲሞች፣ እና የአድዋ ጦርነት ስልታዊ ድል ታሪክ።',
+        keyFormulasAndRules: [
+          'የአድዋ ጦርነት፡ የካቲት 23 ቀን 1888 ዓ.ም (March 1, 1896)',
+          'የውጫሌ ውል አንቀጽ 17፡ የጣሊያን እና የአማርኛ ቅጂዎች ልዩነት የጦርነቱ መንስኤ ነበር',
+        ],
+        sampleExamProblems: [
+          {
+            problem: 'ለአድዋ ጦርነት መቀስቀስ ዋነኛ ምክንያት የሆነው የውጫሌ ውል የትኛው አንቀጽ ነው?',
+            solution: 'አንቀጽ 17 (Article XVII)።',
+            tip: 'በአማርኛው "መጠቀም ይቻላል" ሲል፣ በጣሊያንኛው "ግዴታ አለበት" በሚል የተዛባ ትርጉም ተሰጥቶት ነበር።',
+          },
+        ],
+        fullContent: [
+          'የአድዋ ድል ለመላው ጥቁር ህዝቦች የነፃነት እና የክብር ተምሳሌት የሆነ ታላቅ ታሪካዊ ክስተት ነው።',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'supp-ict-extreme-11-12',
+    title: 'Extreme Series: Information & Communication Technology (Grades 11-12)',
+    amharicTitle: 'ኤክስትሪም ተከታታይ፡ የኢንፎርሜሽን ቴክኖሎጂ እና ኮምፒዩተር ሳይንስ (ክፍል 11-12)',
+    authorOrSeries: 'Extreme Educational Series',
+    category: 'extreme',
+    categoryLabel: 'Extreme Series',
+    subjectId: 'ict',
+    grades: [11, 12],
+    badge: 'የኮዲንግ እና ኔትወርክ ማጠቃለያ',
+    description: 'የኮምፒዩተር ኔትወርኪንግ፣ የፓይዘን ፕሮግራሚንግ፣ የዳታቤዝ አስተዳደር (SQL)፣ እና የሳይበር ደህንነት መርሆዎች።',
+    highlights: [
+      'የፓይዘን (Python) ዳታ አይነቶች፣ ሉፕ እና ፈንክሽን ስሌቶች',
+      'የኮምፒዩተር ኔትወርክ ሞዴሎች (OSI 7 Layers እና TCP/IP)',
+      'የ SQL መጠይቆች (SELECT, INSERT, UPDATE, JOIN)',
+      'የሳይበር ደህንነት እና ኢንክሪፕሽን ስልቶች',
+    ],
+    chapters: [
+      {
+        chapterNumber: 1,
+        title: 'የኮምፒዩተር ኔትወርክ እና የ OSI 7-ንብርብሮች ሞዴል',
+        summary: 'የ OSI ሞዴል ንብርብሮች፣ ፕሮቶኮሎች (HTTP, TCP, IP, DNS) እና የአይፒ አድራሻ ክፍሎች።',
+        keyFormulasAndRules: [
+          'OSI Layers (ከታች ወደ ላይ): Physical, Data Link, Network, Transport, Session, Presentation, Application',
+          'IPv4: 32-bit አድራሻ (4 Octets), IPv6: 128-bit አድራሻ',
+          'TCP = አስተማማኝ (Connection-oriented), UDP = ፈጣን (Connectionless)',
+        ],
+        sampleExamProblems: [
+          {
+            problem: 'በ OSI ሞዴል ውስጥ የፓኬት ራውቲንግን (Routing) የሚያከናውነው ንብርብር የትኛው ነው?',
+            solution: 'Network Layer (ንብርብር 3)።',
+            tip: 'ራውተር በ Network Layer ይሰራል፤ ስዊች (Switch) ደግሞ በ Data Link Layer ይሰራል!',
+          },
+        ],
+        fullContent: [
+          'የኮምፒዩተር ኔትወርክ የተለያዩ መሳሪያዎችን በማገናኘት መረጃ እና ግብዓቶችን በጋራ ለመጠቀም ያስችላል።',
+        ],
+      },
+    ],
+  },
+  {
     id: 'supp-national-exam-past-papers',
     title: 'ESSLCE National Exam Solved Past Papers (2010 - 2024)',
     amharicTitle: 'የኢትዮጵያ ዩኒቨርሲቲ መግቢያ ብሔራዊ ፈተና ያለፉት ዓመታት ጥያቄዎችና መልሶች',
