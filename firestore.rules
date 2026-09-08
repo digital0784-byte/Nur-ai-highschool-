@@ -44,6 +44,36 @@ service cloud.firestore {
       allow write: if isOwner(userId);
     }
 
+    match /students/{studentId} {
+      allow read: if isOwner(studentId) || isTeacher();
+      allow write: if isOwner(studentId);
+    }
+
+    match /subjects/{subjectId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /units/{unitId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /lessons/{lessonId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /topics/{topicId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /questions/{questionId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
     match /progress/{userId} {
       allow read: if isOwner(userId) || isTeacher();
       allow write: if isOwner(userId);
@@ -57,6 +87,105 @@ service cloud.firestore {
     match /youtubeCache/{cacheKey} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated();
+    }
+
+    // ==========================================
+    // ETHIOPIAN CURRICULUM ENGINE RULES (Role-Based)
+    // ==========================================
+    match /curriculum_subjects/{subjectId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /curriculum_units/{unitId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /curriculum_topics/{topicId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /curriculum_questions/{questionId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /curriculum_knowledge_maps/{subjectId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /student_progress/{progressId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isTeacher();
+    }
+
+    // ==========================================
+    // PART 3: AI PERSONAL TUTOR & RAG COLLECTIONS
+    // ==========================================
+    match /ai_sessions/{sessionId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+    }
+
+    match /ai_messages/{messageId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+    }
+
+    match /rag_chunks/{chunkId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /student_mastery/{masteryId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isTeacher();
+    }
+
+    match /student_answers/{answerId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isTeacher();
+    }
+
+    match /weak_topics/{weakTopicId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+    }
+
+    match /recommendations/{recId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+    }
+
+    match /quiz_attempts/{attemptId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isTeacher();
+    }
+
+    match /exam_attempts/{attemptId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isTeacher();
     }
   }
 }

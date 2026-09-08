@@ -23,6 +23,9 @@ import { AIChapterTutorModal } from './components/AIChapterTutorModal';
 import { AuthModal } from './components/AuthModal';
 import { TeacherDashboardModal } from './components/TeacherDashboardModal';
 import { StudentLearningReviewView } from './components/StudentLearningReviewView';
+import { EthiopianCurriculumEngineView } from './components/EthiopianCurriculumEngineView';
+import { EthiopianAITutorView } from './components/EthiopianAITutorView';
+import { StudentAppScaffold } from './components/student/StudentAppScaffold';
 import { AuthGate } from './components/AuthGate';
 
 function TutorialAppContent() {
@@ -33,7 +36,7 @@ function TutorialAppContent() {
   // Application State
   const [selectedGrade, setSelectedGrade] = useState<Grade>(9);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('math');
-  const [activeTab, setActiveTab] = useState<ActiveTab>('lesson');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('student_app');
   const [selectedStream, setSelectedStream] = useState<SubjectStream | 'all'>('all');
 
   // Modals state
@@ -140,7 +143,7 @@ function TutorialAppContent() {
           onOpenChecklist={() => setIsChecklistOpen(true)}
           onOpenCertificate={() => setIsCertificateOpen(true)}
           onOpenAllTextbooks={() => setIsAllTextbooksOpen(true)}
-          onOpenNewCurriculum={() => setIsNewCurriculumOpen(true)}
+          onOpenNewCurriculum={() => setActiveTab('curriculum_engine')}
           onOpenTeacherDashboard={() => setIsTeacherDashboardOpen(true)}
         />
 
@@ -177,6 +180,30 @@ function TutorialAppContent() {
 
             {/* Tab Contents */}
             <div className="flex-1 overflow-y-auto bg-[#FAF6EC]">
+              {activeTab === 'student_app' && (
+                <StudentAppScaffold
+                  initialGrade={selectedGrade}
+                  initialLanguage={language}
+                />
+              )}
+
+              {activeTab === 'ai_tutor' && (
+                <EthiopianAITutorView
+                  currentSubject={currentSubject}
+                  initialGrade={selectedGrade}
+                />
+              )}
+
+              {activeTab === 'curriculum_engine' && (
+                <div className="p-2 sm:p-4">
+                  <EthiopianCurriculumEngineView
+                    initialGrade={selectedGrade}
+                    language={language}
+                    onClose={() => setActiveTab('lesson')}
+                  />
+                </div>
+              )}
+
               {activeTab === 'lesson' && (
                 <LessonView
                   topic={currentTopic}

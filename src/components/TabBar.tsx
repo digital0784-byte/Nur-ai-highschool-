@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActiveTab, Subject } from '../types';
-import { BookOpen, Layers, HelpCircle, Award, Video, Library, Bot } from 'lucide-react';
+import { BookOpen, Layers, HelpCircle, Award, Video, Library, Bot, BrainCircuit, Sparkles, Smartphone } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 interface TabBarProps {
@@ -17,6 +17,9 @@ export const TabBar: React.FC<TabBarProps> = ({
   const { t } = useLanguage();
 
   const tabs: { id: ActiveTab; label: string; icon: React.ReactNode; badge?: string }[] = [
+    { id: 'student_app', label: 'የተማሪ መተግበሪያ (Student App & Adaptive)', icon: <Smartphone className="w-4 h-4 text-purple-700" />, badge: 'PART 4' },
+    { id: 'ai_tutor', label: 'ኑር AI የግል አስተማሪ (AI Tutor & RAG)', icon: <Sparkles className="w-4 h-4 text-amber-700" />, badge: 'PART 3' },
+    { id: 'curriculum_engine', label: 'የስርዓተ-ትምህርት ኢንጅን (Curriculum Engine)', icon: <BrainCircuit className="w-4 h-4 text-indigo-700" />, badge: 'PART 2' },
     { id: 'lesson', label: t.tabLesson, icon: <BookOpen className="w-4 h-4" /> },
     { id: 'textbook', label: t.tabTextbook || 'የተማሪ መጽሐፍ', icon: <BookOpen className="w-4 h-4 text-emerald-700" /> },
     { id: 'objectives_exam', label: t.tabObjectivesExam || 'የቻፕተር ፈተና', icon: <Award className="w-4 h-4 text-amber-700" />, badge: 'AI' },

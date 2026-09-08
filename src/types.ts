@@ -88,6 +88,9 @@ export interface Subject {
 }
 
 export type ActiveTab =
+  | 'student_app'
+  | 'ai_tutor'
+  | 'curriculum_engine'
   | 'lesson'
   | 'textbook'
   | 'objectives_exam'

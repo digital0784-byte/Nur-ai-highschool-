@@ -41,10 +41,349 @@
         "timestamp": { "type": "string" }
       },
       "required": ["userId", "topicId", "score", "total", "timestamp"]
+    },
+    "CurriculumSubject": {
+      "title": "CurriculumSubject",
+      "description": "Ethiopian New Curriculum Subject with official textbook metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "grade": { "type": "number" },
+        "stream": { "type": "string" },
+        "textbookTitle": { "type": "string" },
+        "textbookPublisher": { "type": "string" },
+        "curriculumEdition": { "type": "string" },
+        "totalUnits": { "type": "number" }
+      },
+      "required": ["id", "code", "grade", "textbookTitle"]
+    },
+    "CurriculumUnit": {
+      "title": "CurriculumUnit",
+      "description": "Unit within an Ethiopian curriculum textbook",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "unitNumber": { "type": "number" },
+        "title": { "type": "object" },
+        "description": { "type": "string" },
+        "textbookPageStart": { "type": "number" },
+        "textbookPageEnd": { "type": "number" }
+      },
+      "required": ["id", "subjectId", "unitNumber", "title"]
+    },
+    "CurriculumTopic": {
+      "title": "CurriculumTopic",
+      "description": "Topic with learning outcomes, explanations, activities, and exercises",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "unitId": { "type": "string" },
+        "topicNumber": { "type": "string" },
+        "title": { "type": "object" },
+        "summary": { "type": "string" },
+        "textbookPage": { "type": "number" },
+        "difficulty": { "type": "string" },
+        "prerequisites": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["id", "unitId", "topicNumber", "title", "textbookPage"]
+    },
+    "CurriculumQuestion": {
+      "title": "CurriculumQuestion",
+      "description": "Structured curriculum question with RAG textbook metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "questionType": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "prompt": { "type": "object" },
+        "correctAnswer": { "type": "string" },
+        "explanation": { "type": "object" },
+        "ragMetadata": { "type": "object" }
+      },
+      "required": ["id", "questionType", "difficulty", "prompt", "ragMetadata"]
+    },
+    "KnowledgeMap": {
+      "title": "KnowledgeMap",
+      "description": "Subject knowledge graph with nodes and prerequisite edges",
+      "type": "object",
+      "properties": {
+        "subjectId": { "type": "string" },
+        "grade": { "type": "number" },
+        "nodes": { "type": "array" },
+        "edges": { "type": "array" }
+      },
+      "required": ["subjectId", "grade", "nodes", "edges"]
+    },
+    "StudentProgress": {
+      "title": "StudentProgress",
+      "description": "Student progress tracking per curriculum topic",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "topicId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "grade": { "type": "number" },
+        "masteryLevel": { "type": "number" },
+        "status": { "type": "string" },
+        "lastStudiedAt": { "type": "string" }
+      },
+      "required": ["userId", "topicId", "subjectId", "masteryLevel", "status"]
+    },
+    "AISession": {
+      "title": "AISession",
+      "description": "Interactive AI Tutor learning session for a student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "grade": { "type": "number" },
+        "subjectId": { "type": "string" },
+        "subjectName": { "type": "string" },
+        "mode": { "type": "string", "enum": ["beginner", "guided", "practice", "mastery"] },
+        "language": { "type": "string", "enum": ["am", "en", "om", "ti", "ar"] },
+        "title": { "type": "string" },
+        "activeTopicId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "grade", "subjectId", "mode", "language", "title"]
+    },
+    "AIMessage": {
+      "title": "AIMessage",
+      "description": "Message exchanged between student and AI Tutor with textbook grounding",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "assistant"] },
+        "content": { "type": "string" },
+        "featureType": { "type": "string" },
+        "citations": { "type": "array" },
+        "groundedInTextbook": { "type": "boolean" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "sessionId", "userId", "role", "content", "timestamp"]
+    },
+    "RAGChunk": {
+      "title": "RAGChunk",
+      "description": "Curriculum textbook chunk indexed for vector & semantic RAG retrieval",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "grade": { "type": "number" },
+        "subject": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "unit": { "type": "number" },
+        "unitTitle": { "type": "string" },
+        "topic": { "type": "string" },
+        "textbookPage": { "type": "number" },
+        "source": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "prerequisites": { "type": "array" }
+      },
+      "required": ["id", "text", "grade", "subjectId", "unit", "textbookPage", "source"]
+    },
+    "StudentMastery": {
+      "title": "StudentMastery",
+      "description": "Calculated mastery level and status for a student per topic",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "topicId": { "type": "string" },
+        "topicTitle": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "grade": { "type": "number" },
+        "masteryLevel": { "type": "number" },
+        "status": { "type": "string", "enum": ["not_started", "learning", "weak", "mastered"] },
+        "questionsAnswered": { "type": "number" },
+        "correctCount": { "type": "number" },
+        "currentMode": { "type": "string" },
+        "lastUpdated": { "type": "string" }
+      },
+      "required": ["id", "userId", "topicId", "subjectId", "masteryLevel", "status"]
+    },
+    "StudentAnswer": {
+      "title": "StudentAnswer",
+      "description": "Logged student answer with pedagogical evaluation and mistake diagnosis",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "questionId": { "type": "string" },
+        "studentAnswer": { "type": "string" },
+        "isCorrect": { "type": "boolean" },
+        "feedback": { "type": "string" },
+        "mistakeDiagnosis": { "type": "string" },
+        "topicId": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "userId", "sessionId", "questionId", "studentAnswer", "isCorrect"]
+    },
+    "WeakTopic": {
+      "title": "WeakTopic",
+      "description": "Identified weak topic requiring remedial revision and prerequisite support",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "topicId": { "type": "string" },
+        "topicTitle": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "grade": { "type": "number" },
+        "accuracyRate": { "type": "number" },
+        "failureCount": { "type": "number" },
+        "prerequisiteNeeded": { "type": "string" },
+        "recommendedRemedy": { "type": "string" },
+        "detectedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "topicId", "subjectId", "accuracyRate", "recommendedRemedy"]
+    },
+    "LearningRecommendation": {
+      "title": "LearningRecommendation",
+      "description": "Adaptive recommendation generated by AI Tutor based on knowledge map",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "currentTopicId": { "type": "string" },
+        "recommendedTopicId": { "type": "string" },
+        "recommendedTopicTitle": { "type": "string" },
+        "recommendedAction": { "type": "string", "enum": ["review_prerequisite", "practice_more", "advance_topic"] },
+        "reason": { "type": "string" },
+        "generatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "subjectId", "recommendedTopicId", "recommendedAction", "reason"]
+    },
+    "QuizAttempt": {
+      "title": "QuizAttempt",
+      "description": "Record of a student completing a curriculum-grounded quiz",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "unitNumber": { "type": "number" },
+        "score": { "type": "number" },
+        "totalQuestions": { "type": "number" },
+        "percentage": { "type": "number" },
+        "difficulty": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "userId", "subjectId", "score", "totalQuestions", "percentage"]
+    },
+    "ExamAttempt": {
+      "title": "ExamAttempt",
+      "description": "Record of a student taking a comprehensive curriculum exam",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "examTitle": { "type": "string" },
+        "score": { "type": "number" },
+        "maxScore": { "type": "number" },
+        "percentage": { "type": "number" },
+        "passed": { "type": "boolean" },
+        "durationSeconds": { "type": "number" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "userId", "subjectId", "examTitle", "score", "maxScore", "percentage"]
     }
   },
   "firestore": {
     "collections": {
+      "ai_sessions": {
+        "entity": "AISession",
+        "documentId": "{sessionId}"
+      },
+      "ai_messages": {
+        "entity": "AIMessage",
+        "documentId": "{messageId}"
+      },
+      "rag_chunks": {
+        "entity": "RAGChunk",
+        "documentId": "{chunkId}"
+      },
+      "student_mastery": {
+        "entity": "StudentMastery",
+        "documentId": "{masteryId}"
+      },
+      "student_answers": {
+        "entity": "StudentAnswer",
+        "documentId": "{answerId}"
+      },
+      "weak_topics": {
+        "entity": "WeakTopic",
+        "documentId": "{weakTopicId}"
+      },
+      "recommendations": {
+        "entity": "LearningRecommendation",
+        "documentId": "{recId}"
+      },
+      "quiz_attempts": {
+        "entity": "QuizAttempt",
+        "documentId": "{attemptId}"
+      },
+      "exam_attempts": {
+        "entity": "ExamAttempt",
+        "documentId": "{attemptId}"
+      },
+      "students": {
+        "entity": "User",
+        "documentId": "{studentId}"
+      },
+      "subjects": {
+        "entity": "CurriculumSubject",
+        "documentId": "{subjectId}"
+      },
+      "units": {
+        "entity": "CurriculumUnit",
+        "documentId": "{unitId}"
+      },
+      "lessons": {
+        "entity": "CurriculumTopic",
+        "documentId": "{lessonId}"
+      },
+      "topics": {
+        "entity": "CurriculumTopic",
+        "documentId": "{topicId}"
+      },
+      "questions": {
+        "entity": "CurriculumQuestion",
+        "documentId": "{questionId}"
+      },
+      "curriculum_subjects": {
+        "entity": "CurriculumSubject",
+        "documentId": "{subjectId}"
+      },
+      "curriculum_units": {
+        "entity": "CurriculumUnit",
+        "documentId": "{unitId}"
+      },
+      "curriculum_topics": {
+        "entity": "CurriculumTopic",
+        "documentId": "{topicId}"
+      },
+      "curriculum_questions": {
+        "entity": "CurriculumQuestion",
+        "documentId": "{questionId}"
+      },
+      "curriculum_knowledge_maps": {
+        "entity": "KnowledgeMap",
+        "documentId": "{subjectId}"
+      },
+      "student_progress": {
+        "entity": "StudentProgress",
+        "documentId": "{progressId}"
+      },
       "users": {
         "entity": "User",
         "documentId": "{userId}",

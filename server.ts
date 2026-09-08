@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
+import { ethiopianCurriculumEngine } from './src/engine/curriculumRegistry';
+import { ethiopianAITutorEngine } from './src/engine/aiTutorEngine';
 
 dotenv.config();
 
@@ -974,6 +976,537 @@ ${langInstruction}`;
     } catch (error: any) {
       console.error('Error in youtube/search:', error);
       res.status(500).json({ error: error.message || 'YouTube search failed' });
+    }
+  });
+
+  // =========================================================================
+  // ETHIOPIAN CURRICULUM ENGINE ENDPOINTS (PART 2)
+  // =========================================================================
+
+  // 1. Curriculum Engine Metrics & Audit Report
+  app.get('/api/curriculum/stats', (req, res) => {
+    try {
+      const stats = ethiopianCurriculumEngine.getCurriculumEngineStats();
+      res.json(stats);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to fetch curriculum stats' });
+    }
+  });
+
+  // 2. All Curriculum Subjects with full hierarchy
+  app.get('/api/curriculum/subjects', (req, res) => {
+    try {
+      const grade = req.query.grade ? parseInt(req.query.grade as string, 10) : undefined;
+      const subjects = grade
+        ? ethiopianCurriculumEngine.getSubjectsByGrade(grade as any)
+        : ethiopianCurriculumEngine.getAllSubjects();
+      res.json({ subjects });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to fetch subjects' });
+    }
+  });
+
+  // 3. Reusable Ingestion / Import Endpoint for New Ethiopian Textbooks
+  app.post('/api/curriculum/import-textbook', (req, res) => {
+    try {
+      const payload = req.body;
+      if (!payload.subjectId || !payload.units || !Array.isArray(payload.units)) {
+        return res.status(400).json({ error: 'Invalid payload. subjectId and units array are required.' });
+      }
+      const result = ethiopianCurriculumEngine.importTextbook(payload);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to import textbook' });
+    }
+  });
+
+  // 4. Structured Question Bank Query Endpoint (All 7 Question Types)
+  app.post('/api/curriculum/questions', (req, res) => {
+    try {
+      const { subjectId, grade, unit, questionType, difficulty, limit } = req.body;
+      const questions = ethiopianCurriculumEngine.getQuestions({
+        subjectId,
+        grade,
+        unit,
+        questionType,
+        difficulty,
+        limit: limit ? parseInt(limit, 10) : 20,
+      });
+      res.json({ questions, count: questions.length });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to query questions' });
+    }
+  });
+
+  // 5. Subject Knowledge Map DAG Endpoint
+  app.get('/api/curriculum/knowledge-map/:subjectId', (req, res) => {
+    try {
+      const map = ethiopianCurriculumEngine.getKnowledgeMap(req.params.subjectId);
+      if (!map) {
+        return res.status(404).json({ error: `Knowledge map not found for ${req.params.subjectId}` });
+      }
+      res.json(map);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Failed to fetch knowledge map' });
+    }
+  });
+
+  // 6. Adaptive Weak Topic Detection Endpoint
+  app.post('/api/curriculum/weak-topics', (req, res) => {
+    try {
+      const { subjectId, progress = [] } = req.body;
+      const analysis = ethiopianCurriculumEngine.detectWeakTopics(subjectId, progress);
+      res.json(analysis);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Weak topic detection failed' });
+    }
+  });
+
+  // 7. Curriculum RAG Retrieval Endpoint
+  app.post('/api/curriculum/rag-search', (req, res) => {
+    try {
+      const { query, grade, subjectId, unit, difficulty, limit = 5 } = req.body;
+      if (!query) return res.status(400).json({ error: 'Query is required' });
+
+      const results = ethiopianCurriculumEngine.searchCurriculumRAG(query, {
+        grade,
+        subjectId,
+        unit,
+        difficulty,
+        limit,
+      });
+      res.json({ results });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'RAG search failed' });
+    }
+  });
+
+  // 8. NUR AI: Ask from Textbook (Strict Grounding Rules)
+  app.post('/api/ai/ask-textbook', async (req, res) => {
+    try {
+      const {
+        question,
+        grade = 9,
+        subjectId = 'math-g9',
+        subjectName = 'Mathematics',
+        language = 'am', // 'en' | 'am' | 'om' | 'ti'
+      } = req.body;
+
+      if (!question) {
+        return res.status(400).json({ error: 'Question is required' });
+      }
+
+      // Step 1: Retrieve textbook chunks from Ethiopian Curriculum Engine RAG
+      const ragResults = ethiopianCurriculumEngine.searchCurriculumRAG(question, {
+        grade: grade as any,
+        subjectId,
+        limit: 4,
+      });
+
+      // Step 2: Strict Rule - if no textbook content matches, clearly say so
+      if (ragResults.length === 0) {
+        const langMessages: Record<string, string> = {
+          am: `ይህ ጥያቄ በክፍል ${grade} የ${subjectName} ይፋዊ የአዲሱ ስርዓተ-ትምህርት የመማሪያ መጽሐፍ ውስጥ አልተካተተም። በስርዓተ-ትምህርቱ ህግ መሰረት መልስ የምሰጠው ከመማሪያ መጽሐፍ በተረጋገጠ ምንጭ ላይ ብቻ ተመስርቼ ነው።`,
+          en: `This question is not supported by the official Ethiopian New Curriculum student textbook for Grade ${grade} ${subjectName}. Under the curriculum guidelines, I only provide verified answers grounded in textbook passages.`,
+          om: `Gaaffiin kun kitaaba barataa haarawaa Itoophiyaa Kutaa ${grade} ${subjectName} keessatti hin deeggaramu. Akka qajeelfamaatti deebiin kennamu kan kitaaba irraa mirkanaa'e qofaadha.`,
+          ti: `እዚ ሕቶ ኣብቲ ወግዓዊ ሓዲሽ ስርዓተ ትምህርቲ ክፍሊ ${grade} ${subjectName} መጽሓፍ ተምሃራይ ኣይተረኽበን። ብመሰረት ሕጊ ስርዓተ ትምህርቲ መልሲ ዝወሃብ ካብ መጽሓፍ ብዝተረጋገጸ ጥራይ እዩ።`,
+        };
+
+        return res.json({
+          answer: langMessages[language] || langMessages['en'],
+          citations: [],
+          groundedInTextbook: false,
+        });
+      }
+
+      const topChunk = ragResults[0];
+      const contextText = ragResults
+        .map(
+          (r, idx) =>
+            `[Excerpt ${idx + 1}] Source: ${r.metadata.source} | Grade: ${r.metadata.grade} | Unit ${r.metadata.unit}: ${r.metadata.unitTitle} | Topic: ${r.metadata.topic || 'General'} | Page: ${r.metadata.textbookPage}\nContent: ${r.snippet}`
+        )
+        .join('\n\n');
+
+      const ai = getAI();
+      if (!ai) {
+        // Deterministic textbook-grounded fallback
+        return res.json({
+          answer: `[የመማሪያ መጽሐፍ ማጣቀሻ፡ ክፍል ${topChunk.metadata.grade} ${topChunk.metadata.subject}፣ ምዕራፍ ${topChunk.metadata.unit}፣ ገጽ ${topChunk.metadata.textbookPage}]\n\nበመማሪያ መጽሐፉ መሰረት፡ ${topChunk.snippet}`,
+          citations: [
+            {
+              grade: topChunk.metadata.grade,
+              subject: topChunk.metadata.subject,
+              unit: topChunk.metadata.unit,
+              unitTitle: topChunk.metadata.unitTitle,
+              page: topChunk.metadata.textbookPage,
+              source: topChunk.metadata.source,
+            },
+          ],
+          groundedInTextbook: true,
+        });
+      }
+
+      const prompt = `You are NUR AI, the strict official Ethiopian High School Curriculum AI Personal Tutor.
+MANDATORY RULES:
+1. The Ethiopian New Curriculum Student Textbooks are your primary and absolute source.
+2. NEVER invent textbook content.
+3. NEVER silently replace textbook content with outside general knowledge.
+4. Always provide Grade, Subject, Unit, and Page/Source reference in your answer.
+5. If the provided textbook excerpts do not substantiate the answer, state clearly that the textbook does not support it.
+6. Do NOT copy long copyrighted passages word-for-word; summarize clearly with mathematical/scientific precision.
+7. Language of explanation: Respond completely and fluently in ${
+        language === 'am'
+          ? 'Amharic (አማርኛ)'
+          : language === 'om'
+          ? 'Afaan Oromo'
+          : language === 'ti'
+          ? 'Tigrinya (ትግርኛ)'
+          : 'English'
+      }.
+
+OFFICIAL TEXTBOOK EXCERPTS:
+${contextText}
+
+STUDENT QUESTION:
+"${question}"
+
+Format your response with:
+- Top Citation Banner: 📖 [Grade ${topChunk.metadata.grade} ${topChunk.metadata.subject} | Unit ${topChunk.metadata.unit}: ${topChunk.metadata.unitTitle} | Page ${topChunk.metadata.textbookPage}]
+- Explanation (summarized directly from the textbook concepts)
+- Worked Example or Practical Note (from textbook syllabus)
+- Review Question or Tip for Exam Preparation`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.7-flash',
+        contents: prompt,
+      });
+
+      const citations = ragResults.map((r) => ({
+        grade: r.metadata.grade,
+        subject: r.metadata.subject,
+        unit: r.metadata.unit,
+        unitTitle: r.metadata.unitTitle,
+        page: r.metadata.textbookPage,
+        source: r.metadata.source,
+      }));
+
+      return res.json({
+        answer: response.text || 'No response generated',
+        citations,
+        groundedInTextbook: true,
+      });
+    } catch (error: any) {
+      console.error('Error in ask-textbook:', error);
+      res.status(500).json({ error: error.message || 'Curriculum tutor error' });
+    }
+  });
+
+  // 9. NUR AI: Photo Question Solver
+  app.post('/api/ai/solve-photo-question', async (req, res) => {
+    try {
+      const {
+        imageBase64,
+        mimeType = 'image/jpeg',
+        grade = 9,
+        subjectName = 'General',
+        language = 'am',
+      } = req.body;
+
+      if (!imageBase64) {
+        return res.status(400).json({ error: 'imageBase64 is required' });
+      }
+
+      const ai = getAI();
+      if (!ai) {
+        return res.status(503).json({
+          error: 'AI service unavailable. Please check GEMINI_API_KEY configuration.',
+        });
+      }
+
+      const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+
+      const prompt = `You are NUR AI, the Ethiopian High School Photo Question Solver.
+Analyze this photo from an Ethiopian secondary school textbook, assignment, or national exam (ESSLCE).
+Your task:
+1. Transcribe the exact question text from the image.
+2. Identify Grade (9-12), Subject, and Curriculum Unit.
+3. Provide step-by-step mathematical / scientific / conceptual solution adhering strictly to Ethiopian Ministry of Education curriculum guidelines.
+4. Highlight the Final Answer clearly.
+5. Provide a textbook revision tip (mentioning relevant formulas or laws).
+6. Output in ${
+        language === 'am'
+          ? 'Amharic (አማርኛ)'
+          : language === 'om'
+          ? 'Afaan Oromo'
+          : language === 'ti'
+          ? 'Tigrinya (ትግርኛ)'
+          : 'English'
+      }.`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.7-flash',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  mimeType,
+                  data: cleanBase64,
+                },
+              },
+              { text: prompt },
+            ],
+          },
+        ],
+      });
+
+      return res.json({
+        solution: response.text || 'Unable to analyze question',
+        detectedGrade: grade,
+        detectedSubject: subjectName,
+      });
+    } catch (error: any) {
+      console.error('Error in solve-photo-question:', error);
+      res.status(500).json({ error: error.message || 'Failed to solve photo question' });
+    }
+  });
+
+  // 10. NUR AI: Voice Tutor Endpoint
+  app.post('/api/ai/voice-tutor', async (req, res) => {
+    try {
+      const {
+        question,
+        topic = '',
+        grade = 9,
+        subjectName = 'Mathematics',
+        language = 'am',
+      } = req.body;
+
+      const ai = getAI();
+      const prompt = `You are NUR AI Voice Tutor for Ethiopian students.
+Write a clear, encouraging, spoken audio script explaining: "${question || topic}" for Grade ${grade} ${subjectName}.
+Keep it concise (120-160 words max), conversational, and easy to speak aloud.
+Language: ${language === 'am' ? 'Amharic' : language === 'om' ? 'Afaan Oromo' : language === 'ti' ? 'Tigrinya' : 'English'}.
+Include:
+1. Warm greeting.
+2. The core textbook concept explained simply.
+3. One memorable example or mnemonic.
+4. Quick check question for the student.`;
+
+      let script = `ሰላም ተማሪዬ! በክፍል ${grade} ${subjectName} ላይ ያለህን ጥያቄ እንመልከት። የመማሪያ መጽሐፉ የሚያስተምረን መሰረታዊ መርህ እጅግ ቀላል ነው። በርታ፣ ሁልጊዜ ደግመህ ተለማመድ!`;
+
+      if (ai) {
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.7-flash',
+          contents: prompt,
+        });
+        script = response.text || script;
+      }
+
+      res.json({
+        speechScript: script,
+        language,
+        grade,
+        subject: subjectName,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Voice tutor failed' });
+    }
+  });
+
+  // 11. NUR AI: Dynamic Curriculum Quiz & Exam Generator
+  app.post('/api/ai/generate-curriculum-quiz', async (req, res) => {
+    try {
+      const {
+        grade = 9,
+        subjectId = 'math-g9',
+        subjectName = 'Mathematics',
+        unitNumber = 1,
+        questionCount = 5,
+        difficulty = 'medium',
+        language = 'am',
+      } = req.body;
+
+      const unit = ethiopianCurriculumEngine.getUnit(subjectId, unitNumber);
+      const unitTitle = unit ? unit.title.en : `Unit ${unitNumber}`;
+
+      const ai = getAI();
+      if (!ai) {
+        // Return structured bank questions as fallback
+        const existing = ethiopianCurriculumEngine.getQuestions({
+          subjectId,
+          grade: grade as any,
+          unit: unitNumber,
+          limit: questionCount,
+        });
+        return res.json({
+          questions: existing,
+          source: 'curriculum-bank',
+          unitTitle,
+        });
+      }
+
+      const prompt = `You are the Ethiopian National Examination and Curriculum Assessment Specialist.
+Generate ${questionCount} authentic exam/quiz questions for Grade ${grade} ${subjectName}, Unit ${unitNumber}: "${unitTitle}".
+Difficulty level: ${difficulty}.
+Language: ${language === 'am' ? 'Amharic' : language === 'om' ? 'Afaan Oromo' : language === 'ti' ? 'Tigrinya' : 'English'}.
+
+Include varied question types: Multiple Choice, True/False, Fill in the Blank, and Short Answer.
+Strictly output a VALID JSON array with this exact format without markdown backticks:
+[
+  {
+    "id": "gen-q1",
+    "questionType": "multiple_choice",
+    "difficulty": "${difficulty}",
+    "prompt": "Question text here",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswer": 0,
+    "explanation": "Detailed explanation citing textbook rule and page",
+    "textbookPage": ${unit?.textbookPageStart || 1}
+  }
+]`;
+
+      let parsedQuestions = [];
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.7-flash',
+          contents: prompt,
+        });
+        const cleaned = (response.text || '')
+          .replace(/```json/gi, '')
+          .replace(/```/g, '')
+          .trim();
+        parsedQuestions = JSON.parse(cleaned);
+      } catch (aiErr) {
+        console.warn('Gemini quiz generation failed or unavailable, serving authentic textbook bank questions:', aiErr);
+        parsedQuestions = ethiopianCurriculumEngine.getQuestions({
+          subjectId,
+          grade: grade as any,
+          unit: unitNumber,
+          limit: questionCount,
+        });
+      }
+
+      res.json({
+        questions: parsedQuestions,
+        source: parsedQuestions.length > 0 ? 'curriculum-engine' : 'curriculum-bank',
+        unitTitle,
+      });
+    } catch (err: any) {
+      // Final safety net returns bank questions
+      const fallbackQuestions = ethiopianCurriculumEngine.getQuestions({
+        limit: 5,
+      });
+      res.json({
+        questions: fallbackQuestions,
+        source: 'curriculum-bank-fallback',
+        errorNote: err.message,
+      });
+    }
+  });
+
+  // ==========================================
+  // PART 3: AI PERSONAL TUTOR & RAG ENGINE API
+  // ==========================================
+
+  // 1. Central AI Tutor Action Orchestrator (14 Features)
+  app.post('/api/ai-tutor/action', async (req, res) => {
+    try {
+      const ai = getAI();
+      const response = await ethiopianAITutorEngine.executeAction(req.body, ai);
+      res.json(response);
+    } catch (err: any) {
+      console.error('Error in /api/ai-tutor/action:', err);
+      res.status(500).json({
+        error: err.message || 'AI Tutor action failed',
+        status: 'error',
+      });
+    }
+  });
+
+  // 2. Photo Question Solver Endpoint (OCR + RAG + Step-by-Step)
+  app.post('/api/ai-tutor/photo-solve', async (req, res) => {
+    try {
+      const { imageBase64, mimeType, grade, subjectName, language } = req.body;
+      if (!imageBase64) {
+        return res.status(400).json({ error: 'imageBase64 is required' });
+      }
+      const ai = getAI();
+      const solution = await ethiopianAITutorEngine.solvePhotoQuestion(
+        imageBase64,
+        mimeType || 'image/jpeg',
+        grade || 9,
+        subjectName || 'Mathematics',
+        language || 'am',
+        ai
+      );
+      res.json(solution);
+    } catch (err: any) {
+      console.error('Error in /api/ai-tutor/photo-solve:', err);
+      res.status(500).json({
+        error: err.message || 'Photo question solving failed',
+      });
+    }
+  });
+
+  // 3. Adaptive Learning Evaluation (Mastery, Weak-Topic Detection & Knowledge Map DAG Recommendations)
+  app.post('/api/ai-tutor/evaluate-adaptive', (req, res) => {
+    try {
+      const { userId = 'current-student', subjectId = 'math-g9', answers = [] } = req.body;
+      const evaluation = ethiopianAITutorEngine.evaluateStudentAdaptivity(userId, subjectId, answers);
+      res.json(evaluation);
+    } catch (err: any) {
+      console.error('Error in /api/ai-tutor/evaluate-adaptive:', err);
+      res.status(500).json({ error: err.message || 'Adaptive evaluation failed' });
+    }
+  });
+
+  // 4. Complete End-to-End Verification Test Flow (PART 3 TEST)
+  app.get('/api/ai-tutor/test-flow', async (req, res) => {
+    try {
+      const ai = getAI();
+      const testReport = await ethiopianAITutorEngine.runFullVerificationTest(ai);
+      res.json(testReport);
+    } catch (err: any) {
+      console.error('Error in /api/ai-tutor/test-flow:', err);
+      res.status(500).json({
+        error: err.message || 'Verification test failed',
+      });
+    }
+  });
+
+  // 5. Query / Inspect Indexed Curriculum RAG Chunks
+  app.get('/api/ai-tutor/rag-chunks', (req, res) => {
+    try {
+      const grade = req.query.grade ? parseInt(req.query.grade as string) : undefined;
+      const subjectId = req.query.subjectId as string | undefined;
+      const query = (req.query.q as string) || '';
+
+      if (query) {
+        const results = ethiopianCurriculumEngine.searchCurriculumRAG(query, {
+          grade: grade as any,
+          subjectId,
+          limit: 10,
+        });
+        return res.json({ chunks: results, count: results.length });
+      }
+
+      // Return sample RAG index records
+      const allChunks = ethiopianCurriculumEngine.searchCurriculumRAG('Ethiopian curriculum textbook concepts', {
+        grade: grade as any,
+        subjectId,
+        limit: 20,
+      });
+
+      res.json({
+        chunks: allChunks,
+        count: allChunks.length,
+        totalIndexedInRegistry: ethiopianCurriculumEngine.getCurriculumEngineStats().indexedRAGChunksCount,
+      });
+    } catch (err: any) {
+      console.error('Error in /api/ai-tutor/rag-chunks:', err);
+      res.status(500).json({ error: err.message });
     }
   });
 
