@@ -1795,6 +1795,184 @@ export const textbooksDataAmharic: SubjectTextbookCollection = {
         },
       ],
     },
+    10: {
+      subjectId: 'economics',
+      grade: 10,
+      title: 'የኢኮኖሚክስ ትምህርት የተማሪ መጽሐፍ - ክፍል 10 (Grade 10 Economics Student Textbook)',
+      curriculumBadge: 'የኢ.ፌ.ዲ.ሪ ትምህርት ሚኒስቴር አዲሱ ስርዓተ-ትምህርት',
+      totalUnits: 8,
+      description: 'የክፍል 10 የኢኮኖሚክስ ትምህርት ማይክሮ-ኢኮኖሚክስ፣ የሸማቾች ባህሪ፣ ፍላጎትና አቅርቦት፣ ምርትና ወጪ፣ የገበያ መዋቅር፣ ባንክና ፋይናንስ፣ ኢኮኖሚ እድገት፣ የኢትዮጵያ ኢኮኖሚ እና ስራ ፈጠራን ያጠቃልላል።',
+      units: [
+        {
+          unitNumber: 1,
+          title: 'ምዕራፍ 1፡ የሸማቾች ባህሪ ንድፈ-ሀሳብ (Theory of Consumer Behaviour)',
+          summary: 'የጠቃሚነት (Utility) ፅንሰ-ሀሳብ፣ ካርዲናል እና ኦርዲናል አቀራረቦች፣ የጠርዝ ጠቃሚነት መቀነስ ህግ (Law of Diminishing Marginal Utility) እና የሸማች ሚዛን።',
+          sections: [
+            {
+              title: '1.1 የጠቃሚነት ፅንሰ-ሀሳብ እና መለኪያዎች (The Concept and Measurement of Utility)',
+              content: [
+                'ጠቃሚነት ማለት ሸማቾች ከአንድ እቃ ወይም አገልግሎት ፍጆታ የሚያገኙት እርካታ ወይም እርካታ ሰጪነት ነው።',
+                'ካርዲናል አቀራረብ ጠቃሚነት በቁጥር (Utils) ሊለካ ይችላል ሲል፤ ኦርዲናል አቀራረብ ደግሞ በደረጃ (Ranking) ቅደም ተከተል ይቀመጣል ይላል።',
+              ],
+            },
+            {
+              title: '1.2 የጠርዝ ጠቃሚነት መቀነስ ህግ እና የሸማች ሚዛን (Law of Diminishing Marginal Utility & Consumer Equilibrium)',
+              content: [
+                'አንድ ሸማች የአንድን እቃ ፍጆታ እየጨመረ በሄደ ቁጥር ከተጨማሪው እቃ የሚያገኘው እርካታ (Marginal Utility) እየቀነሰ ይሄዳል።',
+                'የሸማች ሚዛን የሚገኘው የጠርዝ ጠቃሚነት ከዋጋ ጋር እኩል ሲሆን ነው (MUx / Px = MUy / Py = MU of Money)።',
+              ],
+            },
+          ],
+        },
+        {
+          unitNumber: 2,
+          title: 'ምዕራፍ 2፡ የፍላጎትና አቅርቦት ንድፈ-ሀሳብ (Demand & Supply Theory)',
+          summary: 'የፍላጎትና አቅርቦት ህጎች፣ የመለጠጥ ባህሪ (Elasticity of Demand & Supply)፣ የዋጋ፣ የገቢና የተሻጋሪ መለጠጥ ትንተና እና የመንግስት የዋጋ ቁጥጥር።',
+          sections: [
+            {
+              title: '2.1 የፍላጎትና አቅርቦት ህግጋት እና የገበያ ሚዛን (Laws of Demand and Supply and Market Equilibrium)',
+              content: [
+                'የፍላጎት ህግ፡ ሌሎች ነገሮች ሳይለወጡ የዋጋ መጨመር የፍላጎት መጠንን ይቀንሳል፤ የዋጋ መቀነስ ደግሞ ይጨምራል።',
+                'የገበያ ሚዛን የሚፈጠረው የገበያ ፍላጎት መጠንና የገበያ አቅርቦት መጠን ሲተካከሉ ነው (Qd = Qs)።',
+              ],
+            },
+            {
+              title: '2.2 የፍላጎትና አቅርቦት የመለጠጥ ባህሪ (Elasticity of Demand and Supply)',
+              content: [
+                'የዋጋ መለጠጥ (Price Elasticity) ማለት የዋጋ ለውጥ ሲፈጠር የፍላጎት መጠን ምን ያህል ምላሽ እንደሚሰጥ የሚያሳይ መለኪያ ነው።',
+                'የዋጋ ጣሪያ (Price Ceiling) እና የዋጋ ወለል (Price Floor) የመንግስት የዋጋ ቁጥጥር ስልቶች ናቸው።',
+              ],
+            },
+          ],
+        },
+        {
+          unitNumber: 3,
+          title: 'ምዕራፍ 3፡ የምርትና ወጪ ንድፈ-ሀሳብ (Production & Cost Theory)',
+          summary: 'የአጭርና ረጅም ጊዜ የምርት ተግባራት፣ የጠርዝ ምርት መቀነስ ህግ (Law of Diminishing Returns)፣ ቋሚና ተለዋዋጭ ወጪዎች።',
+          sections: [
+            {
+              title: '3.1 የምርት ተግባር እና የምርት ደረጃዎች (Production Function and Stages of Production)',
+              content: [
+                'ምርት ማለት ግብአቶችን (መሬት፣ ጉልበት፣ ካፒታል) ወደ እቃዎችና አገልግሎቶች የመቀየር ሂደት ነው።',
+                'በአጭር ጊዜ ውስጥ ቢያንስ አንድ ግብአት ቋሚ ሲሆን፣ የጠርዝ ምርት መቀነስ ህግ ይተገበራል።',
+              ],
+            },
+            {
+              title: '3.2 የአጭርና ረጅም ጊዜ የወጪ ትንተና (Short-Run and Long-Run Cost Analysis)',
+              content: [
+                'ጠቅላላ ወጪ (TC) = ቋሚ ወጪ (TFC) + ተለዋዋጭ ወጪ (TVC)።',
+                'አማካይ ወጪ (AC) እና የጠርዝ ወጪ (MC) የምርት ውሳኔዎችን ለመወሰን ወሳኝ ናቸው።',
+              ],
+            },
+          ],
+        },
+        {
+          unitNumber: 4,
+          title: 'ምዕራፍ 4፡ የገበያ መዋቅር (Market Structure)',
+          summary: 'ፍጹም ተወዳዳሪ ገበያ (Perfect Competition)፣ ሞኖፖሊ (Monopoly)፣ ሞኖፖሊያዊ ውድድር እና ኦሊጎፖሊ (Oligopoly) ባህሪያትና የዋጋ ውሳኔ።',
+          sections: [
+            {
+              title: '4.1 ፍጹም ተወዳዳሪ ገበያ (Perfect Competition)',
+              content: [
+                'በርካታ ገዢዎችና ሻጮች፣ ተመሳሳይ ምርቶች፣ ነፃ የመግባትና የመውጣት መብት እና ፍጹም የመረጃ ዝውውር መኖሩ።',
+                'ድርጅቶች ዋጋ ተቀባይ (Price Takers) እንጂ ዋጋ ወሳኝ አይደሉም፤ P = MR = MC።',
+              ],
+            },
+            {
+              title: '4.2 ፍጹም ያልሆነ ውድድር ገበያዎች (Imperfect Market Structures)',
+              content: [
+                'ሞኖፖሊ አንድ ብቸኛ አምራች ያለበት እና ምትክ ምርት የሌለበት ገበያ ሲሆን ድርጅቱ ዋጋ ወሳኝ (Price Maker) ነው።',
+                'ኦሊጎፖሊ ጥቂት ግዙፍ ድርጅቶች ገበያውን የሚቆጣጠሩበትና እርስ በእርስ ጥገኛ የሆኑበት መዋቅር ነው።',
+              ],
+            },
+          ],
+        },
+        {
+          unitNumber: 5,
+          title: 'ምዕራፍ 5፡ የባንክ እና ፋይናንስ ስርዓት (Banking & Finance)',
+          summary: 'የገንዘብ ተግባራትና ታሪክ፣ የማዕከላዊ ባንክና የንግድ ባንኮች ሚና፣ ዲጂታል ክፍያ እና የካፒታል ገበያ በኢትዮጵያ።',
+          sections: [
+            {
+              title: '5.1 የገንዘብ ምንነትና የባንኮች ተግባር (Money Functions and Banking Operations)',
+              content: [
+                'ገንዘብ የመለዋወጫ መሳሪያ፣ የእሴት መለኪያ፣ የክፍያ ማስተላለፊያ እና የሀብት ማከማቻ ሆኖ ያገለግላል።',
+                'የኢትዮጵያ ብሔራዊ ባንክ (NBE) ገንዘብ የማተም፣ የውጭ ምንዛሪ የማስተዳደር እና የባንኮችን ስርዓት የመቆጣጠር ስልጣን አለው።',
+              ],
+            },
+            {
+              title: '5.2 የዲጂታል ፋይናንስ እና የካፒታል ገበያ (Digital Finance & Capital Markets)',
+              content: [
+                'የሞባይል ባንኪንግ፣ ቴሌብር እና ኤሌክትሮኒክ የክፍያ ስርዓቶች የፋይናንስ አካታችነትን ያሳድጋሉ።',
+                'የኢትዮጵያ ሰነደ-ሙአለነዋይ (ካፒታል) ገበያ የረጅም ጊዜ ኢንቨስትመንት ሀብት ማሰባሰቢያ መድረክ ነው።',
+              ],
+            },
+          ],
+        },
+        {
+          unitNumber: 6,
+          title: 'ምዕራፍ 6፡ የኢኮኖሚ እድገት እና ልማት (Economic Growth & Development)',
+          summary: 'የኢኮኖሚ እድገት (GDP Growth) ከኢኮኖሚ ልማት (HDI) ያለው ልዩነት፣ የድህነት ቅነሳ፣ የዘላቂ ልማት ግቦች (SDGs)።',
+          sections: [
+            {
+              title: '6.1 የኢኮኖሚ እድገትና ልማት ልዩነት (Growth vs Development)',
+              content: [
+                'የኢኮኖሚ እድገት የሀገራዊ ምርት (GDP) የቁጥር ጭማሪ ሲሆን፣ የኢኮኖሚ ልማት ግን የኑሮ ደረጃ መሻሻልን፣ ጤናንና ትምህርትን ያካትታል።',
+                'የሰብአዊ ልማት መረጃ ጠቋሚ (Human Development Index - HDI) የጤና፣ ትምህርት እና የነፍስ ወከፍ ገቢ ጥምር መለኪያ ነው።',
+              ],
+            },
+            {
+              title: '6.2 የልማት እንቅፋቶች እና ስትራቴጂዎች (Development Barriers and Strategies)',
+              content: [
+                'የካፒታል እጥረት፣ የቴክኖሎጂ ዝቅተኝነት፣ እና የሰለጠነ የሰው ኃይል ማነስ ዋና ዋና ተግዳሮቶች ናቸው።',
+                'የዘላቂ ልማት ግቦች (SDGs) አካባቢን ሳይበክሉ ፍትሃዊ እድገት ማምጣትን ያለሙ ናቸው።',
+              ],
+            },
+          ],
+        },
+        {
+          unitNumber: 7,
+          title: 'ምዕራፍ 7፡ የኢትዮጵያ ኢኮኖሚ ገጽታዎች (The Ethiopian Economy)',
+          summary: 'የግብርና፣ ኢንዱስትሪና አገልግሎት ዘርፎች ሚና፣ የውጭ ንግድ ሚዛን፣ የዋጋ ግሽበት ተግዳሮቶች እና የሀገር በቀል የኢኮኖሚ ማሻሻያ (HBR)።',
+          sections: [
+            {
+              title: '7.1 ዋና ዋና የኢኮኖሚ ዘርፎች (Main Economic Sectors in Ethiopia)',
+              content: [
+                'ግብርና ለከፍተኛ የስራ እድል እና ለወጪ ንግድ (ቡና፣ ሰሊጥ፣ አበቦች) ዋነኛ ምሰሶ ነው።',
+                'የኢንዱስትሪ እና የአገልግሎት ዘርፎች (ቱሪዝም፣ አየር መንገድ፣ ቴሌኮም) በፍጥነት እያደጉ ያሉ ዘርፎች ናቸው።',
+              ],
+            },
+            {
+              title: '7.2 የኢኮኖሚ ፖሊሲዎችና ማሻሻያዎች (Economic Policies & Reforms)',
+              content: [
+                'የሀገር በቀል የኢኮኖሚ ማሻሻያ አጀንዳ (Homegrown Economic Reform) የግል ዘርፍ ተሳትፎን እና የወጪ ንግድን ለማበረታታት ያለመ ነው።',
+                'የዋጋ ግሽበትን መቆጣጠር እና የስራ አጥነትን መቀነስ ዋነኛ ሀገራዊ የትኩረት አቅጣጫዎች ናቸው።',
+              ],
+            },
+          ],
+        },
+        {
+          unitNumber: 8,
+          title: 'ምዕራፍ 8፡ የንግድ ስራ ጅማሮ እና ስራ ፈጠራ (Business Startups)',
+          summary: 'የስራ ፈጠራ ክህሎት፣ የንግድ እድሎችን መለየት፣ የገበያ ጥናት፣ የንግድ እቅድ (Business Plan) ዝግጅት እና የፋይናንስ ምንጮች።',
+          sections: [
+            {
+              title: '8.1 የስራ ፈጠራ ፅንሰ-ሀሳብ እና ባህሪያት (Concept of Entrepreneurship)',
+              content: [
+                'ስራ ፈጣሪ (Entrepreneur) አደጋን ደፍሮ አዳዲስ ቴክኖሎጂዎችንና አገልግሎቶችን በማቅረብ ገበያ የሚፈጥር መሪ ነው።',
+                'የፈጠራ ችሎታ፣ ቆራጥነት፣ እና የገበያ ችግሮችን የመፍታት አቅም ወሳኝ የስራ ፈጣሪ ባህሪያት ናቸው።',
+              ],
+            },
+            {
+              title: '8.2 የተሟላ የንግድ እቅድ ዝግጅት (Comprehensive Business Plan)',
+              content: [
+                'የንግድ እቅድ አስፈፃሚ ማጠቃለያ፣ የገበያ ትንተና፣ የኦፕሬሽን እቅድ እና የፋይናንስ ግምትን ያካተተ ሰነድ ነው።',
+                'የአነስተኛና መካከለኛ ኢንተርፕራይዞች (SMEs) ለሀገራዊ የስራ እድል ፈጠራ ያላቸው ሚና ከፍተኛ ነው።',
+              ],
+            },
+          ],
+        },
+      ],
+    },
     11: {
       subjectId: 'economics',
       grade: 11,
