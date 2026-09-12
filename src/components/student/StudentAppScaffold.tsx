@@ -7,6 +7,7 @@ import {
   Camera,
   Mic,
   HardDrive,
+  Flame,
   Moon,
   Sun,
   Languages,
@@ -21,6 +22,7 @@ import {
   ChevronRight,
   Wifi,
   WifiOff,
+  Search,
 } from 'lucide-react';
 import { GradeLevel, CurriculumSubjectItem, CurriculumTopic, CurriculumUnit, CurriculumLesson } from '../../types/curriculumEngine';
 import { LanguageCode } from '../../types';
@@ -35,6 +37,10 @@ import { StudentQuizScreen } from './StudentQuizScreen';
 import { StudentPhotoSolverScreen } from './StudentPhotoSolverScreen';
 import { StudentVoiceTutorScreen } from './StudentVoiceTutorScreen';
 import { StudentOfflineManager } from './StudentOfflineManager';
+import { GamificationDashboardView } from '../gamification/GamificationDashboardView';
+import { SmartSearchMainView } from '../search/SmartSearchMainView';
+import { OfflineSyncIndicator } from '../notifications/OfflineSyncIndicator';
+import { NotificationBell } from '../notifications/NotificationBell';
 
 interface StudentAppScaffoldProps {
   initialGrade?: GradeLevel;
@@ -309,11 +315,14 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
   // Navigation Items
   const navItems: { id: StudentTab; label: string; icon: any }[] = [
     { id: 'home', label: 'መነሻ (Home)', icon: Home },
+    { id: 'search', label: 'ፍለጋና ጥቆማ (Search & Recs)', icon: Search },
+    { id: 'gamification', label: 'ማበረታቻ (Gamification)', icon: Flame },
     { id: 'subjects', label: 'የትምህርት ዓይነቶች (Subjects)', icon: BookOpen },
     { id: 'knowledge_map', label: 'የእውቀት ካርታ (Map)', icon: Compass },
     { id: 'quiz', label: 'ፈተናዎች (Quiz)', icon: Award },
     { id: 'photo_solver', label: 'የፎቶ ፈቺ (Camera OCR)', icon: Camera },
     { id: 'voice_tutor', label: 'ድምፅ አስተማሪ (Voice)', icon: Mic },
+    { id: 'offline', label: 'ኦፍላይንና ዳታ (Offline & Sync)', icon: HardDrive },
   ];
 
   return (
@@ -390,18 +399,11 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
             </div>
           </div>
 
-          {/* Offline / Storage Status icon */}
-          <button
-            title="ያለ ኢንተርኔት መማር (Offline & Storage)"
-            onClick={() => setCurrentTab('home')}
-            className={`p-2 rounded-full border text-xs cursor-pointer ${
-              isOnline
-                ? 'text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30'
-                : 'text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/30'
-            }`}
-          >
-            {isOnline ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
-          </button>
+          {/* Offline / Storage Status indicator */}
+          <OfflineSyncIndicator onOpenOfflineManager={() => setCurrentTab('offline')} />
+
+          {/* FCM Push & In-App Notifications Bell */}
+          <NotificationBell />
 
           {/* Dark Mode Toggle */}
           <button
@@ -541,26 +543,82 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
               darkMode={darkMode}
             />
           )}
+
+          {/* TAB 8: OFFLINE & DATA SYNC */}
+          {currentTab === 'offline' && (
+            <StudentOfflineManager
+              darkMode={darkMode}
+              lowDataMode={lowDataMode}
+              onToggleLowDataMode={handleToggleLowDataMode}
+              onOpenCachedUnit={handleOpenCachedUnit}
+              onOpenCachedItem={(item) => {
+                if (item.type === 'unit') {
+                  handleOpenCachedUnit({
+                    unitId: item.payload.id,
+                    subjectId: item.subjectId,
+                    unitNumber: item.unitNumber,
+                    title: item.title.am || item.title.en,
+                    grade: item.grade,
+                    downloadedAt: item.downloadedAt,
+                    sizeBytes: item.sizeBytes,
+                    data: item.payload,
+                  });
+                } else if (item.type === 'quiz') {
+                  setCurrentTab('quiz');
+                } else {
+                  const subject = ethiopianCurriculumEngine.getSubject(item.subjectId);
+                  if (subject) {
+                    setSelectedSubjectId(subject.id);
+                    const unit = subject.units.find((u) => u.unitNumber === item.unitNumber) || subject.units[0];
+                    setSelectedUnit(unit);
+                    if (unit) {
+                      const lesson = unit.sections[0]?.lessons[0];
+                      setSelectedLesson(lesson || null);
+                      setSelectedTopic(lesson?.topics[0] || null);
+                      setCurrentTab('learn');
+                    }
+                  }
+                }
+              }}
+            />
+          )}
+
+          {/* TAB: SMART SEARCH & RECOMMENDATIONS */}
+          {currentTab === 'search' && (
+            <div className="p-3 sm:p-6">
+              <SmartSearchMainView
+                studentGrade={grade}
+                onSelectTopic={(subjectId, topicId) => handleContinueLearning(subjectId, topicId)}
+              />
+            </div>
+          )}
+
+          {/* TAB 9: GAMIFICATION & MOTIVATION */}
+          {currentTab === 'gamification' && (
+            <div className="p-3 sm:p-6">
+              <GamificationDashboardView />
+            </div>
+          )}
         </main>
       </div>
 
       {/* 3. FLUTTER MATERIAL 3 BOTTOM NAVIGATION BAR (Mobile View) */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t flex items-center justify-around py-2 px-1 shadow-md ${navBg}`}>
-        {navItems.slice(0, 5).map((item) => {
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t flex items-center justify-start overflow-x-auto py-2 px-2 gap-1 shadow-md scrollbar-none ${navBg}`}>
+        {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.id;
           return (
             <button
               key={item.id}
               onClick={() => setCurrentTab(item.id)}
-              className={`flex flex-col items-center gap-1 p-1.5 rounded-xl cursor-pointer transition-all ${
+              className={`flex flex-col items-center gap-1 py-1 px-2.5 min-w-[58px] rounded-xl cursor-pointer transition-all shrink-0 ${
                 isActive ? 'text-[#6750A4] dark:text-[#D0BCFF] font-black' : textSecondary
               }`}
             >
               <div className={`p-1 rounded-full ${isActive ? 'bg-[#EADDFF] dark:bg-[#4F378B]' : ''}`}>
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4" />
               </div>
-              <span className="text-[10px] leading-none">{item.label.split(' ')[0]}</span>
+              <span className="text-[9px] leading-none whitespace-nowrap">{item.label.split(' ')[0]}</span>
             </button>
           );
         })}

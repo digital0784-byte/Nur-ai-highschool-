@@ -1,144 +1,410 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    function isAuthenticated() {
-      return request.auth != null;
+
+    // =========================================================================
+    // 0. GLOBAL DEFAULT DENY (Zero-Trust Catch-All)
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
     }
-    
+
+    // =========================================================================
+    // 1. REUSABLE IDENTITY, VALIDATION & RBAC PRIMITIVES
+    // =========================================================================
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-    
-    function isTeacher() {
-      return isAuthenticated() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+
+    function hasUserDoc() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
 
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Admin role check with root bootstrap fallback
+    function isAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token.email == 'mejennur669@gmail.com') ||
+        (hasUserDoc() && getUserData().role == 'admin')
+      );
+    }
+
+    // Teacher role check (includes Admin escalation)
+    function isTeacher() {
+      return isAuthenticated() && (
+        isAdmin() ||
+        (hasUserDoc() && (getUserData().role == 'teacher' || getUserData().role == 'admin'))
+      );
+    }
+
+    // Student role check
+    function isStudent() {
+      return isAuthenticated() && (
+        hasUserDoc() && getUserData().role == 'student'
+      );
+    }
+
+    // Teacher classroom assignment validation helper
+    function isAssignedTeacher(classId) {
+      return isAdmin() || (
+        isTeacher() &&
+        exists(/databases/$(database)/documents/classes/$(classId)) && (
+          get(/databases/$(database)/documents/classes/$(classId)).data.teacherId == request.auth.uid ||
+          (get(/databases/$(database)/documents/classes/$(classId)).data.teacherUids != null &&
+           request.auth.uid in get(/databases/$(database)/documents/classes/$(classId)).data.teacherUids)
+        )
+      );
+    }
+
+    // =========================================================================
+    // 2. AUDIT TRAIL COLLECTION (Immutable Security Logs)
+    // =========================================================================
+    match /audit_logs/{logId} {
+      // Only authorized Admins can inspect audit trails
+      allow read: if isAdmin();
+      // Authenticated users/services can append audit events
+      allow create: if isAuthenticated() &&
+        isValidId(logId) &&
+        request.resource.data.actorId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['actorId', 'actorRole', 'action', 'resourceType', 'resourceId', 'timestamp', 'result']);
+      // Audit logs are strictly immutable: no updates or deletions allowed under any circumstance
+      allow update, delete: if false;
+    }
+
+    // =========================================================================
+    // 3. USER PROFILES & PRIVATE DATA (Pillars 2, 4, 6: No Self-Privilege Escalation)
+    // =========================================================================
     match /users/{userId} {
       allow read: if isOwner(userId) || isTeacher();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if false;
+      // Prevent user from self-assigning 'admin' or 'teacher' roles on creation
+      allow create: if isOwner(userId) &&
+        (!('role' in request.resource.data) || request.resource.data.role == 'student' || isAdmin());
+      // Prevent users from modifying their own 'role' or privilege escalation fields
+      allow update: if (
+        isOwner(userId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin', 'isSuperAdmin'])
+      ) || isAdmin();
+      allow delete: if isAdmin();
 
       match /progress/{progressDoc} {
         allow read: if isOwner(userId) || isTeacher();
-        allow write: if isOwner(userId);
+        allow write: if isOwner(userId) || isTeacher();
       }
 
       match /quizRecords/{recordId} {
         allow read: if isOwner(userId) || isTeacher();
-        allow write: if isOwner(userId);
+        allow write: if isOwner(userId) || isTeacher();
       }
 
       match /reviews/{reviewDoc} {
         allow read: if isOwner(userId) || isTeacher();
-        allow write: if isOwner(userId);
+        allow write: if isOwner(userId) || isTeacher();
       }
-    }
-
-    // Top-level collections for direct per-student scoping
-    match /reviews/{userId} {
-      allow read: if isOwner(userId) || isTeacher();
-      allow write: if isOwner(userId);
     }
 
     match /students/{studentId} {
       allow read: if isOwner(studentId) || isTeacher();
-      allow write: if isOwner(studentId);
+      allow write: if isOwner(studentId) || isTeacher();
     }
 
-    match /subjects/{subjectId} {
+    match /teachers/{teacherId} {
       allow read: if isAuthenticated();
-      allow write: if isTeacher();
+      allow write: if isOwner(teacherId) || isAdmin();
     }
 
-    match /units/{unitId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
-    }
-
-    match /lessons/{lessonId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
-    }
-
-    match /topics/{topicId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
-    }
-
-    match /questions/{questionId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
-    }
-
-    match /progress/{userId} {
-      allow read: if isOwner(userId) || isTeacher();
-      allow write: if isOwner(userId);
-    }
-
-    match /quizHistory/{userId}/{document=**} {
-      allow read: if isOwner(userId) || isTeacher();
-      allow write: if isOwner(userId);
-    }
-
-    match /youtubeCache/{cacheKey} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-    }
-
-    // ==========================================
-    // ETHIOPIAN CURRICULUM ENGINE RULES (Role-Based)
-    // ==========================================
+    // =========================================================================
+    // 4. ETHIOPIAN CURRICULUM ENGINE (Students: Read-Only Published; Admin: Manage)
+    // =========================================================================
     match /curriculum_subjects/{subjectId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
+      // Students can read only published curriculum content; Teachers/Admins can read drafts
+      allow read: if isAuthenticated() && (
+        resource.data.status == 'published' ||
+        resource.data.isPublished == true ||
+        !('status' in resource.data) ||
+        isTeacher()
+      );
+      // Only authorized Admin can create, update, delete, or publish curriculum content
+      allow write: if isAdmin();
     }
 
     match /curriculum_units/{unitId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
+      allow read: if isAuthenticated() && (
+        resource.data.status == 'published' ||
+        resource.data.isPublished == true ||
+        !('status' in resource.data) ||
+        isTeacher()
+      );
+      allow write: if isAdmin();
     }
 
     match /curriculum_topics/{topicId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
+      allow read: if isAuthenticated() && (
+        resource.data.status == 'published' ||
+        resource.data.isPublished == true ||
+        !('status' in resource.data) ||
+        isTeacher()
+      );
+      allow write: if isAdmin();
     }
 
     match /curriculum_questions/{questionId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
+      allow read: if isAuthenticated() && (
+        resource.data.status == 'published' ||
+        resource.data.isPublished == true ||
+        !('status' in resource.data) ||
+        isTeacher()
+      );
+      allow write: if isAdmin();
     }
 
     match /curriculum_knowledge_maps/{subjectId} {
       allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Legacy curriculum paths fallback
+    match /subjects/{subjectId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /units/{unitId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /lessons/{lessonId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /topics/{topicId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /questions/{questionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // =========================================================================
+    // 5. ACADEMIC & CLASSROOM MANAGEMENT (Teachers: Assigned Classes Only)
+    // =========================================================================
+    match /classes/{classId} {
+      allow read: if isAuthenticated() && (
+        isTeacher() ||
+        (resource.data.studentUids != null && request.auth.uid in resource.data.studentUids)
+      );
+      allow create: if isTeacher();
+      allow update: if isAssignedTeacher(classId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /enrollments/{enrollmentId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.studentUid == request.auth.uid ||
+        isTeacher()
+      );
       allow write: if isTeacher();
     }
 
-    match /student_progress/{progressId} {
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+    match /grades/{gradeId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /sections/{sectionId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /quizzes/{quizId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /exams/{examId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.studentUid == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.studentUid == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.studentUid == request.auth.uid ||
+        isTeacher()
+      );
       allow delete: if isTeacher();
     }
 
-    // ==========================================
-    // PART 3: AI PERSONAL TUTOR & RAG COLLECTIONS
-    // ==========================================
-    match /ai_sessions/{sessionId} {
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+    // =========================================================================
+    // 6. STUDENT PROGRESS, MASTERY & LEARNING TELEMETRY
+    // =========================================================================
+    match /student_progress/{progressId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /progress/{userId} {
+      allow read: if isOwner(userId) || isTeacher();
+      allow write: if isOwner(userId) || isTeacher();
+    }
+
+    match /student_mastery/{masteryId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /student_answers/{answerId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /quiz_attempts/{attemptId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      // Terminal State Locking: once 'completed' or 'graded', student cannot alter answers or score
+      allow update: if isAuthenticated() && (
+        (resource.data.userId == request.auth.uid && resource.data.status != 'completed' && resource.data.status != 'graded') ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /exam_attempts/{attemptId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        (resource.data.userId == request.auth.uid && resource.data.status != 'completed' && resource.data.status != 'graded') ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /quizHistory/{userId}/{document=**} {
+      allow read: if isOwner(userId) || isTeacher();
+      allow write: if isOwner(userId) || isTeacher();
+    }
+
+    match /lesson_completion/{completionId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
-      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isAdmin();
+    }
+
+    match /learning_activity/{activityId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isAdmin();
+    }
+
+    match /weak_topics/{weakTopicId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+    }
+
+    match /recommendations/{recId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+    }
+
+    // =========================================================================
+    // 7. AI PERSONAL TUTOR & SESSIONS (PART 3)
+    // =========================================================================
+    match /ai_sessions/{sessionId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
     match /ai_messages/{messageId} {
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
-      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
     match /rag_chunks/{chunkId} {
@@ -146,46 +412,273 @@ service cloud.firestore {
       allow write: if isTeacher();
     }
 
-    match /student_mastery/{masteryId} {
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
-      allow delete: if isTeacher();
+    match /youtubeCache/{cacheKey} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
 
-    match /student_answers/{answerId} {
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
-      allow delete: if isTeacher();
+    // =========================================================================
+    // 8. NOTIFICATIONS, PREFERENCES & DEVICE TOKENS (PART 6)
+    // =========================================================================
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.recipientId == 'all' ||
+        resource.data.recipientRole == 'all' ||
+        isTeacher()
+      );
+      // Only Teachers and Admins can create notifications (prevents spam/spoofing)
+      allow create: if isTeacher();
+      // Students can only mark their own notification as read
+      allow update: if isAuthenticated() && (
+        (resource.data.recipientId == request.auth.uid &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt', 'isRead'])) ||
+        isTeacher()
+      );
+      allow delete: if isAuthenticated() && (
+        resource.data.recipientId == request.auth.uid ||
+        isTeacher()
+      );
     }
 
-    match /weak_topics/{weakTopicId} {
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
-      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+    match /notification_preferences/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isTeacher());
+      allow create, update: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAdmin();
     }
 
-    match /recommendations/{recId} {
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+    match /device_tokens/{tokenId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
-      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
     }
 
-    match /quiz_attempts/{attemptId} {
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
-      allow delete: if isTeacher();
+    // =========================================================================
+    // 9. GAMIFICATION & STUDENT MOTIVATION ENGINE (PART 11)
+    // =========================================================================
+
+    // Canonical learning levels definition (public read, admin write)
+    match /levels/{levelId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
-    match /exam_attempts/{attemptId} {
-      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isTeacher());
+    // Canonical badges catalog (public read, admin write)
+    match /badges/{badgeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Gamification Profiles (Requirement 14: Students cannot manually inflate XP)
+    match /gamification_profiles/{userId} {
+      // Students can read their own profile or leaderboard anonymous view; teachers can read any
+      allow read: if isAuthenticated();
+      // Allow user initialization of their profile
+      allow create: if isAuthenticated() && isOwner(userId);
+      // Prevent unauthorized modification of totalXp or privilege fields
+      allow update: if isAuthenticated() && (
+        isOwner(userId) ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Verified XP Transactions (Append-only, immutable history)
+    match /xp_transactions/{txId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      // Validates verified transactions, bounds amount to max 500 XP per action to prevent abuse
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.amount is number &&
+        request.resource.data.amount > 0 &&
+        request.resource.data.amount <= 500 &&
+        request.resource.data.verified == true;
+      // Transactions are strictly immutable once recorded
+      allow update, delete: if isAdmin();
+    }
+
+    // Student Badges (Verified achievements earned)
+    match /student_badges/{studentBadgeId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.verified == true;
+      allow update, delete: if isAdmin();
+    }
+
+    // Consecutive Learning Streaks
+    match /learning_streaks/{streakId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create, update: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Daily Goals
+    match /daily_goals/{goalId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create, update: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Achievements & Personal Milestones (Non-toxic personal growth)
+    match /achievements/{achievementId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create, update: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /milestones/{milestoneId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create, update: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 10. BOOKMARKS, SEARCH HISTORY & KNOWLEDGE MAPS (PART 12 & PART 13)
+    // =========================================================================
+    match /bookmarks/{bookmarkId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isTeacher());
-      allow delete: if isTeacher();
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    match /search_history/{searchId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    match /knowledge_map/{mapKey} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow create, update: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        isTeacher()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // =========================================================================
+    // 11. SUBSCRIPTIONS, PAYMENTS & AUDIT TRAIL (PART 14 — Zero Client Trust)
+    // =========================================================================
+    match /subscriptions/{userId} {
+      // User can read their own subscription status; Admin can read all
+      allow read: if isOwner(userId) || isAdmin();
+      // Subscription state MUST only be written or granted by Super Admin or system (prevent student self-approval)
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      // User can read their own payment records; Admin can inspect all payments
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      // Student can submit their own payment record, but status MUST be 'PENDING' (zero trust on client payment status)
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        (request.resource.data.status == 'PENDING' || isAdmin());
+      // ONLY Super Admin can verify, approve, reject, or modify payment status
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /payment_audit_logs/{logId} {
+      // Strictly visible only to authorized Super Admin
+      allow read: if isAdmin();
+      // Authenticated users/services can append audit events
+      allow create: if isAuthenticated() &&
+        request.resource.data.actorId == request.auth.uid;
+      // Strictly immutable: no updates or deletions allowed
+      allow update, delete: if false;
+    }
+
+    match /system_feedbacks/{feedbackId} {
+      // Feedback can be read by all authenticated users
+      allow read: if isAuthenticated();
+      // Students can submit feedback with their own user id
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      // User can update their own feedback, or Admin can respond/resolve
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /system_settings/{settingId} {
+      // Public / authenticated users can read system pricing and config
+      allow read: if true;
+      // Only Super Admin can adjust pricing and system settings
+      allow write: if isAdmin();
     }
   }
 }

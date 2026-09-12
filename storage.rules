@@ -1,0 +1,67 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Default deny all unknown paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Role check via token claims or default fallback
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == 'mejennur669@gmail.com';
+    }
+
+    // 1. User Profile Images: Max 5MB, must be image/* mime type
+    match /users/{userId}/profile/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) &&
+        request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+    }
+
+    // 2. Curriculum Files (Textbooks, Diagrams, Laboratory Media): Admin write only
+    match /curriculum/{grade}/{subject}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() &&
+        request.resource.size < 50 * 1024 * 1024 &&
+        (request.resource.contentType.matches('application/pdf') ||
+         request.resource.contentType.matches('application/epub\\+zip') ||
+         request.resource.contentType.matches('image/.*') ||
+         request.resource.contentType.matches('application/json'));
+    }
+
+    // 3. Question Diagrams & Laboratory Figures: Teachers and Admin can upload
+    match /question_images/{questionId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() &&
+        request.resource.size < 10 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+    }
+
+    // 4. Class Assignments & Reference Materials: Teachers upload, enrolled students read
+    match /assignments/{classId}/{assignmentId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() &&
+        request.resource.size < 25 * 1024 * 1024;
+    }
+
+    // 5. Student Assignment Submissions: Each student can only write to their own folder
+    match /submissions/{classId}/{assignmentId}/{studentId}/{fileName} {
+      allow read: if isAuthenticated() && (request.auth.uid == studentId || isAdmin());
+      allow write: if isOwner(studentId) &&
+        request.resource.size < 20 * 1024 * 1024 &&
+        (request.resource.contentType.matches('application/pdf') ||
+         request.resource.contentType.matches('image/.*') ||
+         request.resource.contentType.matches('text/.*'));
+    }
+  }
+}

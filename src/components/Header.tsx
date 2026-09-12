@@ -16,10 +16,16 @@ import {
   CloudCheck,
   ShieldCheck,
   Cloud,
+  CreditCard,
+  MessageSquare,
+  Clock,
+  AlertTriangle,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useProgress } from '../context/ProgressContext';
 import { useAuth } from '../context/AuthContext';
+import { useSubscription } from '../context/SubscriptionContext';
+import { NotificationBell } from './notifications/NotificationBell';
 
 interface HeaderProps {
   selectedGrade: Grade;
@@ -30,6 +36,8 @@ interface HeaderProps {
   onOpenAllTextbooks?: () => void;
   onOpenNewCurriculum?: () => void;
   onOpenTeacherDashboard?: () => void;
+  onOpenSubscription?: () => void;
+  onOpenFeedback?: () => void;
 }
 
 const grades: Grade[] = [9, 10, 11, 12];
@@ -43,10 +51,13 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAllTextbooks,
   onOpenNewCurriculum,
   onOpenTeacherDashboard,
+  onOpenSubscription,
+  onOpenFeedback,
 }) => {
   const { language, setLanguage, t, languages } = useLanguage();
   const { getOverallProgress, isSyncing, isCloudSynced } = useProgress();
   const { user, userProfile, logout, openAuthModal } = useAuth();
+  const { accessStatus, remainingDays, isOwnerSuperAdmin } = useSubscription();
 
   const overall = getOverallProgress(subjects);
 
@@ -176,7 +187,9 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Role and User Badge */}
                 <div className="flex items-center gap-1.5 bg-[#EAE2CE] border border-[#38332D]/40 px-2 py-0.5 rounded">
                   <span className="text-xs font-bold font-serif-ethiopic text-[#1E1B18] flex items-center gap-1">
-                    {userProfile?.role === 'teacher' ? (
+                    {isOwnerSuperAdmin ? (
+                      <span className="text-amber-800 font-black">👑 SUPER_ADMIN</span>
+                    ) : userProfile?.role === 'teacher' ? (
                       <span className="text-[#1D4ED8] font-bold">👨‍🏫 መምህር</span>
                     ) : (
                       <span className="text-emerald-700 font-bold">🎓 ተማሪ</span>
@@ -186,6 +199,49 @@ export const Header: React.FC<HeaderProps> = ({
                     </span>
                   </span>
                 </div>
+
+                {/* Subscription Status Pill */}
+                {onOpenSubscription && (
+                  <button
+                    onClick={onOpenSubscription}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded border transition-all cursor-pointer ${
+                      accessStatus === 'ACTIVE'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200'
+                        : accessStatus === 'PENDING'
+                        ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200 animate-pulse'
+                        : accessStatus === 'SUPER_ADMIN'
+                        ? 'bg-amber-100 text-amber-900 border-amber-400 font-black'
+                        : accessStatus === 'EXPIRED'
+                        ? 'bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200'
+                        : 'bg-stone-200 text-stone-800 border-stone-300 hover:bg-stone-300'
+                    }`}
+                    title="የሳብስክሪፕሽንና ክፍያ ዝርዝር"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span className="font-serif-ethiopic hidden sm:inline">
+                      {accessStatus === 'ACTIVE'
+                        ? `ክፍያ የጸደቀ (${remainingDays}ቀን)`
+                        : accessStatus === 'PENDING'
+                        ? 'በማረጋገጥ ላይ'
+                        : accessStatus === 'SUPER_ADMIN'
+                        ? 'ባለቤት'
+                        : accessStatus === 'EXPIRED'
+                        ? 'ጊዜው ያለፈ'
+                        : 'ክፍያ / Sub'}
+                    </span>
+                  </button>
+                )}
+
+                {/* Feedback Button */}
+                {onOpenFeedback && (
+                  <button
+                    onClick={onOpenFeedback}
+                    className="p-1 text-[#665C4D] hover:text-[#1E1B18] hover:bg-[#E5DCB9] rounded transition-colors cursor-pointer"
+                    title="ስለ ሲስተሙ አስተያዬት ስጥ (System Feedback)"
+                  >
+                    <MessageSquare className="w-4 h-4 text-cyan-800" />
+                  </button>
+                )}
 
                 {/* If Teacher, prominent button in top bar */}
                 {userProfile?.role === 'teacher' && onOpenTeacherDashboard && (
@@ -212,6 +268,11 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
             )}
+
+            {/* Notification Bell with Badge & Drawer */}
+            <div className="pl-1 sm:pl-2 sm:border-l border-[#38332D]/30">
+              <NotificationBell />
+            </div>
           </div>
         </div>
       </div>

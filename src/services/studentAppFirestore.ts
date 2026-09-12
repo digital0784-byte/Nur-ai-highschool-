@@ -21,6 +21,7 @@ import {
 } from '../types/studentApp';
 import { GradeLevel, DifficultyLevel } from '../types/curriculumEngine';
 import { ethiopianCurriculumEngine } from '../engine/curriculumRegistry';
+import { offlineSyncEngine } from './offlineSyncEngine';
 
 class StudentAppFirestoreService {
   private isOnline: boolean = typeof navigator !== 'undefined' ? navigator.onLine : true;
@@ -507,6 +508,9 @@ class StudentAppFirestoreService {
         }
       }
       localStorage.removeItem(this.syncQueueKey);
+
+      // Also trigger full offlineSyncEngine
+      await offlineSyncEngine.syncPendingTasks();
     } catch (e) {
       console.warn('Error processing offline queue:', e);
     }

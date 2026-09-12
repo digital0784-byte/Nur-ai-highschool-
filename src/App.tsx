@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Grade, ActiveTab, Topic, SubjectStream } from './types';
 import { getCurriculum } from './data/curriculumData';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProgressProvider, useProgress } from './context/ProgressContext';
+import { NotificationProvider, useNotifications } from './context/NotificationContext';
+import { NotificationToast } from './components/notifications/NotificationToast';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { TopicChips } from './components/TopicChips';
@@ -26,12 +28,33 @@ import { StudentLearningReviewView } from './components/StudentLearningReviewVie
 import { EthiopianCurriculumEngineView } from './components/EthiopianCurriculumEngineView';
 import { EthiopianAITutorView } from './components/EthiopianAITutorView';
 import { StudentAppScaffold } from './components/student/StudentAppScaffold';
+import { AdminDashboardView } from './components/admin/AdminDashboardView';
+import { AdminSecurityDashboard } from './components/admin/AdminSecurityDashboard';
+import { AIQuizExamEngineView } from './components/assessment/AIQuizExamEngineView';
+import { GamificationDashboardView } from './components/gamification/GamificationDashboardView';
+import { SmartSearchMainView } from './components/search/SmartSearchMainView';
+import { PhotoQuestionSolverView } from './components/photoVoice/PhotoQuestionSolverView';
+import { FullSystemIntegrationView } from './components/admin/FullSystemIntegrationView';
 import { AuthGate } from './components/AuthGate';
+
+import { OfflineSyncProvider } from './context/OfflineSyncContext';
+import { GamificationProvider } from './context/GamificationContext';
+import { SubscriptionProvider, useSubscription } from './context/SubscriptionContext';
+import { SubscriptionPaymentView } from './components/subscription/SubscriptionPaymentView';
+import { SubscriptionPaywallGate } from './components/subscription/SubscriptionPaywallGate';
+import { SystemFeedbackModal } from './components/feedback/SystemFeedbackModal';
+import { SystemFeedbackView } from './components/feedback/SystemFeedbackView';
+import { CareerExplorationView } from './components/career/CareerExplorationView';
+import { EntranceExamPrepView } from './components/entrance/EntranceExamPrepView';
+import { useGamification } from './context/GamificationContext';
 
 function TutorialAppContent() {
   const { language, t } = useLanguage();
-  const { getOverallProgress } = useProgress();
+  const { getOverallProgress, progressMap, studentReview } = useProgress();
   const { userProfile } = useAuth();
+  const { isOwnerSuperAdmin, hasLearningAccess, loading: subscriptionLoading } = useSubscription();
+  const { awardQuizXP, updateStreak } = useGamification();
+  const { addNotification } = useNotifications();
 
   // Application State
   const [selectedGrade, setSelectedGrade] = useState<Grade>(9);
@@ -39,12 +62,47 @@ function TutorialAppContent() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('student_app');
   const [selectedStream, setSelectedStream] = useState<SubjectStream | 'all'>('all');
 
+  // PART 15 — Super Admin & Student Routing Enforcement:
+  // IF authenticated user is SUPER_ADMIN: open Admin Dashboard.
+  // IF authenticated user is STUDENT:
+  //   IF active subscription: open Student Dashboard.
+  //   ELSE: open Subscription/Payment screen.
+  // Never expose admin routes to students.
+  useEffect(() => {
+    if (subscriptionLoading) return;
+
+    if (isOwnerSuperAdmin) {
+      setActiveTab((prev) =>
+        prev === 'student_app' || prev === 'subscription_payment' ? 'admin_dashboard' : prev
+      );
+    } else {
+      setActiveTab((prev) => {
+        if (prev === 'admin_dashboard' || prev === 'security_fortress') {
+          return hasLearningAccess ? 'student_app' : 'subscription_payment';
+        }
+        if (prev === 'student_app' && !hasLearningAccess) {
+          return 'subscription_payment';
+        }
+        return prev;
+      });
+    }
+  }, [userProfile?.uid, isOwnerSuperAdmin, hasLearningAccess, subscriptionLoading]);
+
+  const handleTabChange = (newTab: ActiveTab) => {
+    if (newTab === 'admin_dashboard' && !isOwnerSuperAdmin) {
+      setActiveTab(hasLearningAccess ? 'student_app' : 'subscription_payment');
+      return;
+    }
+    setActiveTab(newTab);
+  };
+
   // Modals state
   const [isChecklistOpen, setIsChecklistOpen] = useState<boolean>(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState<boolean>(false);
   const [isAllTextbooksOpen, setIsAllTextbooksOpen] = useState<boolean>(false);
   const [isNewCurriculumOpen, setIsNewCurriculumOpen] = useState<boolean>(false);
   const [isTeacherDashboardOpen, setIsTeacherDashboardOpen] = useState<boolean>(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
 
   // AI Tutor / Deep-Dive Modal State
   const [aiTutorState, setAiTutorState] = useState<{
@@ -145,6 +203,8 @@ function TutorialAppContent() {
           onOpenAllTextbooks={() => setIsAllTextbooksOpen(true)}
           onOpenNewCurriculum={() => setActiveTab('curriculum_engine')}
           onOpenTeacherDashboard={() => setIsTeacherDashboardOpen(true)}
+          onOpenSubscription={() => setActiveTab('subscription_payment')}
+          onOpenFeedback={() => setIsFeedbackModalOpen(true)}
         />
 
         {/* Workspace: Sidebar + Content */}
@@ -174,12 +234,169 @@ function TutorialAppContent() {
             {/* Tabs Header: Lesson | Textbook | Objectives Exam | Video | Supplementary | Flashcards | Quiz */}
             <TabBar
               activeTab={activeTab}
-              onChangeTab={setActiveTab}
+              onChangeTab={handleTabChange}
               subject={currentSubject}
             />
 
             {/* Tab Contents */}
             <div className="flex-1 overflow-y-auto bg-[#FAF6EC]">
+              {activeTab === 'entrance_prep' && (
+                <SubscriptionPaywallGate
+                  featureTitle="የዩኒቨርሲቲ መግቢያ ፈተና ዝግጅት ሞተር (University Entrance Exam Prep Engine)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <div className="p-2 sm:p-4 lg:p-6">
+                    <EntranceExamPrepView
+                      userId={userProfile?.uid || 'guest-student'}
+                      userRole={userProfile?.role === 'admin' || isOwnerSuperAdmin ? 'SUPER_ADMIN' : 'STUDENT'}
+                      onAwardXP={(amount, reason) => {
+                        awardQuizXP('entrance-prep-session', Math.min(amount, 100), 100);
+                        addNotification({
+                          title: 'የፈተና ነጥብ ተጨምሯል (+XP)',
+                          message: `${reason}: +${amount} XP ተቀዳጅተዋል!`,
+                          type: 'achievement',
+                        });
+                      }}
+                      onIncrementStreak={() => {
+                        updateStreak();
+                        addNotification({
+                          title: 'የጥናት ጽናት ቀጥሏል (Streak +1)',
+                          message: 'የዕለቱ የመግቢያ ፈተና ልምምድዎን አጠናቀዋል!',
+                          type: 'streak',
+                        });
+                      }}
+                    />
+                  </div>
+                </SubscriptionPaywallGate>
+              )}
+
+              {activeTab === 'subscription_payment' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  <SubscriptionPaymentView
+                    initialGrade={selectedGrade}
+                    onPaymentSuccess={() => setActiveTab('lesson')}
+                    onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'system_feedback' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  <SystemFeedbackView />
+                </div>
+              )}
+
+              {activeTab === 'career_pathways' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  <CareerExplorationView
+                    userId={userProfile?.uid || 'student_demo'}
+                    studentGrade={selectedGrade}
+                    language={language as any}
+                    progressMap={progressMap}
+                    onNavigateToTopic={(subjectId, topicId) => {
+                      handleSelectSubject(subjectId);
+                      setSelectedTopicId(topicId);
+                      setActiveTab('lesson');
+                    }}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'system_integration' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  <FullSystemIntegrationView />
+                </div>
+              )}
+
+              {activeTab === 'smart_search' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  <SmartSearchMainView
+                    userId={userProfile?.uid || 'student_demo'}
+                    studentGrade={selectedGrade}
+                    progressMap={progressMap}
+                    weakTopics={studentReview?.weakAreas || []}
+                    onSelectTopic={(subjectId, topicId) => {
+                      handleSelectSubject(subjectId);
+                      setSelectedTopicId(topicId);
+                      setActiveTab('lesson');
+                    }}
+                    onOpenAITutor={(prompt, subjectId) => {
+                      if (subjectId) handleSelectSubject(subjectId);
+                      handleOpenAITutor(prompt || 'Curriculum Concept Explanation', 'chat');
+                    }}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'gamification' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  <GamificationDashboardView />
+                </div>
+              )}
+
+              {activeTab === 'photo_voice_tutor' && (
+                <SubscriptionPaywallGate
+                  featureTitle="ፎቶ ጥያቄ ፈቺና ድምፅ (Photo Solver & Voice AI)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <div className="p-2 sm:p-4 lg:p-6">
+                    <PhotoQuestionSolverView />
+                  </div>
+                </SubscriptionPaywallGate>
+              )}
+
+              {activeTab === 'assessment_engine' && (
+                <SubscriptionPaywallGate
+                  featureTitle="የፈተናና ምዘና ሞተር (Assessment Engine)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <div className="p-2 sm:p-4 lg:p-6">
+                    <AIQuizExamEngineView />
+                  </div>
+                </SubscriptionPaywallGate>
+              )}
+
+              {activeTab === 'security_fortress' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  {isOwnerSuperAdmin ? (
+                    <AdminSecurityDashboard />
+                  ) : (
+                    <div className="bg-white p-8 rounded-2xl border border-rose-300 text-center space-y-3 max-w-md mx-auto my-12 shadow-sm">
+                      <h3 className="text-base font-bold text-stone-900 font-serif-ethiopic">የተከለከለ ክልል (Access Denied)</h3>
+                      <p className="text-xs text-stone-600">ይህ ክፍል ለዋናው አስተዳዳሪ (SUPER_ADMIN) ብቻ የተፈቀደ ነው።</p>
+                      <button
+                        onClick={() => setActiveTab(hasLearningAccess ? 'student_app' : 'subscription_payment')}
+                        className="px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-bold cursor-pointer"
+                      >
+                        ወደ ተማሪዎች ገጽ ተመለስ
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'admin_dashboard' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  {isOwnerSuperAdmin ? (
+                    <AdminDashboardView />
+                  ) : (
+                    <div className="bg-white p-8 rounded-2xl border border-rose-300 text-center space-y-3 max-w-md mx-auto my-12 shadow-sm">
+                      <h3 className="text-base font-bold text-stone-900 font-serif-ethiopic">የተከለከለ ክልል (Access Denied)</h3>
+                      <p className="text-xs text-stone-600">ይህ ክፍል ለዋናው አስተዳዳሪ (SUPER_ADMIN) ብቻ የተፈቀደ ነው።</p>
+                      <button
+                        onClick={() => setActiveTab(hasLearningAccess ? 'student_app' : 'subscription_payment')}
+                        className="px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-bold cursor-pointer"
+                      >
+                        ወደ ተማሪዎች ገጽ ተመለስ
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {activeTab === 'student_app' && (
                 <StudentAppScaffold
                   initialGrade={selectedGrade}
@@ -188,10 +405,16 @@ function TutorialAppContent() {
               )}
 
               {activeTab === 'ai_tutor' && (
-                <EthiopianAITutorView
-                  currentSubject={currentSubject}
-                  initialGrade={selectedGrade}
-                />
+                <SubscriptionPaywallGate
+                  featureTitle="ኑር AI የግል አስተማሪ (AI Tutor & RAG)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <EthiopianAITutorView
+                    currentSubject={currentSubject}
+                    initialGrade={selectedGrade}
+                  />
+                </SubscriptionPaywallGate>
               )}
 
               {activeTab === 'curriculum_engine' && (
@@ -205,45 +428,69 @@ function TutorialAppContent() {
               )}
 
               {activeTab === 'lesson' && (
-                <LessonView
-                  topic={currentTopic}
-                  subject={currentSubject}
-                  onChangeTab={setActiveTab}
-                  onOpenAITutor={handleOpenAITutor}
-                />
+                <SubscriptionPaywallGate
+                  featureTitle="የትምህርት ክፍለ-ጊዜ (Lessons & Explanations)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <LessonView
+                    topic={currentTopic}
+                    subject={currentSubject}
+                    onChangeTab={setActiveTab}
+                    onOpenAITutor={handleOpenAITutor}
+                  />
+                </SubscriptionPaywallGate>
               )}
 
               {activeTab === 'textbook' && (
-                <TextbookView
-                  subject={currentSubject}
-                  selectedGrade={selectedGrade}
-                  onSelectGrade={handleSelectGrade}
-                  onOpenAllTextbooksModal={() => setIsAllTextbooksOpen(true)}
-                  onOpenAITutor={handleOpenAITutor}
-                  onTakeObjectivesExam={() => setActiveTab('objectives_exam')}
-                  onExit={() => setActiveTab('lesson')}
-                />
+                <SubscriptionPaywallGate
+                  featureTitle="የተማሪው መጽሐፍ (Textbook Content)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <TextbookView
+                    subject={currentSubject}
+                    selectedGrade={selectedGrade}
+                    onSelectGrade={handleSelectGrade}
+                    onOpenAllTextbooksModal={() => setIsAllTextbooksOpen(true)}
+                    onOpenAITutor={handleOpenAITutor}
+                    onTakeObjectivesExam={() => setActiveTab('objectives_exam')}
+                    onExit={() => setActiveTab('lesson')}
+                  />
+                </SubscriptionPaywallGate>
               )}
 
               {activeTab === 'objectives_exam' && (
-                <div className="p-4 sm:p-6 lg:p-8">
-                  <ObjectivesExamView
-                    subject={currentSubject}
-                    grade={selectedGrade}
-                    onOpenAITutor={handleOpenAITutor}
-                  />
-                </div>
+                <SubscriptionPaywallGate
+                  featureTitle="የቻፕተር ፈተና (Objectives Exam)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <div className="p-4 sm:p-6 lg:p-8">
+                    <ObjectivesExamView
+                      subject={currentSubject}
+                      grade={selectedGrade}
+                      onOpenAITutor={handleOpenAITutor}
+                    />
+                  </div>
+                </SubscriptionPaywallGate>
               )}
 
               {activeTab === 'video_learning' && (
-                <div className="p-4 sm:p-6 lg:p-8">
-                  <VideoLearningView
-                    subject={currentSubject}
-                    grade={selectedGrade}
-                    onOpenAITutor={handleOpenAITutor}
-                    onExit={() => setActiveTab('lesson')}
-                  />
-                </div>
+                <SubscriptionPaywallGate
+                  featureTitle="ምስላዊ ትምህርት (Visual Learning)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <div className="p-4 sm:p-6 lg:p-8">
+                    <VideoLearningView
+                      subject={currentSubject}
+                      grade={selectedGrade}
+                      onOpenAITutor={handleOpenAITutor}
+                      onExit={() => setActiveTab('lesson')}
+                    />
+                  </div>
+                </SubscriptionPaywallGate>
               )}
 
               {activeTab === 'student_review' && (
@@ -260,28 +507,46 @@ function TutorialAppContent() {
               )}
 
               {activeTab === 'supplementary' && (
-                <div className="p-4 sm:p-6 lg:p-8">
-                  <SupplementaryBooksView
-                    subject={currentSubject}
-                    grade={selectedGrade}
-                    onOpenAITutor={handleOpenAITutor}
-                    onExit={() => setActiveTab('lesson')}
-                  />
-                </div>
+                <SubscriptionPaywallGate
+                  featureTitle="አጋዥ መጽሐፍት (Supplementary Books)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <div className="p-4 sm:p-6 lg:p-8">
+                    <SupplementaryBooksView
+                      subject={currentSubject}
+                      grade={selectedGrade}
+                      onOpenAITutor={handleOpenAITutor}
+                      onExit={() => setActiveTab('lesson')}
+                    />
+                  </div>
+                </SubscriptionPaywallGate>
               )}
 
               {activeTab === 'flashcards' && (
-                <FlashcardView
-                  topic={currentTopic}
-                  subject={currentSubject}
-                />
+                <SubscriptionPaywallGate
+                  featureTitle="የቃላትና ፅንሰ-ሃሳብ ፍላሽካርዶች (Flashcards)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <FlashcardView
+                    topic={currentTopic}
+                    subject={currentSubject}
+                  />
+                </SubscriptionPaywallGate>
               )}
 
               {activeTab === 'quiz' && (
-                <QuizView
-                  topic={currentTopic}
-                  subject={currentSubject}
-                />
+                <SubscriptionPaywallGate
+                  featureTitle="የዕውቀት መፈተሻ ጥያቄዎች (Quizzes)"
+                  onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                  onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+                >
+                  <QuizView
+                    topic={currentTopic}
+                    subject={currentSubject}
+                  />
+                </SubscriptionPaywallGate>
               )}
             </div>
           </main>
@@ -352,6 +617,12 @@ function TutorialAppContent() {
       {/* User Authentication Modal */}
       <AuthModal />
 
+      {/* User System Feedback Modal (Part 14) */}
+      <SystemFeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+      />
+
       {/* Teacher / Educator Students Analytics Dashboard */}
       {userProfile?.role === 'teacher' && (
         <TeacherDashboardModal
@@ -360,6 +631,9 @@ function TutorialAppContent() {
           teacherProfile={userProfile}
         />
       )}
+
+      {/* Real-time Notification In-App Toast */}
+      <NotificationToast />
     </div>
   );
 }
@@ -368,11 +642,19 @@ export default function App() {
   return (
     <LanguageProvider>
       <AuthProvider>
-        <ProgressProvider>
-          <AuthGate>
-            <TutorialAppContent />
-          </AuthGate>
-        </ProgressProvider>
+        <SubscriptionProvider>
+          <ProgressProvider>
+            <NotificationProvider>
+              <OfflineSyncProvider>
+                <GamificationProvider>
+                  <AuthGate>
+                    <TutorialAppContent />
+                  </AuthGate>
+                </GamificationProvider>
+              </OfflineSyncProvider>
+            </NotificationProvider>
+          </ProgressProvider>
+        </SubscriptionProvider>
       </AuthProvider>
     </LanguageProvider>
   );

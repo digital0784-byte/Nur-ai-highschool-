@@ -25,6 +25,7 @@ import {
 } from '../../types/curriculumEngine';
 import { LanguageCode } from '../../types';
 import { studentAppFirestore } from '../../services/studentAppFirestore';
+import { offlineSyncEngine } from '../../services/offlineSyncEngine';
 
 interface StudentSubjectScreenProps {
   subject: CurriculumSubjectItem;
@@ -92,6 +93,7 @@ export const StudentSubjectScreen: React.FC<StudentSubjectScreenProps> = ({
 
   const handleDownloadUnit = (unit: CurriculumUnit) => {
     studentAppFirestore.saveUnitOffline(unit, subject.id, grade);
+    offlineSyncEngine.downloadUnit(unit, subject, grade);
     setCachedStatus((prev) => ({ ...prev, [unit.id]: true }));
   };
 

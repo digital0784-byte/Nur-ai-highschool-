@@ -1,7 +1,29 @@
 import React from 'react';
 import { ActiveTab, Subject } from '../types';
-import { BookOpen, Layers, HelpCircle, Award, Video, Library, Bot, BrainCircuit, Sparkles, Smartphone } from 'lucide-react';
+import {
+  BookOpen,
+  Layers,
+  HelpCircle,
+  Award,
+  Video,
+  Library,
+  Bot,
+  BrainCircuit,
+  Sparkles,
+  Smartphone,
+  ShieldCheck,
+  Lock,
+  Camera,
+  Flame,
+  Search,
+  Server,
+  Compass,
+  CreditCard,
+  MessageSquare,
+  GraduationCap,
+} from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useSubscription } from '../context/SubscriptionContext';
 
 interface TabBarProps {
   activeTab: ActiveTab;
@@ -15,8 +37,20 @@ export const TabBar: React.FC<TabBarProps> = ({
   subject,
 }) => {
   const { t } = useLanguage();
+  const { isOwnerSuperAdmin } = useSubscription();
 
-  const tabs: { id: ActiveTab; label: string; icon: React.ReactNode; badge?: string }[] = [
+  const allTabs: { id: ActiveTab; label: string; icon: React.ReactNode; badge?: string; superAdminOnly?: boolean }[] = [
+    { id: 'entrance_prep', label: 'የዩኒቨርሲቲ መግቢያ ፈተና (Entrance Exam Prep Engine)', icon: <GraduationCap className="w-4 h-4 text-indigo-700" />, badge: 'PART 16' },
+    { id: 'subscription_payment', label: 'ክፍያና ሳብስክሪፕሽን (Subscription & Payment)', icon: <CreditCard className="w-4 h-4 text-emerald-700" />, badge: 'PART 14' },
+    { id: 'system_feedback', label: 'የተጠቃሚ አስተያዬት (System Feedback)', icon: <MessageSquare className="w-4 h-4 text-cyan-700" /> },
+    { id: 'career_pathways', label: 'የወደፊት ዓላማና ሙያ (Careers & Real-Life)', icon: <Compass className="w-4 h-4 text-emerald-700" />, badge: 'PART 14' },
+    { id: 'system_integration', label: 'የሥርዓት ውህደትና E2E ፈተና (System Integration & E2E)', icon: <Server className="w-4 h-4 text-emerald-800" />, badge: 'PART 13' },
+    { id: 'smart_search', label: 'ስማርት ፍለጋና ጥቆማ (Smart Search & Recommendations)', icon: <Search className="w-4 h-4 text-emerald-700" />, badge: 'PART 12' },
+    { id: 'gamification', label: 'የተማሪ ማበረታቻና ባጆች (Gamification & Motivation)', icon: <Flame className="w-4 h-4 text-orange-600 fill-orange-500" />, badge: 'PART 11' },
+    { id: 'photo_voice_tutor', label: 'ፎቶ ጥያቄ ፈቺና ድምፅ (Photo Solver & Voice)', icon: <Camera className="w-4 h-4 text-sky-600" />, badge: 'PART 10' },
+    { id: 'assessment_engine', label: 'የፈተናና ምዘና ሞተር (Assessment Engine)', icon: <Award className="w-4 h-4 text-amber-600" />, badge: 'PART 9' },
+    { id: 'security_fortress', label: 'ደህንነትና ፍቃዶች (Security & RBAC)', icon: <Lock className="w-4 h-4 text-emerald-800" />, badge: 'PART 8' },
+    { id: 'admin_dashboard', label: 'አስተዳደር ዳሽቦርድ (Admin Dashboard)', icon: <ShieldCheck className="w-4 h-4 text-emerald-700" />, badge: 'PART 15', superAdminOnly: true },
     { id: 'student_app', label: 'የተማሪ መተግበሪያ (Student App & Adaptive)', icon: <Smartphone className="w-4 h-4 text-purple-700" />, badge: 'PART 4' },
     { id: 'ai_tutor', label: 'ኑር AI የግል አስተማሪ (AI Tutor & RAG)', icon: <Sparkles className="w-4 h-4 text-amber-700" />, badge: 'PART 3' },
     { id: 'curriculum_engine', label: 'የስርዓተ-ትምህርት ኢንጅን (Curriculum Engine)', icon: <BrainCircuit className="w-4 h-4 text-indigo-700" />, badge: 'PART 2' },
@@ -29,6 +63,9 @@ export const TabBar: React.FC<TabBarProps> = ({
     { id: 'flashcards', label: t.tabFlashcards, icon: <Layers className="w-4 h-4" /> },
     { id: 'quiz', label: t.tabQuiz, icon: <HelpCircle className="w-4 h-4" /> },
   ];
+
+  // Filter out super-admin-only tabs for normal students
+  const tabs = allTabs.filter((tab) => !tab.superAdminOnly || isOwnerSuperAdmin);
 
   return (
     <div

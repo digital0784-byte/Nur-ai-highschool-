@@ -1,6 +1,9 @@
 {
   "name": "የክፍል 9-12 ቲቶሪያል",
-  "description": "ኑር AI - የኢትዮጵያ የሁለተኛ ደረጃ (9-12 ክፍል) ተማሪዎች መስተጋብራዊ የትምህርት፣ የላብራቶሪ ማስመሰያ፣ የፍላሽካርድ እና የፈተና መተግበሪያ",
-  "requestFramePermissions": [],
+  "description": "ኑር AI - የኢትዮጵያ የሁለተኛ ደረጃ (9-12 ክፍል) ተማሪዎች መስተጋብራዊ የትምህርት፣ የላብራቶሪ ማስመሰያ፣ የዩኒቨርሲቲ መግቢያ ፈተና ዝግጅት ሞተር፣ የፍላሽካርድ እና የፈተና መተግበሪያ",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

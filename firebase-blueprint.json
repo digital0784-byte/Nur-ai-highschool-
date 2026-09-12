@@ -10,7 +10,7 @@
         "uid": { "type": "string", "description": "Firebase Auth UID" },
         "email": { "type": "string", "description": "User email address" },
         "displayName": { "type": "string", "description": "Full name of the user" },
-        "role": { "type": "string", "enum": ["student", "teacher"], "description": "Role determining access permissions" },
+        "role": { "type": "string", "enum": ["student", "teacher", "admin", "parent"], "description": "Role determining access permissions" },
         "grade": { "type": "number", "description": "High school grade level (9, 10, 11, 12)" },
         "createdAt": { "type": "string", "description": "Account creation ISO timestamp" },
         "updatedAt": { "type": "string", "description": "Last update ISO timestamp" }
@@ -296,10 +296,226 @@
         "timestamp": { "type": "string" }
       },
       "required": ["id", "userId", "subjectId", "examTitle", "score", "maxScore", "percentage"]
+    },
+    "ClassGroup": {
+      "title": "ClassGroup",
+      "description": "High school class section with assigned teacher, grade, and enrolled students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "grade": { "type": "number" },
+        "section": { "type": "string" },
+        "academicYear": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "studentUids": { "type": "array" },
+        "schedule": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "grade", "section"]
+    },
+    "Enrollment": {
+      "title": "Enrollment",
+      "description": "Student enrollment record into a class",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "studentUid": { "type": "string" },
+        "studentName": { "type": "string" },
+        "grade": { "type": "number" },
+        "enrolledAt": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "classId", "studentUid"]
+    },
+    "SchoolGrade": {
+      "title": "SchoolGrade",
+      "description": "Grade tier definition for Ethiopian secondary school",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "gradeLevel": { "type": "number" },
+        "name": { "type": "string" },
+        "stream": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "gradeLevel", "name"]
+    },
+    "SchoolSection": {
+      "title": "SchoolSection",
+      "description": "Classroom section room and capacity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "grade": { "type": "number" },
+        "roomNumber": { "type": "string" },
+        "maxCapacity": { "type": "number" },
+        "activeStudentsCount": { "type": "number" }
+      },
+      "required": ["id", "name", "grade"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Homework or classroom assignment assigned to students",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "classId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "grade": { "type": "number" },
+        "unitNumber": { "type": "number" },
+        "dueDate": { "type": "string" },
+        "totalPoints": { "type": "number" },
+        "status": { "type": "string" },
+        "questions": { "type": "array" },
+        "assignedDate": { "type": "string" }
+      },
+      "required": ["id", "title", "classId", "subjectId", "grade"]
+    },
+    "AssessmentQuiz": {
+      "title": "AssessmentQuiz",
+      "description": "Teacher/Admin-managed curriculum quiz",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "classId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "grade": { "type": "number" },
+        "unitNumber": { "type": "number" },
+        "difficulty": { "type": "string" },
+        "timeLimitMinutes": { "type": "number" },
+        "questions": { "type": "array" },
+        "totalMarks": { "type": "number" },
+        "scheduledDate": { "type": "string" },
+        "published": { "type": "boolean" }
+      },
+      "required": ["id", "title", "subjectId", "grade", "questions"]
+    },
+    "AssessmentExam": {
+      "title": "AssessmentExam",
+      "description": "Formal midterm, final, or national model exam",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "examType": { "type": "string" },
+        "classId": { "type": "string" },
+        "subjectId": { "type": "string" },
+        "grade": { "type": "number" },
+        "durationMinutes": { "type": "number" },
+        "totalMarks": { "type": "number" },
+        "passingScore": { "type": "number" },
+        "questions": { "type": "array" },
+        "published": { "type": "boolean" }
+      },
+      "required": ["id", "title", "examType", "subjectId", "grade", "questions"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "Student work submission for an assignment, quiz, or exam",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "assessmentId": { "type": "string" },
+        "type": { "type": "string" },
+        "studentUid": { "type": "string" },
+        "studentName": { "type": "string" },
+        "classId": { "type": "string" },
+        "score": { "type": "number" },
+        "total": { "type": "number" },
+        "percentage": { "type": "number" },
+        "answers": { "type": "array" },
+        "submittedAt": { "type": "string" },
+        "gradedAt": { "type": "string" },
+        "feedback": { "type": "string" }
+      },
+      "required": ["id", "assessmentId", "type", "studentUid", "score", "total"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Multi-channel system or academic notification for students, teachers, and admins",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "type": { "type": "string", "enum": ["new_lesson", "new_quiz", "new_exam", "assignment", "assignment_deadline", "quiz_exam_result", "ai_recommendation", "weak_topic_alert", "new_curriculum_content", "system_announcement", "admin_notification"] },
+        "recipientId": { "type": "string" },
+        "recipientRole": { "type": "string", "enum": ["student", "teacher", "admin", "all"] },
+        "createdAt": { "type": "string" },
+        "readAt": { "type": "string" },
+        "relatedId": { "type": "string" },
+        "relatedType": { "type": "string" },
+        "deepLink": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "normal", "high", "urgent"] }
+      },
+      "required": ["id", "title", "body", "type", "recipientId", "recipientRole", "createdAt", "deepLink", "priority"]
+    },
+    "NotificationPreferences": {
+      "title": "NotificationPreferences",
+      "description": "User preferences for push, in-app, sound, quiet hours and language",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "pushEnabled": { "type": "boolean" },
+        "inAppEnabled": { "type": "boolean" },
+        "emailNotifications": { "type": "boolean" },
+        "soundEnabled": { "type": "boolean" },
+        "language": { "type": "string", "enum": ["en", "am", "om", "ti", "so"] },
+        "types": { "type": "object" },
+        "quietHours": { "type": "object" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "pushEnabled", "inAppEnabled", "language"]
+    },
+    "DeviceToken": {
+      "title": "DeviceToken",
+      "description": "FCM device registration token for Android, Web and Mobile clients",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "token": { "type": "string" },
+        "platform": { "type": "string", "enum": ["android", "web", "ios"] },
+        "deviceModel": { "type": "string" },
+        "appVersion": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "lastActiveAt": { "type": "string" },
+        "isValid": { "type": "boolean" }
+      },
+      "required": ["id", "userId", "token", "platform", "createdAt", "isValid"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable security and administrative action audit record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "actorId": { "type": "string" },
+        "actorRole": { "type": "string", "enum": ["admin", "teacher", "student", "system"] },
+        "action": { "type": "string" },
+        "resourceType": { "type": "string" },
+        "resourceId": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "result": { "type": "string", "enum": ["success", "denied", "failed"] },
+        "ip": { "type": "string" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["id", "actorId", "actorRole", "action", "resourceType", "resourceId", "timestamp", "result"]
     }
   },
   "firestore": {
     "collections": {
+      "audit_logs": {
+        "entity": "AuditLog",
+        "documentId": "{logId}"
+      },
       "ai_sessions": {
         "entity": "AISession",
         "documentId": "{sessionId}"
@@ -383,6 +599,50 @@
       "student_progress": {
         "entity": "StudentProgress",
         "documentId": "{progressId}"
+      },
+      "classes": {
+        "entity": "ClassGroup",
+        "documentId": "{classId}"
+      },
+      "enrollments": {
+        "entity": "Enrollment",
+        "documentId": "{enrollmentId}"
+      },
+      "grades": {
+        "entity": "SchoolGrade",
+        "documentId": "{gradeId}"
+      },
+      "sections": {
+        "entity": "SchoolSection",
+        "documentId": "{sectionId}"
+      },
+      "assignments": {
+        "entity": "Assignment",
+        "documentId": "{assignmentId}"
+      },
+      "quizzes": {
+        "entity": "AssessmentQuiz",
+        "documentId": "{quizId}"
+      },
+      "exams": {
+        "entity": "AssessmentExam",
+        "documentId": "{examId}"
+      },
+      "submissions": {
+        "entity": "Submission",
+        "documentId": "{submissionId}"
+      },
+      "notifications": {
+        "entity": "Notification",
+        "documentId": "{notificationId}"
+      },
+      "notification_preferences": {
+        "entity": "NotificationPreferences",
+        "documentId": "{userId}"
+      },
+      "device_tokens": {
+        "entity": "DeviceToken",
+        "documentId": "{tokenId}"
       },
       "users": {
         "entity": "User",

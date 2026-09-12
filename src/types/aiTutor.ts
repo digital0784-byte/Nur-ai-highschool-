@@ -161,6 +161,116 @@ export interface PhotoQuestionSolution {
   revisionTip: string;
 }
 
+// ===================== PART 10: PHOTO SOLVER, OCR & VOICE TUTOR =====================
+
+export interface OCRResult {
+  extractedText: string;
+  confidence: number; // 0 - 100
+  detectedLanguage: LanguageCode;
+  hasMath: boolean;
+  hasTable: boolean;
+  hasDiagram: boolean;
+  needsConfirmation: boolean;
+  originalImageCompressed?: boolean;
+}
+
+export interface SubjectDetection {
+  subject: string;
+  confidence: number; // 0 - 100
+  grade: GradeLevel;
+  unitNumber?: number;
+  unitTitle?: string;
+  topic: string;
+  textbookPage?: number | string;
+  isConfident: boolean;
+}
+
+export interface StepByStepCalculation {
+  given: string[];
+  required: string;
+  conceptOrFormula: string;
+  calculationSteps: string[];
+  finalAnswer: string;
+  explanation: string;
+  commonMistake: string;
+}
+
+export interface StepByStepConceptual {
+  concept: string;
+  simpleExplanation: string;
+  example: string;
+  whyCorrect: string;
+  practiceQuestion: {
+    question: string;
+    options?: string[];
+    correctAnswer: string | number;
+    explanation: string;
+  };
+}
+
+export interface Part10SourceCitation {
+  subject: string;
+  grade: GradeLevel;
+  unit: string | number;
+  topic: string;
+  textbookPage: string | number;
+  sourceText: string;
+  isVerifiedInCurriculum: boolean;
+}
+
+export interface Part10Solution {
+  id: string;
+  questionType: 'calculation' | 'conceptual';
+  ocr: OCRResult;
+  detection: SubjectDetection;
+  calculation?: StepByStepCalculation;
+  conceptual?: StepByStepConceptual;
+  finalAnswer: string;
+  explanation: string;
+  sourceCitation: Part10SourceCitation;
+  followUpActions: Array<'explain_more' | 'explain_simply' | 'another_example' | 'hint' | 'similar_question' | 'quiz_me'>;
+  createdAt: string;
+}
+
+export interface PhotoQuestionHistoryItem {
+  id: string;
+  userId: string;
+  createdAt: string;
+  grade: GradeLevel;
+  subject: string;
+  topic: string;
+  questionText: string;
+  thumbnail?: string;
+  solution: Part10Solution;
+  source: string;
+  textbookPage: string | number;
+  status: 'analyzed' | 'confirmed' | 'solved' | 'failed';
+}
+
+export interface VoiceSessionMessage {
+  id: string;
+  sender: 'student' | 'ai';
+  text: string;
+  audioScript?: string;
+  timestamp: string;
+  durationSeconds?: number;
+  citation?: string;
+  source?: Part10SourceCitation;
+}
+
+export interface VoiceTutorSession {
+  id: string;
+  userId: string;
+  grade: GradeLevel;
+  subject: string;
+  language: LanguageCode;
+  startedAt: string;
+  lastActiveAt: string;
+  status: 'active' | 'completed';
+  messages: VoiceSessionMessage[];
+}
+
+
 export interface TutorActionRequest {
   feature: TutorFeatureType;
   question?: string;

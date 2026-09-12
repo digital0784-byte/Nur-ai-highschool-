@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Topic, Subject, ActiveTab } from '../types';
-import { BookOpen, CheckCircle2, ArrowRight, ArrowLeft, Layers, HelpCircle, Target, FlaskConical, Sparkles, Compass } from 'lucide-react';
+import { BookOpen, CheckCircle2, ArrowRight, ArrowLeft, Layers, HelpCircle, Target, FlaskConical, Sparkles, Compass, Briefcase, Globe } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useProgress } from '../context/ProgressContext';
+import { RealLifeConnectionModal } from './career/RealLifeConnectionModal';
+import { careerConnectionEngine } from '../engine/careerConnectionEngine';
 
 interface LessonViewProps {
   topic: Topic;
@@ -17,8 +19,9 @@ export const LessonView: React.FC<LessonViewProps> = ({
   onChangeTab,
   onOpenAITutor,
 }) => {
-  const { t, isRtl } = useLanguage();
+  const { t, isRtl, language } = useLanguage();
   const { getTopicProgress, markLessonComplete } = useProgress();
+  const [isPurposeModalOpen, setIsPurposeModalOpen] = useState(false);
 
   const progress = getTopicProgress(topic.id);
   const isLessonDone = progress.lessonCompleted;
@@ -26,6 +29,9 @@ export const LessonView: React.FC<LessonViewProps> = ({
   const handleToggleLessonComplete = () => {
     markLessonComplete(topic.id, !isLessonDone);
   };
+
+  const isAmharic = language === 'am';
+  const quickConn = careerConnectionEngine.getTopicRealLifeConnection(subject.id, topic.id, topic.lessonTitle);
 
   // Helper for stream name
   const streamLabel =
@@ -99,6 +105,15 @@ export const LessonView: React.FC<LessonViewProps> = ({
         {/* AI & Interactive Learning Quick Actions */}
         <div className="pt-3 flex flex-wrap gap-2 border-t border-[#38332D]/30 mt-3">
           <button
+            id="open-purpose-modal-btn"
+            onClick={() => setIsPurposeModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold font-serif-ethiopic shadow-2xs cursor-pointer"
+          >
+            <Compass className="w-3.5 h-3.5 text-emerald-300" />
+            <span>🧭 በእውነተኛ ህይወትና ስራ (Why am I learning this?)</span>
+          </button>
+
+          <button
             onClick={() => onOpenAITutor?.(topic.lessonTitle, 'analysis')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border border-amber-400 text-amber-950 text-xs font-bold font-serif-ethiopic shadow-2xs cursor-pointer"
           >
@@ -127,6 +142,46 @@ export const LessonView: React.FC<LessonViewProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-900 text-xs font-bold font-serif-ethiopic cursor-pointer"
           >
             <span>🎥 ቪዲዮ ትምህርት</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Real-Life Purpose & Ethiopian Context Callout (Part 14) */}
+      <div
+        id="lesson-purpose-banner"
+        className="rounded-2xl border-[1.5px] border-emerald-700/70 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 p-4.5 space-y-2.5 shadow-xs"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-emerald-900">
+            <Compass className="w-4 h-4 text-emerald-700" />
+            <span>{isAmharic ? 'ይህንን ትምህርት ለምን እማራለሁ? (Why am I learning this?)' : 'Real-Life Purpose & Ethiopian Context'}</span>
+          </div>
+          <button
+            onClick={() => setIsPurposeModalOpen(true)}
+            className="text-xs font-bold text-emerald-800 hover:text-emerald-950 underline flex items-center gap-1 cursor-pointer"
+          >
+            <span>{isAmharic ? 'ሙሉ ዝርዝር እይ' : 'Explore All Connections'}</span>
+            <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+
+        <p className="text-xs sm:text-sm text-slate-800 leading-relaxed">
+          {isAmharic ? quickConn.whyItMatters.am : quickConn.whyItMatters.en}
+        </p>
+
+        <div className="pt-2 border-t border-emerald-200/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center space-x-1.5 text-amber-900 font-medium">
+            <Globe className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+            <span className="line-clamp-1">
+              {isAmharic ? quickConn.ethiopianContextExample.am : quickConn.ethiopianContextExample.en}
+            </span>
+          </div>
+
+          <button
+            onClick={() => setIsPurposeModalOpen(true)}
+            className="rounded-lg bg-emerald-700 px-3 py-1 text-xs font-bold text-white hover:bg-emerald-800 transition-colors shadow-2xs cursor-pointer shrink-0"
+          >
+            {isAmharic ? 'የሙያና የፕሮጀክት ዝምድና' : 'Careers & Projects'}
           </button>
         </div>
       </div>

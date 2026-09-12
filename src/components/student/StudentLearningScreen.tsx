@@ -20,6 +20,8 @@ import {
   Clock,
   Compass,
   Zap,
+  Download,
+  WifiOff,
 } from 'lucide-react';
 import {
   CurriculumTopic,
@@ -31,6 +33,7 @@ import { LanguageCode } from '../../types';
 import { LearningPageSection, StudentTopicMastery, StudentRecommendationItem } from '../../types/studentApp';
 import { studentAppFirestore } from '../../services/studentAppFirestore';
 import { aiTutorEngine } from '../../engine/aiTutorEngine';
+import { useOfflineSync } from '../../context/OfflineSyncContext';
 
 interface StudentLearningScreenProps {
   topic: CurriculumTopic;
@@ -59,6 +62,16 @@ export const StudentLearningScreen: React.FC<StudentLearningScreenProps> = ({
   onBack,
   onNavigateToTopic,
 }) => {
+  const {
+    isOnline,
+    isOffline,
+    downloadLesson,
+    isItemCached,
+    recordQuizAttempt,
+    recordLessonCompletion,
+    getAIOfflineNotice,
+  } = useOfflineSync();
+
   const [activeSection, setActiveSection] = useState<LearningPageSection>('read');
   const [mastery, setMastery] = useState<StudentTopicMastery | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -239,6 +252,25 @@ export const StudentLearningScreen: React.FC<StudentLearningScreenProps> = ({
     setQuizScore(Math.round((correct / total) * 100));
     setQuizSubmitted(true);
 
+    // Save locally via offlineSyncEngine
+    const answersList = sampleQuizQuestions.map((q, idx) => ({
+      questionId: `q_${idx}`,
+      selectedAnswer: quizAnswers[idx] !== undefined ? q.options[quizAnswers[idx]] : null,
+      correctAnswer: q.options[q.correctIndex],
+      isCorrect: quizAnswers[idx] === q.correctIndex,
+      timeSpentSeconds: Math.round(timeSpentSeconds / total),
+    }));
+    recordQuizAttempt(
+      topic.id,
+      topic.title[language] || topic.title.en,
+      subjectId,
+      grade,
+      correct,
+      total,
+      answersList,
+      timeSpentSeconds
+    );
+
     // Save quiz result & update adaptive mastery
     const result = await studentAppFirestore.recordQuizResult(
       topic.id,
@@ -255,6 +287,10 @@ export const StudentLearningScreen: React.FC<StudentLearningScreenProps> = ({
 
   const handleMarkAsComplete = async () => {
     const timeSpentSeconds = Math.max(20, Math.round((Date.now() - startTimeRef.current) / 1000));
+    
+    // Record offline completion
+    recordLessonCompletion(lesson.id, topic.id, subjectId, grade, timeSpentSeconds);
+
     const updated = await studentAppFirestore.recordLearningProgress(
       topic.id,
       topic.title[language] || topic.title.en,
@@ -299,8 +335,23 @@ export const StudentLearningScreen: React.FC<StudentLearningScreenProps> = ({
           </div>
         </div>
 
-        {/* 8. Action: Mark as Complete / Status */}
+        {/* Offline Download & Mark as Complete Actions */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              downloadLesson(lesson, unit, { id: subjectId, name: { en: subjectName, am: subjectName } }, grade);
+            }}
+            className={`px-3 py-2 rounded-full text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+              isItemCached(lesson.id)
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                : 'bg-gray-100 hover:bg-gray-200 border-gray-300 text-gray-700 dark:bg-[#2B2930] dark:border-[#49454F] dark:text-[#CAC4D0]'
+            }`}
+            title="ያለ ኢንተርኔት ለመማር ትምህርቱን አውርድ"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>{isItemCached(lesson.id) ? 'ወርዷል (Cached)' : 'አውርድ (Download)'}</span>
+          </button>
+
           {isCompleted ? (
             <div className="px-4 py-2 rounded-full text-xs font-black bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 flex items-center gap-1.5">
               <Check className="w-4 h-4 text-emerald-600" />
@@ -409,116 +460,203 @@ export const StudentLearningScreen: React.FC<StudentLearningScreenProps> = ({
       {/* 2. AI Explain */}
       {activeSection === 'ai_explain' && (
         <div className={`rounded-3xl p-6 sm:p-8 border-[1.5px] shadow-xs space-y-5 ${bgCard}`}>
-          <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#6750A4]" />
-              <h2 className={`text-base sm:text-lg font-black ${textPrimary}`}>
-                የኑር AI ዝርዝር ማብራሪያ (RAG Grounded Explanation)
-              </h2>
-            </div>
-            <button
-              onClick={handleRequestAIExplain}
-              disabled={isExplaining}
-              className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#6750A4] text-white hover:bg-[#523e85] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-            >
-              {isExplaining ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
-              <span>እንደገና አብራራ</span>
-            </button>
-          </div>
+          {isOffline ? (
+            <div className="p-6 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                  <WifiOff className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-amber-900 dark:text-amber-200">
+                    የ AI ማብራሪያ ያለ ኢንተርኔት አይሰራም (AI Explain Offline)
+                  </h3>
+                  <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+                    የ AI ሞዴሉ ዝርዝር ማብራሪያ ለመስጠት የኢንተርኔት ግንኙነት ይፈልጋል።
+                  </p>
+                </div>
+              </div>
 
-          {isExplaining ? (
-            <div className="py-12 text-center space-y-3">
-              <Loader2 className="w-8 h-8 animate-spin text-[#6750A4] mx-auto" />
-              <p className="text-xs text-gray-500 font-medium">
-                የኢትዮጵያ አዲሱን የመማሪያ መጽሐፍ ገጽ {topic.textbookPage} በመፈተሽ ላይ...
-              </p>
+              <div className="p-4 rounded-xl bg-white/80 dark:bg-black/30 border border-amber-200 dark:border-amber-800 text-xs text-gray-800 dark:text-gray-200 space-y-2">
+                <strong className="block text-amber-900 dark:text-amber-200">የሚመከሩ የኦፍላይን አማራጮች፡</strong>
+                <ul className="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-300">
+                  <li>የወረደውን የመማሪያ መጽሐፍ ጽንሰ-ሀሳቦች ያንብቡ።</li>
+                  <li>በመማሪያ መጽሐፉ ውስጥ ያሉትን ዝርዝር ምሳሌዎች ይመርምሩ።</li>
+                  <li>የደረጃ በደረጃ የተግባር ልምምዶችን ይስሩ።</li>
+                  <li>የተዘጋጁትን የፈተና ጥያቄዎች ይመልሱ።</li>
+                </ul>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={() => setActiveSection('read')}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[#6750A4] text-white cursor-pointer hover:bg-[#523e85] transition-all"
+                >
+                  ትምህርቱን አንብብ (Read Textbook)
+                </button>
+                <button
+                  onClick={() => setActiveSection('examples')}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700 cursor-pointer"
+                >
+                  ምሳሌዎችን እይ (Examples)
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="p-5 rounded-2xl bg-gray-50 dark:bg-[#1D1B20] border border-gray-200 dark:border-gray-800 text-xs sm:text-sm leading-relaxed whitespace-pre-line text-gray-800 dark:text-gray-200">
-              {aiExplainText || 'ማብራሪያውን ለመጫን "እንደገና አብራራ" የሚለውን ይጫኑ።'}
-            </div>
-          )}
+            <>
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#6750A4]" />
+                  <h2 className={`text-base sm:text-lg font-black ${textPrimary}`}>
+                    የኑር AI ዝርዝር ማብራሪያ (RAG Grounded Explanation)
+                  </h2>
+                </div>
+                <button
+                  onClick={handleRequestAIExplain}
+                  disabled={isExplaining}
+                  className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#6750A4] text-white hover:bg-[#523e85] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {isExplaining ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                  <span>እንደገና አብራራ</span>
+                </button>
+              </div>
 
-          <div className="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/50 dark:bg-indigo-950/20 text-xs flex items-center gap-2 text-indigo-800 dark:text-indigo-300">
-            <BookMarked className="w-4 h-4 flex-shrink-0" />
-            <span>
-              ይህ ማብራሪያ በቀጥታ በኢትዮጵያ ትምህርት ሚኒስቴር አዲሱ ስርዓተ-ትምህርት (ገጽ {topic.textbookPage}) ላይ የተመሰረተ ነው።
-            </span>
-          </div>
+              {isExplaining ? (
+                <div className="py-12 text-center space-y-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#6750A4] mx-auto" />
+                  <p className="text-xs text-gray-500 font-medium">
+                    የኢትዮጵያ አዲሱን የመማሪያ መጽሐፍ ገጽ {topic.textbookPage} በመፈተሽ ላይ...
+                  </p>
+                </div>
+              ) : (
+                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-[#1D1B20] border border-gray-200 dark:border-gray-800 text-xs sm:text-sm leading-relaxed whitespace-pre-line text-gray-800 dark:text-gray-200">
+                  {aiExplainText || 'ማብራሪያውን ለመጫን "እንደገና አብራራ" የሚለውን ይጫኑ።'}
+                </div>
+              )}
+
+              <div className="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/50 dark:bg-indigo-950/20 text-xs flex items-center gap-2 text-indigo-800 dark:text-indigo-300">
+                <BookMarked className="w-4 h-4 flex-shrink-0" />
+                <span>
+                  ይህ ማብራሪያ በቀጥታ በኢትዮጵያ ትምህርት ሚኒስቴር አዲሱ ስርዓተ-ትምህርት (ገጽ {topic.textbookPage}) ላይ የተመሰረተ ነው።
+                </span>
+              </div>
+            </>
+          )}
         </div>
       )}
 
       {/* 3. Ask AI Tutor Chat */}
       {activeSection === 'ask_tutor' && (
         <div className={`rounded-3xl p-5 sm:p-6 border-[1.5px] shadow-xs space-y-4 ${bgCard}`}>
-          <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-[#6750A4]" />
-              <h2 className={`text-base font-black ${textPrimary}`}>
-                የግል AI አስተማሪ (Personal Socratic Tutor)
-              </h2>
-            </div>
-            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200">
-              መስመር ላይ (Active)
-            </span>
-          </div>
-
-          {/* Chat Stream */}
-          <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
-            {chatMessages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
-                    msg.sender === 'user'
-                      ? 'bg-[#6750A4] text-white rounded-tr-xs'
-                      : darkMode
-                      ? 'bg-[#2B2930] text-[#E6E1E5] border border-[#49454F] rounded-tl-xs'
-                      : 'bg-gray-100 text-[#1D1B20] border border-gray-200 rounded-tl-xs'
-                  }`}
-                >
-                  <p className="whitespace-pre-line">{msg.text}</p>
-                  {msg.citation && (
-                    <div className="mt-2 pt-1.5 border-t border-black/10 dark:border-white/10 text-[10px] opacity-80 flex items-center gap-1 font-mono">
-                      <BookMarked className="w-3 h-3" />
-                      <span>{msg.citation}</span>
-                    </div>
-                  )}
+          {isOffline ? (
+            <div className="p-6 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                  <WifiOff className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-amber-900 dark:text-amber-200">
+                    የ AI መምህር ያለ ኢንተርኔት አይሰራም (AI Socratic Tutor Offline)
+                  </h3>
+                  <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
+                    የግል AI አስተማሪ ጥያቄዎችን ለመመለስ ንቁ የኢንተርኔት ግንኙነት ይፈልጋል።
+                  </p>
                 </div>
               </div>
-            ))}
-            {isChatSending && (
-              <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#6750A4]" />
-                <span>አስተማሪው በመጽሐፉ ላይ በመመስረት እየመለሰ ነው...</span>
-              </div>
-            )}
-          </div>
 
-          {/* Input Bar */}
-          <div className="pt-2 flex items-center gap-2">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage()}
-              placeholder="ስለዚህ ርዕስ ማንኛውንም ነገር ጠይቅ (ለምሳሌ፡ ቀመሩን በምሳሌ አስረዳኝ)..."
-              className={`flex-1 px-4 py-2.5 rounded-full border text-xs sm:text-sm outline-none transition-all ${
-                darkMode
-                  ? 'bg-[#2B2930] border-[#49454F] text-[#E6E1E5] focus:border-[#D0BCFF]'
-                  : 'bg-[#F7F2FA] border-[#CAC4D0] text-[#1D1B20] focus:border-[#6750A4]'
-              }`}
-            />
-            <button
-              onClick={handleSendChatMessage}
-              disabled={!chatInput.trim() || isChatSending}
-              className="p-2.5 rounded-full bg-[#6750A4] text-white hover:bg-[#523e85] transition-all disabled:opacity-50 cursor-pointer shadow-xs"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
+              <div className="p-4 rounded-xl bg-white/80 dark:bg-black/30 border border-amber-200 dark:border-amber-800 text-xs text-gray-800 dark:text-gray-200 space-y-2">
+                <strong className="block text-amber-900 dark:text-amber-200">ያለ ኢንተርኔት ምን ማድረግ ይችላሉ?</strong>
+                <p>
+                  ትምህርቱን ማንበብ፣ የተካተቱትን ምሳሌዎች ማጥናት፣ የደረጃ በደረጃ ልምምድ ጥያቄዎችን መስራት፣ እና የፈተና ጥያቄዎችን በመመለስ ውጤትዎን በአካባቢው ማስቀመጥ ይችላሉ።
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={() => setActiveSection('practice')}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[#6750A4] text-white cursor-pointer hover:bg-[#523e85] transition-all"
+                >
+                  ልምምድ ስራ (Practice)
+                </button>
+                <button
+                  onClick={() => setActiveSection('quiz')}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white cursor-pointer hover:bg-emerald-700 transition-all"
+                >
+                  ፈተና ውሰድ (Take Quiz)
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-[#6750A4]" />
+                  <h2 className={`text-base font-black ${textPrimary}`}>
+                    የግል AI አስተማሪ (Personal Socratic Tutor)
+                  </h2>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200">
+                  መስመር ላይ (Active)
+                </span>
+              </div>
+
+              {/* Chat Stream */}
+              <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                {chatMessages.map((msg, i) => (
+                  <div
+                    key={i}
+                    className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] sm:max-w-[75%] p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                        msg.sender === 'user'
+                          ? 'bg-[#6750A4] text-white rounded-tr-xs'
+                          : darkMode
+                          ? 'bg-[#2B2930] text-[#E6E1E5] border border-[#49454F] rounded-tl-xs'
+                          : 'bg-gray-100 text-[#1D1B20] border border-gray-200 rounded-tl-xs'
+                      }`}
+                    >
+                      <p className="whitespace-pre-line">{msg.text}</p>
+                      {msg.citation && (
+                        <div className="mt-2 pt-1.5 border-t border-black/10 dark:border-white/10 text-[10px] opacity-80 flex items-center gap-1 font-mono">
+                          <BookMarked className="w-3 h-3" />
+                          <span>{msg.citation}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {isChatSending && (
+                  <div className="flex items-center gap-2 text-xs text-gray-500 py-2">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#6750A4]" />
+                    <span>አስተማሪው በመጽሐፉ ላይ በመመስረት እየመለሰ ነው...</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Input Bar */}
+              <div className="pt-2 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage()}
+                  placeholder="ስለዚህ ርዕስ ማንኛውንም ነገር ጠይቅ (ለምሳሌ፡ ቀመሩን በምሳሌ አስረዳኝ)..."
+                  className={`flex-1 px-4 py-2.5 rounded-full border text-xs sm:text-sm outline-none transition-all ${
+                    darkMode
+                      ? 'bg-[#2B2930] border-[#49454F] text-[#E6E1E5] focus:border-[#D0BCFF]'
+                      : 'bg-[#F7F2FA] border-[#CAC4D0] text-[#1D1B20] focus:border-[#6750A4]'
+                  }`}
+                />
+                <button
+                  onClick={handleSendChatMessage}
+                  disabled={!chatInput.trim() || isChatSending}
+                  className="p-2.5 rounded-full bg-[#6750A4] text-white hover:bg-[#523e85] transition-all disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 

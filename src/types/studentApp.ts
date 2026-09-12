@@ -75,7 +75,7 @@ export interface OfflineCachedUnit {
   data: any; // Full unit content
 }
 
-export type StudentTab = 'home' | 'subjects' | 'learn' | 'knowledge_map' | 'quiz' | 'photo_solver' | 'voice_tutor';
+export type StudentTab = 'home' | 'search' | 'subjects' | 'learn' | 'knowledge_map' | 'quiz' | 'photo_solver' | 'voice_tutor' | 'offline' | 'gamification';
 
 export type LearningPageSection =
   | 'read'

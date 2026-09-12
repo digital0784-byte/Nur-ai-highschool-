@@ -88,6 +88,17 @@ export interface Subject {
 }
 
 export type ActiveTab =
+  | 'entrance_prep'
+  | 'subscription_payment'
+  | 'system_feedback'
+  | 'career_pathways'
+  | 'system_integration'
+  | 'smart_search'
+  | 'gamification'
+  | 'photo_voice_tutor'
+  | 'assessment_engine'
+  | 'security_fortress'
+  | 'admin_dashboard'
   | 'student_app'
   | 'ai_tutor'
   | 'curriculum_engine'
@@ -398,7 +409,7 @@ export interface YouTubeVideoItem {
   publishedAt?: string;
 }
 
-export type UserRole = 'student' | 'teacher';
+export type UserRole = 'student' | 'teacher' | 'admin' | 'parent';
 
 export interface UserProfile {
   uid: string;

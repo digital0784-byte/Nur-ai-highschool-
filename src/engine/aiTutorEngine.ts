@@ -341,10 +341,10 @@ FEATURE TASK: ${req.feature.toUpperCase()}
 ${featureSpecificPrompt}`;
 
     try {
-      const callWithTimeout = async (modelName: string, timeoutMs = 28000) => {
+      const callWithTimeout = async (modelName: string, timeoutMs = 25000) => {
         let timer: any = null;
         const timeoutPromise = new Promise<never>((_, reject) => {
-          timer = setTimeout(() => reject(new Error(`AI Request timeout after ${timeoutMs}ms`)), timeoutMs);
+          timer = setTimeout(() => reject(new Error(`AI Request timeout after ${timeoutMs}ms on ${modelName}`)), timeoutMs);
         });
         const apiPromise = ai.models.generateContent({
           model: modelName,
@@ -355,17 +355,43 @@ ${featureSpecificPrompt}`;
         return await Promise.race([apiPromise, timeoutPromise]);
       };
 
-      let response;
-      try {
-        response = await callWithTimeout('gemini-3.8-flash', 28000);
-      } catch (firstErr: any) {
-        console.warn('Primary model busy or timed out, trying gemini-3.1-flash-lite fallback:', firstErr?.message);
-        try {
-          response = await callWithTimeout('gemini-3.1-flash-lite', 20000);
-        } catch (secondErr: any) {
-          console.warn('Fallback model also timed out, activating curriculum RAG fallback:', secondErr?.message);
-          throw secondErr;
+      // Candidate models in priority: 3.8-flash, 3.6-flash, 3.1-flash-lite, and flash-latest
+      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+      let response: any = null;
+      let lastErr: any = null;
+
+      for (const modelName of candidateModels) {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            response = await callWithTimeout(modelName, attempt === 0 ? 25000 : 18000);
+            if (response) break;
+          } catch (err: any) {
+            lastErr = err;
+            const errMsg = err?.message || String(err);
+            const isTransient =
+              errMsg.includes('503') ||
+              errMsg.includes('high demand') ||
+              errMsg.includes('UNAVAILABLE') ||
+              errMsg.includes('429') ||
+              errMsg.includes('RESOURCE_EXHAUSTED') ||
+              errMsg.includes('timeout') ||
+              errMsg.includes('temporarily');
+
+            if (isTransient && attempt === 0) {
+              console.warn(`Model ${modelName} returned temporary high demand or timeout, retrying with brief backoff...`);
+              await new Promise((res) => setTimeout(res, 800));
+              continue;
+            }
+            console.warn(`Model ${modelName} unavailable (${errMsg.slice(0, 80)}), transitioning to next model in fallback chain...`);
+            break;
+          }
         }
+        if (response) break;
+      }
+
+      if (!response) {
+        console.warn('All Gemini candidate models busy or timed out, activating curriculum RAG fallback:', lastErr?.message);
+        return this.handleFallbackResponse(req, topChunk, citations, language, mode);
       }
 
       const responseText = response.text || '';
@@ -547,23 +573,56 @@ Output strictly in JSON within <SOLUTION_JSON>...</SOLUTION_JSON>:
 </SOLUTION_JSON>`;
 
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-lite',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              {
-                inlineData: {
-                  mimeType,
-                  data: cleanBase64,
+      const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.1-flash-lite'];
+      let response: any = null;
+      let lastErr: any = null;
+
+      for (const modelName of candidateModels) {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            response = await ai.models.generateContent({
+              model: modelName,
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    {
+                      inlineData: {
+                        mimeType,
+                        data: cleanBase64,
+                      },
+                    },
+                    { text: prompt },
+                  ],
                 },
-              },
-              { text: prompt },
-            ],
-          },
-        ],
-      });
+              ],
+            });
+            if (response) break;
+          } catch (err: any) {
+            lastErr = err;
+            const errMsg = err?.message || String(err);
+            const isTransient =
+              errMsg.includes('503') ||
+              errMsg.includes('high demand') ||
+              errMsg.includes('UNAVAILABLE') ||
+              errMsg.includes('429') ||
+              errMsg.includes('RESOURCE_EXHAUSTED') ||
+              errMsg.includes('timeout') ||
+              errMsg.includes('temporarily');
+
+            if (isTransient && attempt === 0) {
+              await new Promise((res) => setTimeout(res, 800));
+              continue;
+            }
+            break;
+          }
+        }
+        if (response) break;
+      }
+
+      if (!response) {
+        throw lastErr || new Error('All photo solver models unavailable');
+      }
 
       const responseText = response.text || '';
       const match = responseText.match(/<SOLUTION_JSON>([\s\S]*?)<\/SOLUTION_JSON>/);
@@ -683,7 +742,13 @@ Output strictly in JSON within <SOLUTION_JSON>...</SOLUTION_JSON>:
 
       // If weak (<60%), detect prerequisite gap via Knowledge Map DAG
       if (accuracy < 60) {
-        const node = knowledgeMap?.nodes.find((n) => n.topicId === topicId);
+        const node = knowledgeMap?.nodes.find(
+          (n) =>
+            n.topicId === topicId ||
+            n.id === topicId ||
+            (stat.topicTitle && n.label.toLowerCase().includes(stat.topicTitle.toLowerCase())) ||
+            (stat.topicTitle && stat.topicTitle.toLowerCase().includes(n.label.toLowerCase()))
+        );
         const prereqId = node?.prerequisites?.[0];
         const prereqNode = prereqId
           ? knowledgeMap?.nodes.find((n) => n.id === prereqId)
@@ -707,27 +772,33 @@ Output strictly in JSON within <SOLUTION_JSON>...</SOLUTION_JSON>:
           detectedAt: now,
         });
 
-        // Recommendation: Review prerequisite first
-        if (prereqNode) {
-          recommendations.push({
-            id: `rec_${userId}_${topicId}_prereq`,
-            userId,
-            subjectId,
-            currentTopicId: topicId,
-            currentTopicTitle: stat.topicTitle,
-            recommendedTopicId: prereqNode.topicId,
-            recommendedTopicTitle: prereqNode.label,
-            recommendedAction: 'review_prerequisite',
-            reason: `ተማሪው በ"${stat.topicTitle}" ዝቅተኛ ውጤት (${accuracy}%) ስላስመዘገበ፣ አስቀድሞ ቅድመ-ተፈላጊውን "${prereqNode.label}" መከለስ ቅድሚያ ይሰጠዋል።`,
-            generatedAt: now,
-          });
-        }
+        // Recommendation: Review prerequisite or targeted practice
+        recommendations.push({
+          id: `rec_${userId}_${topicId}_remedy`,
+          userId,
+          subjectId,
+          currentTopicId: topicId,
+          currentTopicTitle: stat.topicTitle,
+          recommendedTopicId: prereqNode?.topicId || topicId,
+          recommendedTopicTitle: prereqNode?.label || stat.topicTitle,
+          recommendedAction: prereqNode ? 'review_prerequisite' : 'practice_more',
+          reason: prereqNode
+            ? `ተማሪው በ"${stat.topicTitle}" ዝቅተኛ ውጤት (${accuracy}%) ስላስመዘገበ፣ አስቀድሞ ቅድመ-ተፈላጊውን "${prereqNode.label}" መከለስ ቅድሚያ ይሰጠዋል።`
+            : `በ"${stat.topicTitle}" ላይ የጀማሪ ልምምዶችን እና ማብራሪያዎችን በመስራት ውጤትዎን ያሻሽሉ።`,
+          generatedAt: now,
+        });
       } else if (accuracy >= 80) {
         // Recommendation: Advance to next topic in Knowledge Map DAG
-        const nextEdge = knowledgeMap?.edges.find((e) => {
-          const fromNode = knowledgeMap.nodes.find((n) => n.id === e.from);
-          return fromNode?.topicId === topicId;
-        });
+        const currentNode = knowledgeMap?.nodes.find(
+          (n) =>
+            n.topicId === topicId ||
+            n.id === topicId ||
+            (stat.topicTitle && n.label.toLowerCase().includes(stat.topicTitle.toLowerCase())) ||
+            (stat.topicTitle && stat.topicTitle.toLowerCase().includes(n.label.toLowerCase()))
+        );
+        const nextEdge = currentNode
+          ? knowledgeMap?.edges.find((e) => e.from === currentNode.id)
+          : undefined;
 
         if (nextEdge) {
           const nextNode = knowledgeMap.nodes.find((n) => n.id === nextEdge.to);
@@ -896,11 +967,11 @@ Output strictly in JSON within <SOLUTION_JSON>...</SOLUTION_JSON>:
 
     // Step 8: Simulated Student Submission & Score
     const sampleStudentAnswers = [
-      { topicId: 'topic-linear-eq', topicTitle: 'Linear Equations', isCorrect: false },
-      { topicId: 'topic-linear-eq', topicTitle: 'Linear Equations', isCorrect: false },
-      { topicId: 'topic-linear-eq', topicTitle: 'Linear Equations', isCorrect: true }, // 33% -> Weak!
-      { topicId: 'topic-real-num', topicTitle: 'Real Numbers', isCorrect: true },
-      { topicId: 'topic-real-num', topicTitle: 'Real Numbers', isCorrect: true }, // 100% -> Mastered!
+      { topicId: 'math-g9-u2-top1', topicTitle: 'Linear Equations & Inequalities', isCorrect: false },
+      { topicId: 'math-g9-u2-top1', topicTitle: 'Linear Equations & Inequalities', isCorrect: false },
+      { topicId: 'math-g9-u2-top1', topicTitle: 'Linear Equations & Inequalities', isCorrect: true }, // 33% -> Weak!
+      { topicId: 'math-g9-u1-top2', topicTitle: 'Real Numbers & Irrationals', isCorrect: true },
+      { topicId: 'math-g9-u1-top2', topicTitle: 'Real Numbers & Irrationals', isCorrect: true }, // 100% -> Mastered!
     ];
 
     steps.push({
