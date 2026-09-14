@@ -18,10 +18,13 @@ import {
   PaymentRecord,
   PaymentAuditLog,
   SubscriptionPricingConfig,
+  PricingConfig,
+  PaymentMethodConfig,
   PaymentMethodName,
   SystemFeedback,
 } from '../types/subscription';
 import { Grade } from '../types';
+import { Entitlement, EntitlementStatus } from '../types/premiumSecurity';
 import { notificationService } from './notificationService';
 
 export const SUPER_ADMIN_EMAIL = 'mejennur669@gmail.com';
@@ -91,6 +94,7 @@ export const DEFAULT_PRICING_CONFIG: SubscriptionPricingConfig = {
 
 const PAYMENTS_COLLECTION = 'payments';
 const SUBSCRIPTIONS_COLLECTION = 'subscriptions';
+const ENTITLEMENTS_COLLECTION = 'entitlements';
 const SETTINGS_COLLECTION = 'system_settings';
 const AUDIT_LOGS_COLLECTION = 'payment_audit_logs';
 const FEEDBACKS_COLLECTION = 'system_feedbacks';
@@ -120,69 +124,248 @@ class SubscriptionService {
   }
 
   /**
+   * Subscribe to system pricing config in real time
+   */
+  subscribeToPricingConfig(callback: (config: PricingConfig) => void): Unsubscribe {
+    const docRef = doc(db, SETTINGS_COLLECTION, 'subscription_pricing');
+    return onSnapshot(
+      docRef,
+      (snap) => {
+        if (snap.exists()) {
+          const d = snap.data();
+          callback({
+            gradeMonthlyPrices: {
+              9: d.grade9Price ?? d.gradeMonthlyPrices?.[9] ?? 160,
+              10: d.grade10Price ?? d.gradeMonthlyPrices?.[10] ?? 180,
+              11: d.grade11Price ?? d.gradeMonthlyPrices?.[11] ?? 200,
+              12: d.grade12Price ?? d.gradeMonthlyPrices?.[12] ?? 200,
+            },
+            billingCycleDays: d.subscriptionDurationDays ?? d.billingCycleDays ?? 30,
+            currency: d.currency ?? 'ETB',
+            freeTierEnabled: d.freeTierEnabled ?? false,
+            updatedAt: d.updatedAt,
+            updatedBy: d.updatedBy,
+          });
+        } else {
+          callback({
+            gradeMonthlyPrices: {
+              9: DEFAULT_PRICING_CONFIG.grade9Price,
+              10: DEFAULT_PRICING_CONFIG.grade10Price,
+              11: DEFAULT_PRICING_CONFIG.grade11Price,
+              12: DEFAULT_PRICING_CONFIG.grade12Price,
+            },
+            billingCycleDays: DEFAULT_PRICING_CONFIG.subscriptionDurationDays,
+            currency: 'ETB',
+            freeTierEnabled: false,
+          });
+        }
+      },
+      (err) => {
+        console.warn('Could not subscribe to pricing config:', err);
+        callback({
+          gradeMonthlyPrices: { 9: 160, 10: 180, 11: 200, 12: 200 },
+          billingCycleDays: 30,
+          currency: 'ETB',
+          freeTierEnabled: false,
+        });
+      }
+    );
+  }
+
+  /**
+   * Subscribe to system payment methods in real time
+   */
+  subscribeToPaymentMethods(callback: (methods: PaymentMethodConfig[]) => void): Unsubscribe {
+    const docRef = doc(db, SETTINGS_COLLECTION, 'subscription_pricing');
+    return onSnapshot(
+      docRef,
+      (snap) => {
+        const methodsObj = snap.exists() && snap.data()?.methods
+          ? snap.data().methods
+          : DEFAULT_PRICING_CONFIG.methods;
+
+        const list: PaymentMethodConfig[] = Object.values(methodsObj).map((m: any) => ({
+          ...m,
+          name: m.displayName || m.name || m.id,
+          enabled: m.isEnabled ?? m.enabled ?? true,
+        }));
+        callback(list);
+      },
+      (err) => {
+        console.warn('Payment methods subscription error:', err);
+        callback(
+          Object.values(DEFAULT_PRICING_CONFIG.methods).map((m) => ({
+            ...m,
+            name: m.displayName,
+            enabled: m.isEnabled,
+          }))
+        );
+      }
+    );
+  }
+
+  /**
+   * Super Admin update payment method configuration
+   */
+  async updatePaymentMethod(
+    methodId: PaymentMethodName | string,
+    updates: Partial<PaymentMethodConfig>
+  ): Promise<void> {
+    const docRef = doc(db, SETTINGS_COLLECTION, 'subscription_pricing');
+    const snap = await getDoc(docRef);
+    const existing = snap.exists() ? snap.data() : { ...DEFAULT_PRICING_CONFIG };
+    const currentMethods = existing.methods || { ...DEFAULT_PRICING_CONFIG.methods };
+
+    const matchedKey =
+      Object.keys(currentMethods).find(
+        (k) =>
+          k.toLowerCase() === methodId.toLowerCase() ||
+          currentMethods[k]?.id?.toLowerCase() === methodId.toLowerCase()
+      ) || methodId;
+
+    const existingMethod = currentMethods[matchedKey] || {};
+    const updatedMethod = {
+      ...existingMethod,
+      ...updates,
+      id: existingMethod.id || methodId,
+      displayName: updates.displayName || updates.name || existingMethod.displayName || methodId,
+      name: updates.name || updates.displayName || existingMethod.name || methodId,
+      isEnabled: updates.isEnabled ?? updates.enabled ?? existingMethod.isEnabled ?? true,
+      enabled: updates.enabled ?? updates.isEnabled ?? existingMethod.enabled ?? true,
+    };
+
+    currentMethods[matchedKey] = updatedMethod;
+
+    await setDoc(
+      docRef,
+      {
+        ...existing,
+        methods: currentMethods,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+  }
+
+  /**
+   * Fetch a student's current active subscription
+   */
+  async getStudentSubscription(userId: string): Promise<Subscription | null> {
+    try {
+      const subRef = doc(db, SUBSCRIPTIONS_COLLECTION, userId);
+      const snap = await getDoc(subRef);
+      if (snap.exists()) {
+        const data = snap.data() as Subscription;
+        if (
+          data.status === 'ACTIVE' &&
+          new Date(data.expiryDate).getTime() < Date.now()
+        ) {
+          data.status = 'EXPIRED';
+        }
+        return data;
+      }
+      return null;
+    } catch (err) {
+      console.warn('Could not get student subscription:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Fetch a student's payment records
+   */
+  async getStudentPayments(userId: string): Promise<PaymentRecord[]> {
+    return this.getUserPayments(userId);
+  }
+
+  /**
    * Super Admin update pricing configuration
-   * Requires SUPER_ADMIN authorization, validation, and logs old/new price, date/time, adminId
+   * Requires SUPER_ADMIN authorization, validation, and logs audit trail
    */
   async updatePricingConfig(
-    config: SubscriptionPricingConfig,
-    actorEmail: string,
-    actorId: string,
+    config: any,
+    actorEmailOrObj?: string | { uid?: string; email?: string },
+    actorId?: string,
     oldConfig?: SubscriptionPricingConfig,
     reason?: string
   ): Promise<void> {
+    const actorEmail =
+      typeof actorEmailOrObj === 'string'
+        ? actorEmailOrObj
+        : actorEmailOrObj?.email || SUPER_ADMIN_EMAIL;
+    const adminId =
+      actorId ||
+      (typeof actorEmailOrObj === 'object' ? actorEmailOrObj?.uid : undefined) ||
+      'super_admin_id';
+
     // 1. Authorization check
     if (!isSuperAdmin(actorEmail)) {
       throw new Error('Unauthorized. Only Super Admin (mejennur669@gmail.com) can update pricing.');
     }
 
+    const grade9 = config.gradeMonthlyPrices ? config.gradeMonthlyPrices[9] : config.grade9Price;
+    const grade10 = config.gradeMonthlyPrices ? config.gradeMonthlyPrices[10] : config.grade10Price;
+    const grade11 = config.gradeMonthlyPrices ? config.gradeMonthlyPrices[11] : config.grade11Price;
+    const grade12 = config.gradeMonthlyPrices ? config.gradeMonthlyPrices[12] : config.grade12Price;
+    const durationDays = config.billingCycleDays || config.subscriptionDurationDays || 30;
+
     // 2. Strict validation: prices must be positive numbers
-    if (
-      config.grade9Price <= 0 ||
-      config.grade10Price <= 0 ||
-      config.grade11Price <= 0 ||
-      config.grade12Price <= 0
-    ) {
+    if (grade9 <= 0 || grade10 <= 0 || grade11 <= 0 || grade12 <= 0) {
       throw new Error('Validation error: All grade prices must be positive numbers greater than 0.');
     }
-    if (config.subscriptionDurationDays <= 0) {
+    if (durationDays <= 0) {
       throw new Error('Validation error: Subscription duration must be greater than 0 days.');
     }
 
     const docRef = doc(db, SETTINGS_COLLECTION, 'subscription_pricing');
     const nowIso = new Date().toISOString();
-    await setDoc(docRef, {
-      ...config,
+    const payload = {
+      grade9Price: Number(grade9),
+      grade10Price: Number(grade10),
+      grade11Price: Number(grade11),
+      grade12Price: Number(grade12),
+      subscriptionDurationDays: Number(durationDays),
+      renewalReminderDays: config.renewalReminderDays || 3,
+      methods: config.methods || DEFAULT_PRICING_CONFIG.methods,
+      gradeMonthlyPrices: {
+        9: Number(grade9),
+        10: Number(grade10),
+        11: Number(grade11),
+        12: Number(grade12),
+      },
+      billingCycleDays: Number(durationDays),
+      currency: config.currency || 'ETB',
+      freeTierEnabled: config.freeTierEnabled ?? false,
       updatedAt: nowIso,
       updatedBy: actorEmail,
-    });
+    };
+
+    await setDoc(docRef, payload, { merge: true });
 
     const oldPricesStr = oldConfig
       ? `G9: ${oldConfig.grade9Price} ETB, G10: ${oldConfig.grade10Price} ETB, G11: ${oldConfig.grade11Price} ETB, G12: ${oldConfig.grade12Price} ETB`
       : 'Previous default config';
-    const newPricesStr = `G9: ${config.grade9Price} ETB, G10: ${config.grade10Price} ETB, G11: ${config.grade11Price} ETB, G12: ${config.grade12Price} ETB`;
+    const newPricesStr = `G9: ${grade9} ETB, G10: ${grade10} ETB, G11: ${grade11} ETB, G12: ${grade12} ETB`;
 
     await this.logPaymentAudit({
       action: 'PRICING_UPDATED',
-      actorId,
+      actorId: adminId,
       actorEmail,
       actorRole: 'SUPER_ADMIN',
-      adminId: actorId,
+      adminId,
       timestamp: nowIso,
       previousStatus: oldPricesStr,
       newStatus: newPricesStr,
       reason: reason || 'Super Admin pricing configuration update',
-      details: `Super Admin updated prices from [${oldPricesStr}] to [${newPricesStr}]. Duration: ${config.subscriptionDurationDays} days`,
+      details: `Super Admin updated prices from [${oldPricesStr}] to [${newPricesStr}]. Duration: ${durationDays} days`,
       metadata: {
         oldPrices: oldConfig || null,
         newPrices: {
-          grade9Price: config.grade9Price,
-          grade10Price: config.grade10Price,
-          grade11Price: config.grade11Price,
-          grade12Price: config.grade12Price,
+          grade9Price: grade9,
+          grade10Price: grade10,
+          grade11Price: grade11,
+          grade12Price: grade12,
         },
-        durationDays: config.subscriptionDurationDays,
-        adminId: actorId,
-        adminEmail: actorEmail,
       },
     });
   }
@@ -433,6 +616,24 @@ class SubscriptionService {
       updatedAt: nowIso,
     });
 
+    // 2b. PART 4 & 7: Provision Server-Side Verified Entitlement
+    const entitlementRef = doc(db, ENTITLEMENTS_COLLECTION, params.studentUserId);
+    const entitlementData: Entitlement = {
+      id: params.studentUserId,
+      studentId: params.studentUserId,
+      entitlementType: 'ALL_PREMIUM',
+      plan: `Grade ${params.grade} Monthly Premium`,
+      premium: true,
+      grade: params.grade,
+      status: 'ACTIVE',
+      startDate: nowIso,
+      endDate: expiryDate,
+      sourcePaymentId: params.paymentId,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    await setDoc(entitlementRef, entitlementData, { merge: true });
+
     // 3. Audit Log
     await this.logPaymentAudit({
       paymentId: params.paymentId,
@@ -503,6 +704,18 @@ class SubscriptionService {
       // ignore if doc missing
     }
 
+    // 2b. Revoke Entitlement
+    try {
+      const entRef = doc(db, ENTITLEMENTS_COLLECTION, params.studentUserId);
+      await updateDoc(entRef, {
+        status: 'REVOKED',
+        premium: false,
+        updatedAt: nowIso,
+      });
+    } catch {
+      // ignore if not found
+    }
+
     // 3. Audit Log
     await this.logPaymentAudit({
       paymentId: params.paymentId,
@@ -545,14 +758,36 @@ class SubscriptionService {
    */
   async superAdminToggleSubscriptionSuspension(
     userId: string,
-    action: 'SUSPEND' | 'REACTIVATE',
-    adminEmail: string,
-    adminId: string,
-    reason?: string
+    actionOrBool: 'SUSPEND' | 'REACTIVATE' | boolean,
+    arg3?: string | { uid?: string; email?: string },
+    arg4?: string | { uid?: string; email?: string },
+    arg5?: string
   ): Promise<void> {
+    const isSuspending = actionOrBool === true || actionOrBool === 'SUSPEND';
+    const action: 'SUSPEND' | 'REACTIVATE' = isSuspending ? 'SUSPEND' : 'REACTIVATE';
+    const newStatus = isSuspending ? 'SUSPENDED' : 'ACTIVE';
+
+    let adminEmail = SUPER_ADMIN_EMAIL;
+    let adminId = 'super_admin_id';
+    let reason = '';
+
+    if (typeof arg3 === 'string' && (arg3.includes('@') || !arg3.trim().includes(' '))) {
+      adminEmail = arg3;
+      adminId = typeof arg4 === 'string' ? arg4 : (arg4?.uid || 'super_admin_id');
+      reason = arg5 || '';
+    } else if (typeof arg3 === 'string') {
+      reason = arg3;
+      if (typeof arg4 === 'object' && arg4) {
+        adminEmail = arg4.email || SUPER_ADMIN_EMAIL;
+        adminId = arg4.uid || 'super_admin_id';
+      }
+    } else if (typeof arg3 === 'object' && arg3) {
+      adminEmail = arg3.email || SUPER_ADMIN_EMAIL;
+      adminId = arg3.uid || 'super_admin_id';
+    }
+
     const nowIso = new Date().toISOString();
     const subRef = doc(db, SUBSCRIPTIONS_COLLECTION, userId);
-    const newStatus = action === 'SUSPEND' ? 'SUSPENDED' : 'ACTIVE';
 
     await updateDoc(subRef, {
       status: newStatus,
@@ -561,16 +796,16 @@ class SubscriptionService {
 
     await this.logPaymentAudit({
       subscriptionId: userId,
-      action: action === 'SUSPEND' ? 'SUBSCRIPTION_SUSPENDED' : 'SUBSCRIPTION_REACTIVATED',
+      action: isSuspending ? 'SUBSCRIPTION_SUSPENDED' : 'SUBSCRIPTION_REACTIVATED',
       actorId: adminId,
       adminId,
       actorEmail: adminEmail,
       actorRole: 'SUPER_ADMIN',
       timestamp: nowIso,
-      previousStatus: action === 'SUSPEND' ? 'ACTIVE' : 'SUSPENDED',
+      previousStatus: isSuspending ? 'ACTIVE' : 'SUSPENDED',
       newStatus,
       reason: reason || 'Admin action',
-      details: `Super Admin ${action === 'SUSPEND' ? 'suspended' : 'reactivated'} subscription. Reason: ${reason || 'Admin action'}`,
+      details: `Super Admin ${isSuspending ? 'suspended' : 'reactivated'} subscription. Reason: ${reason || 'Admin action'}`,
       metadata: {
         reason: reason || 'Admin action',
         adminId,
@@ -777,6 +1012,53 @@ class SubscriptionService {
       respondedAt: nowIso,
       updatedAt: nowIso,
     });
+  }
+
+  /**
+   * Fetch verified student entitlement
+   */
+  async getStudentEntitlement(studentId: string): Promise<Entitlement | null> {
+    try {
+      const snap = await getDoc(doc(db, ENTITLEMENTS_COLLECTION, studentId));
+      if (snap.exists()) {
+        const ent = snap.data() as Entitlement;
+        if (ent.status === 'ACTIVE' && new Date(ent.endDate).getTime() < Date.now()) {
+          ent.status = 'EXPIRED';
+        }
+        return ent;
+      }
+    } catch (e) {
+      console.warn('Error fetching entitlement:', e);
+    }
+    return null;
+  }
+
+  /**
+   * Listen to student entitlement changes in real time
+   */
+  subscribeToStudentEntitlement(
+    studentId: string,
+    callback: (entitlement: Entitlement | null) => void
+  ): Unsubscribe {
+    const entRef = doc(db, ENTITLEMENTS_COLLECTION, studentId);
+    return onSnapshot(
+      entRef,
+      (snap) => {
+        if (snap.exists()) {
+          const ent = snap.data() as Entitlement;
+          if (ent.status === 'ACTIVE' && new Date(ent.endDate).getTime() < Date.now()) {
+            ent.status = 'EXPIRED';
+          }
+          callback(ent);
+        } else {
+          callback(null);
+        }
+      },
+      (err) => {
+        console.warn('Entitlement snapshot error:', err);
+        callback(null);
+      }
+    );
   }
 }
 

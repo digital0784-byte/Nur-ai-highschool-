@@ -19,6 +19,7 @@ export type TutorFeatureType =
   | 'recommend_lesson'
   | 'recommend_next_lesson'
   | 'photo_solver'
+  | 'deep_research_analysis'
   | 'voice';
 
 export interface TextbookCitation {
@@ -292,4 +293,6 @@ export interface TutorActionRequest {
   audioPrompt?: string;
   sessionId?: string;
   userId?: string;
+  allowExternalResearch?: boolean;
+  researchMode?: 'curriculum' | 'deep_analysis' | 'comparative' | 'real_world' | 'university_level' | 'book_recommendations' | 'sources_used';
 }

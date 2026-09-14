@@ -5,6 +5,7 @@ import {
   EntranceMockAttempt,
   EntranceStream,
   TopicPerformance,
+  MockExamAnswer,
 } from '../../types/entranceExam';
 import { Grade } from '../../types';
 import {
@@ -222,6 +223,7 @@ export const MockExamView: React.FC<MockExamViewProps> = ({
       topicPerformance: {},
       difficultyPerformance: {},
       weakAreas,
+      recommendedRevision: recommendations,
       recommendations,
       answers: examQuestions.reduce((acc, q, idx) => {
         acc[q.id] = {

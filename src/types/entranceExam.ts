@@ -179,10 +179,12 @@ export interface EntranceMockAttempt {
   timeUsedSeconds: number;
   subjectPerformance: Record<string, { score: number; total: number; accuracy: number }>;
   subjectBreakdown?: Record<string, { score: number; total: number; percentage: number }>;
+  topicBreakdown?: Record<string, any>;
+  difficultyBreakdown?: Record<string, any>;
   topicPerformance: Record<string, { score: number; total: number; accuracy: number; weak: boolean }>;
   difficultyPerformance: Record<string, { score: number; total: number }>;
   weakAreas: string[];
-  recommendedRevision: string[];
+  recommendedRevision?: string[];
   recommendations?: string[];
   answers: Record<string, MockExamAnswer>;
   completedAt: string;

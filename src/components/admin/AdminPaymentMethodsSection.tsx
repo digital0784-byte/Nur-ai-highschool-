@@ -152,7 +152,7 @@ export const AdminPaymentMethodsSection: React.FC = () => {
               <div className="p-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-white border border-stone-200 flex items-center justify-center font-bold text-stone-800 shadow-xs">
-                    {m.id === 'telebirr' ? (
+                    {(m.id as string).toLowerCase().includes('telebirr') ? (
                       <Smartphone className="w-4 h-4 text-teal-600" />
                     ) : (
                       <Building className="w-4 h-4 text-emerald-700" />

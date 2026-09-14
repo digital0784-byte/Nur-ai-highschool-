@@ -94,19 +94,27 @@ export const AdminRevenueAnalyticsSection: React.FC = () => {
 
   // Revenue by Payment Method (Approved payments only)
   const revenueByMethod = useMemo(() => {
-    const map: Record<PaymentMethodName, { amount: number; count: number }> = {
-      telebirr: { amount: 0, count: 0 },
-      cbe: { amount: 0, count: 0 },
-      dashen: { amount: 0, count: 0 },
-      boa: { amount: 0, count: 0 },
+    const map: Record<string, { amount: number; count: number }> = {
+      'Telebirr': { amount: 0, count: 0 },
+      'Commercial Bank of Ethiopia (CBE)': { amount: 0, count: 0 },
+      'Dashen Bank': { amount: 0, count: 0 },
+      'Bank of Abyssinia': { amount: 0, count: 0 },
     };
 
     approvedPayments.forEach((p) => {
-      const m = p.paymentMethod || 'telebirr';
-      if (map[m]) {
-        map[m].amount += p.amountETB || 0;
-        map[m].count += 1;
+      const m = p.paymentMethod || 'Telebirr';
+      let key = m;
+      const lower = m.toLowerCase();
+      if (lower.includes('telebirr')) key = 'Telebirr';
+      else if (lower.includes('cbe') || lower.includes('commercial')) key = 'Commercial Bank of Ethiopia (CBE)';
+      else if (lower.includes('dashen')) key = 'Dashen Bank';
+      else if (lower.includes('abyssinia') || lower.includes('boa')) key = 'Bank of Abyssinia';
+
+      if (!map[key]) {
+        map[key] = { amount: 0, count: 0 };
       }
+      map[key].amount += p.amountETB || 0;
+      map[key].count += 1;
     });
 
     return map;
@@ -320,12 +328,12 @@ export const AdminRevenueAnalyticsSection: React.FC = () => {
 
           <div className="space-y-3 pt-2">
             {[
-              { id: 'telebirr' as PaymentMethodName, name: 'Telebirr (ቴሌብር)', color: 'bg-teal-500' },
-              { id: 'cbe' as PaymentMethodName, name: 'CBE (የኢትዮጵያ ንግድ ባንክ)', color: 'bg-purple-600' },
-              { id: 'dashen' as PaymentMethodName, name: 'Dashen Bank (ዳሽን ባንክ)', color: 'bg-blue-600' },
-              { id: 'boa' as PaymentMethodName, name: 'Bank of Abyssinia (አቢሲኒያ)', color: 'bg-amber-600' },
+              { id: 'Telebirr', name: 'Telebirr (ቴሌብር)', color: 'bg-teal-500' },
+              { id: 'Commercial Bank of Ethiopia (CBE)', name: 'CBE (የኢትዮጵያ ንግድ ባንክ)', color: 'bg-purple-600' },
+              { id: 'Dashen Bank', name: 'Dashen Bank (ዳሽን ባንክ)', color: 'bg-blue-600' },
+              { id: 'Bank of Abyssinia', name: 'Bank of Abyssinia (አቢሲኒያ)', color: 'bg-amber-600' },
             ].map((m) => {
-              const data = revenueByMethod[m.id];
+              const data = revenueByMethod[m.id] || { amount: 0, count: 0 };
               const pct = totalRevenue > 0 ? Math.round((data.amount / totalRevenue) * 100) : 0;
               return (
                 <div key={m.id} className="space-y-1">

@@ -11,10 +11,11 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { GradeLevel, SubjectKnowledgeMap, KnowledgeNode } from '../../types/curriculumEngine';
-import { LanguageCode } from '../../types';
+import { Grade, LanguageCode } from '../../types';
 import { StudentTopicMastery, StudentMasteryLevel } from '../../types/studentApp';
 import { ethiopianCurriculumEngine } from '../../engine/curriculumRegistry';
 import { studentAppFirestore } from '../../services/studentAppFirestore';
+import { KnowledgeMapHub } from '../knowledgeMap/KnowledgeMapHub';
 
 interface StudentKnowledgeMapScreenProps {
   grade: GradeLevel;
@@ -29,6 +30,7 @@ export const StudentKnowledgeMapScreen: React.FC<StudentKnowledgeMapScreenProps>
   darkMode,
   onOpenTopic,
 }) => {
+  const [viewMode, setViewMode] = useState<'hub' | 'dag'>('hub');
   const subjects = ethiopianCurriculumEngine.getSubjectsByGrade(grade);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(subjects[0]?.id || 'math-g9');
   const [knowledgeMap, setKnowledgeMap] = useState<SubjectKnowledgeMap | undefined>(() =>
@@ -67,7 +69,43 @@ export const StudentKnowledgeMapScreen: React.FC<StudentKnowledgeMapScreenProps>
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      {/* Header Bar */}
+      {/* Top View Toggle */}
+      <div className="flex items-center justify-between bg-white dark:bg-[#211F26] p-3 rounded-2xl border border-[#E6E0E9] dark:border-[#36343B] shadow-2xs">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setViewMode('hub')}
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              viewMode === 'hub'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            AI Analytics & Early Warning Engine
+          </button>
+          <button
+            onClick={() => setViewMode('dag')}
+            className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${
+              viewMode === 'dag'
+                ? 'bg-[#6750A4] text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            Curriculum DAG Graph
+          </button>
+        </div>
+      </div>
+
+      {viewMode === 'hub' ? (
+        <KnowledgeMapHub
+          currentGrade={grade as Grade}
+          language={language}
+          userRole="student"
+          onNavigateToTopic={(topicId, subject) => onOpenTopic(subject, topicId)}
+          onOpenAITutor={() => {}}
+        />
+      ) : (
+        <>
+          {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6E0E9] dark:border-[#36343B]">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase bg-[#EADDFF] text-[#21005D] dark:bg-[#4F378B] dark:text-[#EADDFF]">
@@ -240,6 +278,8 @@ export const StudentKnowledgeMapScreen: React.FC<StudentKnowledgeMapScreenProps>
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 };

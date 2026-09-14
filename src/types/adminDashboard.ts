@@ -239,8 +239,11 @@ export interface SystemSettings {
 export type AdminActiveSubTab =
   | 'overview'
   | 'students'
+  | 'voice_tutor_analytics'
+  | 'research_sources'
   | 'payments_billing'
   | 'subscriptions'
+  | 'premium_content_protection'
   | 'pricing_management'
   | 'payment_methods'
   | 'revenue_analytics'

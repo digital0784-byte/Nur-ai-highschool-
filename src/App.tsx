@@ -54,7 +54,7 @@ function TutorialAppContent() {
   const { userProfile } = useAuth();
   const { isOwnerSuperAdmin, hasLearningAccess, loading: subscriptionLoading } = useSubscription();
   const { awardQuizXP, updateStreak } = useGamification();
-  const { addNotification } = useNotifications();
+  const { sendNotification } = useNotifications();
 
   // Application State
   const [selectedGrade, setSelectedGrade] = useState<Grade>(9);
@@ -252,18 +252,22 @@ function TutorialAppContent() {
                       userRole={userProfile?.role === 'admin' || isOwnerSuperAdmin ? 'SUPER_ADMIN' : 'STUDENT'}
                       onAwardXP={(amount, reason) => {
                         awardQuizXP('entrance-prep-session', Math.min(amount, 100), 100);
-                        addNotification({
+                        sendNotification({
                           title: 'የፈተና ነጥብ ተጨምሯል (+XP)',
-                          message: `${reason}: +${amount} XP ተቀዳጅተዋል!`,
-                          type: 'achievement',
+                          body: `${reason}: +${amount} XP ተቀዳጅተዋል!`,
+                          type: 'admin_notification',
+                          recipientId: userProfile?.uid || 'guest-student',
+                          recipientRole: 'student',
                         });
                       }}
                       onIncrementStreak={() => {
                         updateStreak();
-                        addNotification({
+                        sendNotification({
                           title: 'የጥናት ጽናት ቀጥሏል (Streak +1)',
-                          message: 'የዕለቱ የመግቢያ ፈተና ልምምድዎን አጠናቀዋል!',
-                          type: 'streak',
+                          body: 'የዕለቱ የመግቢያ ፈተና ልምምድዎን አጠናቀዋል!',
+                          type: 'admin_notification',
+                          recipientId: userProfile?.uid || 'guest-student',
+                          recipientRole: 'student',
                         });
                       }}
                     />

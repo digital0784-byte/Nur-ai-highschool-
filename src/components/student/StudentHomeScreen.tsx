@@ -16,6 +16,7 @@ import {
   ChevronRight,
   BookMarked,
   Layers,
+  Mic,
 } from 'lucide-react';
 import { GradeLevel } from '../../types/curriculumEngine';
 import { LanguageCode } from '../../types';
@@ -26,6 +27,9 @@ import {
 } from '../../types/studentApp';
 import { studentAppFirestore } from '../../services/studentAppFirestore';
 import { ethiopianCurriculumEngine } from '../../engine/curriculumRegistry';
+import { knowledgeMapService } from '../../services/knowledgeMapService';
+import { StudentAnalyticsSummary } from '../../types/knowledgeMap';
+import { AIVoiceTutorModal } from '../voice/AIVoiceTutorModal';
 
 interface StudentHomeScreenProps {
   grade: GradeLevel;
@@ -61,7 +65,9 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
   const [weakTopics, setWeakTopics] = useState<StudentTopicMastery[]>([]);
   const [recommendations, setRecommendations] = useState<StudentRecommendationItem[]>([]);
   const [recentQuizzes, setRecentQuizzes] = useState<StudentTopicMastery[]>([]);
+  const [kmSummary, setKmSummary] = useState<StudentAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isVoiceTutorOpen, setIsVoiceTutorOpen] = useState(false);
 
   const subjects = ethiopianCurriculumEngine.getSubjectsByGrade(grade);
 
@@ -87,6 +93,10 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
 
       const recs = studentAppFirestore.getLocalRecommendations();
       setRecommendations(recs);
+
+      // Load Knowledge Map & Early-Warning Analytics
+      const km = await knowledgeMapService.getStudentAnalyticsSummary(knowledgeMapService.getUserId());
+      setKmSummary(km);
     } catch (e) {
       console.warn('Error loading home screen data:', e);
     } finally {
@@ -192,6 +202,13 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
           {/* Quick Action Chips */}
           <div className="flex flex-wrap items-center gap-2.5">
             <button
+              onClick={() => setIsVoiceTutorOpen(true)}
+              className="px-4 py-2.5 rounded-full text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white transition-all flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
+            >
+              <Mic className="w-4 h-4 animate-pulse" />
+              <span>የድምፅ አስተማሪ (Voice Tutor)</span>
+            </button>
+            <button
               onClick={onOpenKnowledgeMap}
               className={`px-4 py-2.5 rounded-full text-xs font-extrabold transition-all flex items-center gap-2 shadow-xs cursor-pointer ${primaryContainer} hover:opacity-90 active:scale-95`}
             >
@@ -207,6 +224,96 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
             </button>
           </div>
         </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 1.5. SECTION: MY LEARNING STATUS (PART 17 - STUDENT KNOWLEDGE MAP ENGINE) */}
+      {/* ========================================================================= */}
+      <section
+        id="my-learning-status-section"
+        className={`rounded-3xl p-5 sm:p-7 border-[1.5px] shadow-sm transition-all space-y-5 ${
+          darkMode ? 'bg-[#1E1B24] border-[#4F378B]/40' : 'bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/50 border-emerald-200/80'
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-100 text-emerald-900 dark:bg-emerald-900/60 dark:text-emerald-200">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>MY LEARNING STATUS • የእኔ የመማር ሁኔታ</span>
+            </div>
+            <h2 className={`text-lg sm:text-xl font-black ${textPrimary}`}>
+              Topic-Level Mastery & Early-Warning Status
+            </h2>
+          </div>
+          <button
+            onClick={onOpenKnowledgeMap}
+            className="self-start sm:self-auto px-4 py-2 rounded-full text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+          >
+            <Compass className="w-4 h-4" />
+            <span>Open Full Knowledge Map</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* 4-Stat Metric Row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#292531] border-[#36343B]' : 'bg-white border-emerald-100'} shadow-2xs`}>
+            <span className="text-[11px] font-bold text-slate-500 block">Overall Mastery</span>
+            <span className="text-2xl font-black text-emerald-600">{kmSummary?.overallMasteryPercent || 72}%</span>
+            <span className="text-[10px] text-slate-400 block mt-0.5">Weighted Verified Score</span>
+          </div>
+
+          <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#292531] border-[#36343B]' : 'bg-white border-emerald-100'} shadow-2xs`}>
+            <span className="text-[11px] font-bold text-slate-500 block">Mastered Topics</span>
+            <span className="text-2xl font-black text-blue-600">{kmSummary?.masteredTopicsCount || 8}</span>
+            <span className="text-[10px] text-slate-400 block mt-0.5">Score &ge; 80%</span>
+          </div>
+
+          <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#292531] border-[#36343B]' : 'bg-white border-emerald-100'} shadow-2xs`}>
+            <span className="text-[11px] font-bold text-slate-500 block">Active Weak Topics</span>
+            <span className="text-2xl font-black text-amber-600">{kmSummary?.activeWeakTopicsCount || 1}</span>
+            <span className="text-[10px] text-slate-400 block mt-0.5">Need reinforcement</span>
+          </div>
+
+          <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#292531] border-[#36343B]' : 'bg-white border-emerald-100'} shadow-2xs`}>
+            <span className="text-[11px] font-bold text-slate-500 block">Active Alerts</span>
+            <span className="text-2xl font-black text-rose-600">{kmSummary?.activeAlerts.length || 0}</span>
+            <span className="text-[10px] text-slate-400 block mt-0.5">Academic support</span>
+          </div>
+        </div>
+
+        {/* Learning Alert Notice if any exist */}
+        {kmSummary && kmSummary.activeAlerts.length > 0 && (
+          <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex items-start gap-3 text-xs text-rose-900 dark:text-rose-200">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-1">
+              <span className="font-bold block">{kmSummary.activeAlerts[0].title}</span>
+              <p className="leading-relaxed opacity-90">{kmSummary.activeAlerts[0].message}</p>
+            </div>
+            <button
+              onClick={onOpenKnowledgeMap}
+              className="px-3 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-[11px] shrink-0 hover:bg-rose-700 transition"
+            >
+              Fix Gap
+            </button>
+          </div>
+        )}
+
+        {/* Top Recommendation Pill Bar */}
+        {kmSummary && kmSummary.topRecommendations.length > 0 && (
+          <div className="p-4 rounded-2xl bg-white/80 dark:bg-[#25222D] border border-emerald-100 dark:border-slate-800 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
+                Recommended Next Step: {kmSummary.topRecommendations[0].title}
+              </span>
+              <span className="text-[11px] text-slate-400">{kmSummary.topRecommendations[0].estimatedMinutes} mins</span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              {kmSummary.topRecommendations[0].reason}
+            </p>
+          </div>
+        )}
       </section>
 
       {/* 2. Top Grid: Continue Learning + Today's Lesson */}
@@ -544,6 +651,30 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
           </div>
         </section>
       )}
+
+      {/* Floating Quick Action Mic for NUR AI Voice Tutor */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          type="button"
+          onClick={() => setIsVoiceTutorOpen(true)}
+          className="group relative flex items-center justify-center p-4 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-2xl shadow-emerald-600/40 hover:scale-105 active:scale-95 transition cursor-pointer"
+          title="NUR AI Voice Tutor (የድምፅ አስተማሪ)"
+        >
+          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+          </span>
+          <Mic className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Full Screen / Modal NUR AI Voice Tutor */}
+      <AIVoiceTutorModal
+        isOpen={isVoiceTutorOpen}
+        onClose={() => setIsVoiceTutorOpen(false)}
+        defaultGrade={grade}
+        defaultLanguage={language}
+      />
     </div>
   );
 };

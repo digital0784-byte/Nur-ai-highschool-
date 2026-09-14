@@ -27,6 +27,12 @@ import {
   RotateCcw,
   X,
   Upload,
+  Scale,
+  Globe,
+  GraduationCap,
+  Library,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { GradeLevel } from '../types/curriculumEngine';
 import { LanguageCode, Subject } from '../types';
@@ -41,6 +47,7 @@ import {
   LearningRecommendationRecord,
   PhotoQuestionSolution,
 } from '../types/aiTutor';
+import { AnalysisMode, DeepAnalysisResult, ValidatedCitation } from '../types/researchAnalysis';
 import { aiTutorFirestore } from '../services/aiTutorFirestore';
 
 interface EthiopianAITutorViewProps {
@@ -92,6 +99,8 @@ export const EthiopianAITutorView: React.FC<EthiopianAITutorViewProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [activeFeature, setActiveFeature] = useState<TutorFeatureType>('ask_question');
   const [hintLevel, setHintLevel] = useState<1 | 2 | 3>(1);
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('curriculum');
+  const [expandedCitations, setExpandedCitations] = useState<Record<string, boolean>>({});
 
   // Messages & Session state
   const [sessionId, setSessionId] = useState<string>(() => 'sess_' + Date.now());
@@ -255,6 +264,8 @@ export const EthiopianAITutorView: React.FC<EthiopianAITutorViewProps> = ({
           studentAnswer: additionalParams.studentAnswer,
           previousQuestion: additionalParams.previousQuestion,
           correctAnswer: additionalParams.correctAnswer,
+          allowExternalResearch: analysisMode !== 'curriculum',
+          analysisMode: analysisMode !== 'curriculum' ? analysisMode : undefined,
           ...additionalParams,
         }),
       });
@@ -280,6 +291,10 @@ export const EthiopianAITutorView: React.FC<EthiopianAITutorViewProps> = ({
         metadata: {
           hintLevel: data.hintLevel,
           evaluation: data.evaluation,
+          twoLayerKnowledge: data.twoLayerKnowledge,
+          deepAnalysisResult: data.deepAnalysisResult,
+          externalCitations: data.externalCitations,
+          analysisMode: data.analysisMode || (analysisMode !== 'curriculum' ? analysisMode : undefined),
         },
       };
 
@@ -743,8 +758,14 @@ export const EthiopianAITutorView: React.FC<EthiopianAITutorViewProps> = ({
                         <Sparkles className="w-3 h-3 text-amber-600" />
                         <span className="font-extrabold text-[#38332D]">ኑር AI አስተማሪ</span>
                         {msg.groundedInTextbook && (
-                          <span className="ml-1 px-1.5 py-0.2 rounded text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">
-                            ✓ ከመማሪያ መጽሐፍ የተረጋገጠ
+                          <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">
+                            ✓ Layer 1: ከመማሪያ መጽሐፍ የተረጋገጠ
+                          </span>
+                        )}
+                        {msg.metadata?.twoLayerKnowledge && (
+                          <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] bg-indigo-100 text-indigo-800 border border-indigo-300 font-bold inline-flex items-center gap-0.5">
+                            <GraduationCap className="w-2.5 h-2.5 text-indigo-700" />
+                            Layer 2: ተጨማሪ ውጫዊ ምርምር
                           </span>
                         )}
                       </>
@@ -758,20 +779,72 @@ export const EthiopianAITutorView: React.FC<EthiopianAITutorViewProps> = ({
                         : 'bg-white text-[#24211E] border-[#38332D] rounded-tl-none'
                     }`}
                   >
-                    {/* Citations Header if present */}
-                    {!isUser && msg.citations && msg.citations.length > 0 && (
-                      <div className="mb-3 p-2.5 rounded-lg bg-[#FAF6EC] border border-[#E3DAC4] flex items-start gap-2 text-xs">
-                        <BookOpen className="w-4 h-4 text-amber-800 shrink-0 mt-0.5" />
-                        <div className="text-[#38332D]">
-                          <span className="font-extrabold text-amber-900 block">
-                            📖 ይፋዊ የመማሪያ መጽሐፍ ምንጭ (Official Textbook Citation):
-                          </span>
-                          <span className="font-bold">
-                            ክፍል {msg.citations[0].grade} {msg.citations[0].subject} | ምዕራፍ{' '}
-                            {msg.citations[0].unit}: {msg.citations[0].unitTitle} | ገጽ{' '}
-                            {msg.citations[0].page}
-                          </span>
-                        </div>
+                    {/* Two-Layer Citations Header if present */}
+                    {!isUser && ((msg.citations && msg.citations.length > 0) || (msg.metadata?.externalCitations && msg.metadata.externalCitations.length > 0)) && (
+                      <div className="mb-3 p-2.5 rounded-lg bg-[#FAF6EC] border border-[#E3DAC4] space-y-2 text-xs">
+                        {/* Layer 1: Ethiopian Curriculum Citation */}
+                        {msg.citations && msg.citations.length > 0 && (
+                          <div className="flex items-start gap-2">
+                            <BookOpen className="w-4 h-4 text-emerald-800 shrink-0 mt-0.5" />
+                            <div className="text-[#38332D]">
+                              <span className="font-extrabold text-emerald-900 block">
+                                📖 ደረጃ 1፦ ይፋዊ የመማሪያ መጽሐፍ ምንጭ (Primary Curriculum Citation):
+                              </span>
+                              <span className="font-bold text-[11px]">
+                                ክፍል {msg.citations[0].grade} {msg.citations[0].subject} | ምዕራፍ{' '}
+                                {msg.citations[0].unit}: {msg.citations[0].unitTitle} | ገጽ{' '}
+                                {msg.citations[0].page}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Layer 2: External Academic Research Citations */}
+                        {msg.metadata?.externalCitations && msg.metadata.externalCitations.length > 0 && (
+                          <div className="pt-1.5 border-t border-[#E3DAC4]/60 flex items-start gap-2">
+                            <GraduationCap className="w-4 h-4 text-indigo-800 shrink-0 mt-0.5" />
+                            <div className="text-[#38332D] flex-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-extrabold text-indigo-900 block">
+                                  🔬 ደረጃ 2-5፦ የተረጋገጡ ውጫዊ የምርምር ምንጮች ({msg.metadata.externalCitations.length}):
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setExpandedCitations((prev) => ({ ...prev, [msg.id]: !prev[msg.id] }))}
+                                  className="text-[10px] text-indigo-700 hover:text-indigo-900 font-bold flex items-center gap-0.5 cursor-pointer"
+                                >
+                                  {expandedCitations[msg.id] ? (
+                                    <><span>አሳንስ</span><ChevronUp className="w-3 h-3" /></>
+                                  ) : (
+                                    <><span>ዝርዝር ምንጮች</span><ChevronDown className="w-3 h-3" /></>
+                                  )}
+                                </button>
+                              </div>
+                              <div className="text-[11px] text-stone-600 font-medium">
+                                {msg.metadata.externalCitations.map((c: any) => c.sourceTitle).join(' • ')}
+                              </div>
+
+                              {/* Expanded Citations List */}
+                              {expandedCitations[msg.id] && (
+                                <div className="mt-2 space-y-1.5">
+                                  {msg.metadata.externalCitations.map((cit: any, cIdx: number) => (
+                                    <div key={cIdx} className="p-2 rounded bg-white/80 border border-indigo-100 text-[11px]">
+                                      <div className="font-bold text-indigo-950 flex items-center gap-1.5">
+                                        <span>{cit.sourceTitle}</span>
+                                        <span className="px-1.5 py-0.2 rounded text-[9px] bg-indigo-50 text-indigo-700 font-mono">
+                                          ደረጃ {cit.priorityLevel}
+                                        </span>
+                                      </div>
+                                      <div className="text-stone-500 text-[10px]">
+                                        {cit.author} • {cit.publisher} ({cit.year})
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -779,6 +852,22 @@ export const EthiopianAITutorView: React.FC<EthiopianAITutorViewProps> = ({
                     <div className="whitespace-pre-wrap font-sans text-xs sm:text-sm">
                       {msg.content}
                     </div>
+
+                    {/* Deep Analysis Real-World Context Card if available */}
+                    {msg.metadata?.deepAnalysisResult?.realWorldApplications && msg.metadata.deepAnalysisResult.realWorldApplications.length > 0 && (
+                      <div className="mt-3 p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 text-emerald-950 text-xs">
+                        <div className="font-extrabold flex items-center gap-1 text-emerald-900 mb-1">
+                          <span>🇪🇹</span>
+                          <span>ተጨባጭ የሀገር ውስጥ አተገባበር (Ethiopian Real-World Application):</span>
+                        </div>
+                        {msg.metadata.deepAnalysisResult.realWorldApplications.map((app: any, aIdx: number) => (
+                          <div key={aIdx} className="text-[11px] text-stone-700 mt-1">
+                            <span className="font-bold text-emerald-800">• {app.domain} ({app.ethiopianContext}): </span>
+                            <span>{app.application}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Evaluation Box if present */}
                     {msg.metadata?.evaluation && (
@@ -849,6 +938,49 @@ export const EthiopianAITutorView: React.FC<EthiopianAITutorViewProps> = ({
             id="tutor-input-container"
             className="border-t-[1.5px] border-[#38332D] bg-[#EDE6D4] p-3 sm:p-4"
           >
+            {/* PART 20: Research & Multi-Source Analysis Mode Switcher */}
+            <div className="max-w-4xl mx-auto mb-2.5 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                <span className="text-[10px] font-bold text-[#857B6C] uppercase tracking-wider flex items-center gap-1 shrink-0 mr-0.5">
+                  <Sparkles className="w-3 h-3 text-emerald-700" />
+                  የምርምር ሁነታ (Mode):
+                </span>
+                {[
+                  { id: 'curriculum', label: '📖 ስርዓተ-ትምህርት (Curriculum)', icon: BookOpen },
+                  { id: 'deep_analysis', label: '🔬 ጥልቅ ትንታኔ (Deep Research)', icon: BrainCircuit },
+                  { id: 'comparative', label: '⚖️ ንፅፅር (Comparative)', icon: Scale },
+                  { id: 'real_world', label: '🌍 ተጨባጭ (Real-World)', icon: Globe },
+                  { id: 'university_level', label: '🎓 ዩኒቨርሲቲ (University)', icon: GraduationCap },
+                  { id: 'book_recommendations', label: '📚 መጻሕፍት (Books)', icon: Library },
+                ].map((modeItem) => {
+                  const isActive = analysisMode === modeItem.id;
+                  const Icon = modeItem.icon;
+                  return (
+                    <button
+                      key={modeItem.id}
+                      type="button"
+                      onClick={() => setAnalysisMode(modeItem.id as AnalysisMode)}
+                      className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 shrink-0 cursor-pointer ${
+                        isActive
+                          ? 'bg-emerald-700 text-white shadow-xs border border-emerald-900'
+                          : 'bg-[#FAF6EC] text-[#5A5143] border border-[#D5CBB5] hover:bg-[#F3EDE0]'
+                      }`}
+                    >
+                      <Icon className={`w-3 h-3 ${isActive ? 'text-white' : 'text-[#7A7060]'}`} />
+                      <span>{modeItem.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {analysisMode !== 'curriculum' && (
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0">
+                  <CheckCircle className="w-3 h-3 text-emerald-700" />
+                  Layer 1 + Layer 2
+                </span>
+              )}
+            </div>
+
             <div className="max-w-4xl mx-auto flex items-center gap-2">
               <button
                 id="tutor-mic-btn"

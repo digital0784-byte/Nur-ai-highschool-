@@ -508,6 +508,66 @@
         "metadata": { "type": "object" }
       },
       "required": ["id", "actorId", "actorRole", "action", "resourceType", "resourceId", "timestamp", "result"]
+    },
+    "Entitlement": {
+      "title": "Entitlement",
+      "description": "Server-side verified student premium entitlement record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "entitlementType": { "type": "string", "enum": ["ALL_PREMIUM", "PREMIUM_VIDEO", "PREMIUM_ANIMATION"] },
+        "plan": { "type": "string" },
+        "premium": { "type": "boolean" },
+        "grade": { "type": "number" },
+        "status": { "type": "string", "enum": ["ACTIVE", "EXPIRED", "REVOKED", "SUSPENDED"] },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "sourcePaymentId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["studentId", "entitlementType", "premium", "grade", "status", "startDate", "endDate"]
+    },
+    "ProtectedContent": {
+      "title": "ProtectedContent",
+      "description": "Premium video and 2D/3D educational animation metadata managed by Super Admin",
+      "type": "object",
+      "properties": {
+        "contentId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "grade": { "type": "number" },
+        "subject": { "type": "string" },
+        "chapter": { "type": "string" },
+        "topic": { "type": "string" },
+        "contentType": { "type": "string", "enum": ["video", "animation_2d", "animation_3d"] },
+        "premiumRequired": { "type": "boolean" },
+        "storagePath": { "type": "string" },
+        "duration": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "draft", "archived"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["contentId", "title", "grade", "subject", "contentType", "premiumRequired", "storagePath"]
+    },
+    "SecurityLog": {
+      "title": "SecurityLog",
+      "description": "Security audit and fraud prevention log for recovery and access attempts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "eventType": { "type": "string" },
+        "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "riskScore": { "type": "number" },
+        "details": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "eventType", "severity", "timestamp"]
     }
   },
   "firestore": {
@@ -643,6 +703,18 @@
       "device_tokens": {
         "entity": "DeviceToken",
         "documentId": "{tokenId}"
+      },
+      "entitlements": {
+        "entity": "Entitlement",
+        "documentId": "{entitlementId}"
+      },
+      "protected_content": {
+        "entity": "ProtectedContent",
+        "documentId": "{contentId}"
+      },
+      "security_logs": {
+        "entity": "SecurityLog",
+        "documentId": "{logId}"
       },
       "users": {
         "entity": "User",

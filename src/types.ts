@@ -194,6 +194,7 @@ export interface VideoLessonItem {
   unitTitle: string;
   duration: string;
   videoUrl: string;
+  thumbnailUrl?: string;
   instructor: string;
   curriculumBadge: string;
   overview: string;
@@ -418,6 +419,9 @@ export interface UserProfile {
   role: UserRole;
   grade?: Grade;
   schoolName?: string;
+  isSuspended?: boolean;
+  suspendedAt?: string | null;
+  suspensionReason?: string | null;
   createdAt: string;
   updatedAt: string;
 }

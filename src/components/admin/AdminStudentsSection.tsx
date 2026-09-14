@@ -127,8 +127,9 @@ export const AdminStudentsSection: React.FC<AdminStudentsSectionProps> = ({
       await adminFirestoreService.toggleStudentSuspension(
         suspendingStudent.uid,
         willSuspend,
-        suspensionReason.trim() || undefined,
-        user ? { uid: user.uid, email: user.email || SUPER_ADMIN_EMAIL } : undefined
+        user?.email || SUPER_ADMIN_EMAIL,
+        user?.uid || 'super_admin_id',
+        suspensionReason.trim() || undefined
       );
 
       setActionAlert({

@@ -3,6 +3,8 @@ import { Subject, Grade, VideoLessonItem, YouTubeVideoItem } from '../types';
 import { videoLessonsData } from '../data/videoLessonsData';
 import { useLanguage } from '../context/LanguageContext';
 import { VisualDualEngineStudio } from './visualizer/VisualDualEngineStudio';
+import { ProtectedMediaShield } from './premium/ProtectedMediaShield';
+import { SubscriptionPaymentView } from './subscription/SubscriptionPaymentView';
 import {
   Video,
   Play,
@@ -24,6 +26,8 @@ import {
   Search,
   ExternalLink,
   Tv,
+  X,
+  Crown,
 } from 'lucide-react';
 
 interface VideoLearningViewProps {
@@ -57,6 +61,8 @@ export const VideoLearningView: React.FC<VideoLearningViewProps> = ({
     visualNotes?: string;
     keyFormulas?: string[];
   } | null>(null);
+
+  const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
 
   // --- FEATURE 3: YouTube Search State ---
   const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideoItem[]>([]);
@@ -265,16 +271,19 @@ export const VideoLearningView: React.FC<VideoLearningViewProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Col: Video Player + Details */}
             <div className="lg:col-span-8 space-y-4">
-              {/* Video Container */}
-              <div className="bg-[#1E1B18] rounded-xl border-[2px] border-[#38332D] shadow-[4px_4px_0px_0px_#38332D] overflow-hidden aspect-video relative flex items-center justify-center">
-                <iframe
-                  src={selectedVideo.videoUrl}
-                  title={selectedVideo.title}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
+              {/* Video Container Protected by Zero-Trust & DRM */}
+              <ProtectedMediaShield
+                contentId={`video_${selectedVideo.id}`}
+                title={selectedVideo.title}
+                overview={selectedVideo.overview}
+                contentType="video"
+                mediaUrl={selectedVideo.videoUrl}
+                thumbnailUrl={selectedVideo.thumbnailUrl}
+                duration={selectedVideo.duration}
+                instructor={selectedVideo.instructor}
+                curriculumBadge={selectedVideo.curriculumBadge}
+                onOpenSubscriptionModal={() => setShowPaymentModal(true)}
+              />
 
               {/* Video Info Card */}
               <div className="bg-[#FAF6EC] border-[1.5px] border-[#38332D] rounded-xl p-5 shadow-xs space-y-3">
@@ -607,6 +616,34 @@ export const VideoLearningView: React.FC<VideoLearningViewProps> = ({
                 </p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      {/* Subscription Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-[#FAF6EC] rounded-3xl p-5 sm:p-6 max-w-2xl w-full border-[2px] border-[#38332D] shadow-[6px_6px_0px_0px_#38332D] max-h-[90vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#38332D]/20">
+              <div className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-600" />
+                <h3 className="font-serif-ethiopic font-bold text-base text-[#1E1B18]">
+                  የፕሪሚየም አባልነት ክፍያ (Upgrade to Premium)
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="p-1 rounded-lg text-stone-500 hover:text-stone-900 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <SubscriptionPaymentView
+              initialGrade={grade}
+              onPaymentSuccess={() => {
+                setShowPaymentModal(false);
+              }}
+            />
           </div>
         </div>
       )}

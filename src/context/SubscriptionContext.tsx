@@ -8,6 +8,7 @@ import {
   SubscriptionStatus,
   SystemFeedback,
 } from '../types/subscription';
+import { Entitlement } from '../types/premiumSecurity';
 import { Grade } from '../types';
 import {
   subscriptionService,
@@ -17,6 +18,7 @@ import {
 
 interface SubscriptionContextType {
   subscription: Subscription | null;
+  entitlement: Entitlement | null;
   latestPayment: PaymentRecord | null;
   paymentsHistory: PaymentRecord[];
   loading: boolean;
@@ -68,6 +70,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const { user, userProfile } = useAuth();
 
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [entitlement, setEntitlement] = useState<Entitlement | null>(null);
   const [latestPayment, setLatestPayment] = useState<PaymentRecord | null>(null);
   const [paymentsHistory, setPaymentsHistory] = useState<PaymentRecord[]>([]);
   const [pricingConfig, setPricingConfig] = useState<SubscriptionPricingConfig>(DEFAULT_PRICING_CONFIG);
@@ -86,10 +89,11 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
   }, []);
 
-  // Listen to User Subscription & Payments
+  // Listen to User Subscription & Payments & Verified Entitlements
   useEffect(() => {
     if (!user) {
       setSubscription(null);
+      setEntitlement(null);
       setLatestPayment(null);
       setPaymentsHistory([]);
       setLoading(false);
@@ -109,7 +113,12 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setLatestPayment(pay);
     });
 
-    // 3. Load historical payments
+    // 3. Listen to verified entitlement
+    const unsubEnt = subscriptionService.subscribeToStudentEntitlement(user.uid, (ent) => {
+      setEntitlement(ent);
+    });
+
+    // 4. Load historical payments
     subscriptionService.getUserPayments(user.uid).then((records) => {
       setPaymentsHistory(records);
     });
@@ -117,6 +126,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return () => {
       unsubSub();
       unsubPay();
+      unsubEnt();
     };
   }, [user]);
 
@@ -306,6 +316,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     <SubscriptionContext.Provider
       value={{
         subscription,
+        entitlement,
         latestPayment,
         paymentsHistory,
         loading,

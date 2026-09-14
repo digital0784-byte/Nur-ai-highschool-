@@ -63,5 +63,24 @@ service firebase.storage {
          request.resource.contentType.matches('image/.*') ||
          request.resource.contentType.matches('text/.*'));
     }
+
+    // 6. Payment Receipts & Bank Transfer Proofs
+    match /payment_proofs/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) &&
+        request.resource.size < 10 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+    }
+
+    // 7. Protected Video Lessons & 2D/3D Animation Media (PARTS 8, 16)
+    // NEVER make these directories public! Direct unauthenticated and student client downloads are strictly denied.
+    // Authorized playback is securely proxied/streamed with signed, temporary time-limited tokens.
+    match /protected-content/videos/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /protected-content/animations/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
   }
 }

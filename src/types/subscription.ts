@@ -72,6 +72,7 @@ export interface PaymentAuditLog {
 export interface PaymentMethodConfig {
   id: PaymentMethodName;
   displayName: string;
+  name?: string;
   accountName: string;
   accountNumber: string;
   shortCodeOrTill?: string;
@@ -80,6 +81,7 @@ export interface PaymentMethodConfig {
   instructionsAm: string;
   instructionsEn: string;
   isEnabled: boolean;
+  enabled?: boolean;
 }
 
 export interface SubscriptionPricingConfig {
@@ -90,6 +92,15 @@ export interface SubscriptionPricingConfig {
   subscriptionDurationDays: number;
   renewalReminderDays: number;
   methods: Record<PaymentMethodName, PaymentMethodConfig>;
+}
+
+export interface PricingConfig {
+  gradeMonthlyPrices: Record<Grade, number>;
+  billingCycleDays: number;
+  currency: string;
+  freeTierEnabled?: boolean;
+  updatedAt?: string;
+  updatedBy?: string;
 }
 
 export type FeedbackCategory =

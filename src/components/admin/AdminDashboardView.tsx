@@ -20,6 +20,7 @@ import {
   FileText,
   ShieldAlert,
   Tag,
+  Mic,
 } from 'lucide-react';
 import {
   AdminActiveSubTab,
@@ -53,6 +54,9 @@ import { AdminPaymentMethodsSection } from './AdminPaymentMethodsSection';
 import { AdminRevenueAnalyticsSection } from './AdminRevenueAnalyticsSection';
 import { AdminReportsSection } from './AdminReportsSection';
 import { AdminPaymentAuditLogsSection } from './AdminPaymentAuditLogsSection';
+import { AdminVoiceAnalyticsSection } from './AdminVoiceAnalyticsSection';
+import { AdminResearchSourcesSection } from './AdminResearchSourcesSection';
+import { AdminPremiumContentSection } from './AdminPremiumContentSection';
 
 export const AdminDashboardView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminActiveSubTab>('overview');
@@ -111,15 +115,18 @@ export const AdminDashboardView: React.FC = () => {
   const navItems: { id: AdminActiveSubTab; label: string; icon: React.ReactNode; badge?: string }[] = [
     { id: 'overview', label: '1. አጠቃላይ ዳሽቦርድ (Overview)', icon: <LayoutDashboard className="w-4 h-4 text-emerald-400" /> },
     { id: 'students', label: '2. ተማሪዎች (Students)', icon: <Users className="w-4 h-4" />, badge: `${students.length}` },
-    { id: 'payments_billing', label: '3. ክፍያዎች ማረጋገጫ (Payments)', icon: <CreditCard className="w-4 h-4 text-amber-400" />, badge: 'PART 15' },
+    { id: 'voice_tutor_analytics', label: '3. የድምፅ AI ትንታኔ (Voice AI & Quotas)', icon: <Mic className="w-4 h-4 text-emerald-400" />, badge: 'PART 18' },
+    { id: 'payments_billing', label: '4. ክፍያዎች ማረጋገጫ (Payments)', icon: <CreditCard className="w-4 h-4 text-amber-400" />, badge: 'PART 15' },
     { id: 'subscriptions', label: '4. ሳብስክሪፕሽን (Subscriptions)', icon: <CreditCard className="w-4 h-4 text-blue-400" /> },
-    { id: 'pricing_management', label: '5. የዋጋ ቅንብር (Pricing Config)', icon: <Tag className="w-4 h-4 text-emerald-400" /> },
+    { id: 'premium_content_protection', label: '5. የይዘትና ቪዲዮ ጥበቃ (Protected Media & DRM)', icon: <ShieldAlert className="w-4 h-4 text-amber-400" />, badge: 'DRM' },
+    { id: 'pricing_management', label: '6. የዋጋ ቅንብር (Pricing Config)', icon: <Tag className="w-4 h-4 text-emerald-400" /> },
     { id: 'payment_methods', label: '6. የክፍያ መንገዶች (Payment Methods)', icon: <CreditCard className="w-4 h-4 text-amber-400" /> },
     { id: 'revenue_analytics', label: '7. የገቢ ትንታኔ (Revenue Analytics)', icon: <TrendingUp className="w-4 h-4 text-teal-400" /> },
     { id: 'reports', label: '8. ኦፊሴላዊ ሪፖርቶች (Reports & Export)', icon: <FileText className="w-4 h-4 text-indigo-400" /> },
     { id: 'payment_audit_logs', label: '9. የኦዲት መዝገብ (Payment Audit Log)', icon: <ShieldAlert className="w-4 h-4 text-rose-400" /> },
     { id: 'notifications', label: '10. ማሳወቂያዎች (Notifications & Alerts)', icon: <Bell className="w-4 h-4 text-amber-300" />, badge: 'ALERTS' },
     { id: 'security_rbac', label: '11. ደህንነትና ቁጥጥር (Security Fortress)', icon: <ShieldCheck className="w-4 h-4 text-emerald-400" /> },
+    { id: 'research_sources', label: '12. የምርምር ምንጮችና QC (Research & QC)', icon: <BookOpen className="w-4 h-4 text-emerald-400" />, badge: 'PART 20' },
     { id: 'teachers', label: 'መምህራን (Teachers)', icon: <GraduationCap className="w-4 h-4" />, badge: '12' },
     { id: 'parents', label: 'ወላጆች (Parents)', icon: <Users className="w-4 h-4" />, badge: '28' },
     { id: 'classes', label: 'ክፍሎችና ሴክሽኖች (Classes)', icon: <Layers className="w-4 h-4" />, badge: `${classes.length}` },
@@ -234,8 +241,10 @@ export const AdminDashboardView: React.FC = () => {
             {activeTab === 'students' && (
               <AdminStudentsSection students={students} onRefresh={loadAllData} />
             )}
+            {activeTab === 'voice_tutor_analytics' && <AdminVoiceAnalyticsSection />}
             {activeTab === 'payments_billing' && <AdminPaymentDashboardSection />}
             {activeTab === 'subscriptions' && <AdminSubscriptionsSection />}
+            {activeTab === 'premium_content_protection' && <AdminPremiumContentSection />}
             {activeTab === 'pricing_management' && <AdminPricingManagementSection />}
             {activeTab === 'payment_methods' && <AdminPaymentMethodsSection />}
             {activeTab === 'revenue_analytics' && <AdminRevenueAnalyticsSection />}
@@ -243,6 +252,7 @@ export const AdminDashboardView: React.FC = () => {
             {activeTab === 'payment_audit_logs' && <AdminPaymentAuditLogsSection />}
             {activeTab === 'notifications' && <AdminNotificationsSection />}
             {activeTab === 'security_rbac' && <AdminSecurityDashboard />}
+            {activeTab === 'research_sources' && <AdminResearchSourcesSection />}
             {activeTab === 'teachers' && <AdminTeachersSection />}
             {activeTab === 'parents' && <AdminParentsSection />}
             {activeTab === 'classes' && (
