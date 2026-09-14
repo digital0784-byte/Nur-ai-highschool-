@@ -301,47 +301,49 @@ class ResearchAnalysisService {
       limit: 4,
     });
 
-    try {
-      const response = await fetch('/api/ai/research-analysis', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question,
-          subject,
-          grade,
-          unitNumber,
-          topicTitle,
-          mode: resolvedMode,
-          language,
-          adaptiveDepth: intent.adaptiveDepth,
-          explicitAdvanced: intent.explicitAdvanced,
-          approvedExternalSources: matchedSources,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.analysisResult) {
-          // Log audit
-          this.logAudit({
-            auditId: `audit-${Date.now()}`,
+    if (typeof window !== 'undefined') {
+      try {
+        const response = await fetch('/api/ai/research-analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             question,
-            studentGrade: grade,
             subject,
-            citationsCheckedCount: data.analysisResult.citations?.length || 0,
-            curriculumCitationsCount: (data.analysisResult.citations || []).filter((c: any) => c.isCurriculum).length,
-            externalCitationsCount: (data.analysisResult.citations || []).filter((c: any) => !c.isCurriculum).length,
-            hallucinationScore: 0,
-            verifiedSourcesRatio: 1.0,
-            timestamp: new Date().toISOString(),
-            flaggedUnverified: false,
-          });
+            grade,
+            unitNumber,
+            topicTitle,
+            mode: resolvedMode,
+            language,
+            adaptiveDepth: intent.adaptiveDepth,
+            explicitAdvanced: intent.explicitAdvanced,
+            approvedExternalSources: matchedSources,
+          }),
+        });
 
-          return data.analysisResult as DeepAnalysisResult;
+        if (response.ok) {
+          const data = await response.json();
+          if (data.analysisResult) {
+            // Log audit
+            this.logAudit({
+              auditId: `audit-${Date.now()}`,
+              question,
+              studentGrade: grade,
+              subject,
+              citationsCheckedCount: data.analysisResult.citations?.length || 0,
+              curriculumCitationsCount: (data.analysisResult.citations || []).filter((c: any) => c.isCurriculum).length,
+              externalCitationsCount: (data.analysisResult.citations || []).filter((c: any) => !c.isCurriculum).length,
+              hallucinationScore: 0,
+              verifiedSourcesRatio: 1.0,
+              timestamp: new Date().toISOString(),
+              flaggedUnverified: false,
+            });
+
+            return data.analysisResult as DeepAnalysisResult;
+          }
         }
+      } catch (apiError) {
+        console.warn('API /api/ai/research-analysis unreachable, activating intelligent client-side synthesis:', apiError);
       }
-    } catch (apiError) {
-      console.warn('API /api/ai/research-analysis unreachable, activating intelligent client-side synthesis:', apiError);
     }
 
     // High quality deterministic client-side synthesis fallback
@@ -359,7 +361,7 @@ class ResearchAnalysisService {
   /**
    * Deterministic high-yield fallback meeting all 13 points of PART 20
    */
-  private generateDeterministicAnalysisFallback(
+  public generateDeterministicAnalysisFallback(
     question: string,
     subject: string,
     grade: GradeLevel,
