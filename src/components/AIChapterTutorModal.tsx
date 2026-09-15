@@ -2,7 +2,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Subject, Grade, StudentWeakArea } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useProgress } from '../context/ProgressContext';
-import { Bot, Sparkles, Send, Loader2, X, BookOpen, Lightbulb, RefreshCw, MessageSquare, AlertCircle } from 'lucide-react';
+import {
+  Bot,
+  Sparkles,
+  Send,
+  Loader2,
+  X,
+  BookOpen,
+  Lightbulb,
+  RefreshCw,
+  MessageSquare,
+  AlertCircle,
+  Library,
+  GraduationCap,
+  Globe,
+  CheckCircle2,
+  ExternalLink,
+  ShieldCheck,
+  Search,
+} from 'lucide-react';
+import { DeepAnalysisResult, SOURCE_PRIORITY_LABELS, SOURCE_TYPE_LABELS } from '../types/researchAnalysis';
+import { researchAnalysisService } from '../services/researchAnalysisService';
 
 interface AIChapterTutorModalProps {
   isOpen: boolean;
@@ -12,7 +32,7 @@ interface AIChapterTutorModalProps {
   chapterTitle: string;
   chapterNumber?: number;
   chapterSummary?: string;
-  initialMode?: 'analysis' | 'chat';
+  initialMode?: 'analysis' | 'chat' | 'research';
   weakAreas?: StudentWeakArea[];
 }
 
@@ -35,7 +55,7 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
 }) => {
   const { language, t } = useLanguage();
   const { studentReview } = useProgress();
-  const [activeMode, setActiveMode] = useState<'analysis' | 'chat'>(initialMode);
+  const [activeMode, setActiveMode] = useState<'analysis' | 'chat' | 'research'>(initialMode);
   const [analysis, setAnalysis] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);

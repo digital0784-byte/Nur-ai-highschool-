@@ -16,7 +16,10 @@ import {
   Scale,
   Globe2,
   TrendingUp,
-  Filter
+  Filter,
+  Phone,
+  Mail,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -220,6 +223,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
           );
         })}
       </nav>
+
+      {/* Developer & System Owner Info */}
+      <div className="p-3 border-t-[1.5px] border-[#38332D] bg-[#ECE4D0] mt-auto">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-[#1E1B18] mb-1">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+          <span>Developed by Nuriye Ahmed Adem</span>
+        </div>
+        <div className="space-y-1 text-[11px] text-[#5A5143] font-mono">
+          <a
+            href="tel:0910097862"
+            className="flex items-center gap-1.5 hover:text-emerald-800 transition-colors"
+          >
+            <Phone className="w-3 h-3 text-[#786D5B]" />
+            <span>0910097862</span>
+          </a>
+          <a
+            href="mailto:mejennur669@gmail.com"
+            className="flex items-center gap-1.5 hover:text-emerald-800 transition-colors truncate"
+          >
+            <Mail className="w-3 h-3 text-[#786D5B] shrink-0" />
+            <span className="truncate">mejennur669@gmail.com</span>
+          </a>
+        </div>
+      </div>
     </aside>
   );
 };

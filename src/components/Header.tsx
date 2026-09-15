@@ -188,15 +188,21 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="flex items-center gap-1.5 bg-[#EAE2CE] border border-[#38332D]/40 px-2 py-0.5 rounded">
                   <span className="text-xs font-bold font-serif-ethiopic text-[#1E1B18] flex items-center gap-1">
                     {isOwnerSuperAdmin ? (
-                      <span className="text-amber-800 font-black">👑 SUPER_ADMIN</span>
+                      <span className="text-amber-800 font-black flex items-center gap-1">
+                        <span>👑</span>
+                        <span className="hidden md:inline">ብቸኛ SUPER_ADMIN:</span>
+                        <span className="text-amber-900">Nuriye Ahmed Adem</span>
+                      </span>
                     ) : userProfile?.role === 'teacher' ? (
                       <span className="text-[#1D4ED8] font-bold">👨‍🏫 መምህር</span>
                     ) : (
                       <span className="text-emerald-700 font-bold">🎓 ተማሪ</span>
                     )}
-                    <span className="font-semibold text-[11px] truncate max-w-[90px] sm:max-w-[120px]">
-                      {userProfile?.displayName || user.email?.split('@')[0]}
-                    </span>
+                    {!isOwnerSuperAdmin && (
+                      <span className="font-semibold text-[11px] truncate max-w-[90px] sm:max-w-[120px]">
+                        {userProfile?.displayName || user.email?.split('@')[0]}
+                      </span>
+                    )}
                   </span>
                 </div>
 

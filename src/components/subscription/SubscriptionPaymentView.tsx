@@ -17,6 +17,8 @@ import {
   RotateCcw,
   QrCode,
   FileCheck2,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { useSubscription } from '../../context/SubscriptionContext';
 import { useAuth } from '../../context/AuthContext';
@@ -628,6 +630,41 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
                 </p>
               </div>
             </form>
+          </div>
+
+          {/* Developer & System Super Admin Direct Contact Card */}
+          <div className="p-4 bg-emerald-50/80 border border-emerald-300 rounded-xl space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 font-bold text-emerald-950 font-serif-ethiopic">
+                <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                <span>ሲስተም አልሚ እና ሱፐር አድሚን (Developer & Super Admin)</span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded">
+                Verified Owner
+              </span>
+            </div>
+            <div className="text-emerald-900 font-semibold">
+              Developed by <span className="font-bold text-stone-900">Nuriye Ahmed Adem</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-4 text-[11px] pt-1 border-t border-emerald-200">
+              <a
+                href="tel:0910097862"
+                className="flex items-center gap-1 font-mono font-bold text-emerald-900 hover:text-emerald-700 transition-colors"
+              >
+                <Phone className="w-3.5 h-3.5 text-emerald-700" />
+                <span>0910097862</span>
+              </a>
+              <a
+                href="mailto:mejennur669@gmail.com"
+                className="flex items-center gap-1 font-mono font-bold text-emerald-900 hover:text-emerald-700 transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5 text-emerald-700" />
+                <span>mejennur669@gmail.com</span>
+              </a>
+            </div>
+            <p className="text-[11px] text-emerald-800/90 font-serif-ethiopic">
+              የክፍያ ማረጋገጫ፣ የቴክኒክ ድጋፍ ወይም የፈቃድ ጥያቄ ካለዎት በቀጥታ በስልክ ወይም በኢሜይል ያግኙን።
+            </p>
           </div>
 
           {/* User Feedback Callout Button (Addressing User Request) */}

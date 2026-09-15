@@ -47,12 +47,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (snap.exists()) {
         return snap.data() as UserProfile;
       } else if (fallbackUser) {
+        const isOwner = fallbackUser.email?.trim().toLowerCase() === 'mejennur669@gmail.com';
         // Create initial fallback profile if doc missing
         const newProfile: UserProfile = {
           uid,
           email: fallbackUser.email || '',
-          displayName: fallbackUser.displayName || 'ተማሪ (Student)',
-          role: 'student',
+          displayName: isOwner ? 'Nuriye Ahmed Adem' : (fallbackUser.displayName || 'ተማሪ (Student)'),
+          role: isOwner ? 'teacher' : 'student',
           grade: 9,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -63,11 +64,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.warn('Could not fetch Firestore profile, using local fallback:', err);
       if (fallbackUser) {
+        const isOwner = fallbackUser.email?.trim().toLowerCase() === 'mejennur669@gmail.com';
         return {
           uid,
           email: fallbackUser.email || '',
-          displayName: fallbackUser.displayName || 'User',
-          role: 'student',
+          displayName: isOwner ? 'Nuriye Ahmed Adem' : (fallbackUser.displayName || 'User'),
+          role: isOwner ? 'teacher' : 'student',
           grade: 9,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),

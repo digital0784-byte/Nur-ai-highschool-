@@ -28,11 +28,24 @@ import { Entitlement, EntitlementStatus } from '../types/premiumSecurity';
 import { notificationService } from './notificationService';
 
 export const SUPER_ADMIN_EMAIL = 'mejennur669@gmail.com';
+export const DEVELOPER_INFO = {
+  name: 'Nuriye Ahmed Adem',
+  phone: '0910097862',
+  email: 'mejennur669@gmail.com',
+  title: 'Lead Developer & System Architect',
+};
 
+/**
+ * Strict Super Admin Verification:
+ * ONLY the owner/creator email (mejennur669@gmail.com) holds permanent Super Admin privileges.
+ */
 export function isSuperAdmin(email?: string | null, role?: string): boolean {
   if (!email && !role) return false;
-  if (email && email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) return true;
-  if (role === 'SUPER_ADMIN' || role === 'super_admin') return true;
+  if (email && email.trim().toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) return true;
+  // If role says SUPER_ADMIN, strictly verify it also matches the sole super admin email
+  if ((role === 'SUPER_ADMIN' || role === 'super_admin') && email && email.trim().toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
+    return true;
+  }
   return false;
 }
 

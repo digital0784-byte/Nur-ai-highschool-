@@ -20,6 +20,8 @@ import {
   BarChart3,
   ChevronRight,
   RefreshCw,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { AdminDashboardStats, AdminActiveSubTab } from '../../types/adminDashboard';
 import { subscriptionService } from '../../services/subscriptionService';
@@ -162,6 +164,29 @@ export const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
             <p className="text-sm text-stone-300 mt-1 max-w-2xl font-serif-ethiopic">
               Grade 9–12 Ethiopian Curriculum management, student subscriptions, pending bank payment verifications, and MoE textbook mastery.
             </p>
+            {/* Sole Super Admin Developer Attribution */}
+            <div className="mt-3 inline-flex flex-wrap items-center gap-2 sm:gap-3 bg-stone-900/60 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-emerald-500/40 text-xs">
+              <span className="flex items-center gap-1.5 text-amber-300 font-bold">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                <span>Super Admin: Nuriye Ahmed Adem</span>
+              </span>
+              <span className="text-stone-500 hidden sm:inline">•</span>
+              <a
+                href="tel:0910097862"
+                className="flex items-center gap-1 text-stone-300 hover:text-emerald-300 transition-colors font-mono text-[11px]"
+              >
+                <Phone className="w-3 h-3 text-emerald-400" />
+                <span>0910097862</span>
+              </a>
+              <span className="text-stone-500 hidden sm:inline">•</span>
+              <a
+                href="mailto:mejennur669@gmail.com"
+                className="flex items-center gap-1 text-stone-300 hover:text-emerald-300 transition-colors font-mono text-[11px]"
+              >
+                <Mail className="w-3 h-3 text-emerald-400" />
+                <span>mejennur669@gmail.com</span>
+              </a>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

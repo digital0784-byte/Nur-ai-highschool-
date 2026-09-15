@@ -559,17 +559,34 @@ function TutorialAppContent() {
         {/* Footer info bar */}
         <footer
           id="app-footer"
-          className="border-t-[1.5px] border-[#38332D] bg-[#F2ECE0] px-4 py-2.5 text-center text-xs text-[#5A5143] flex flex-col sm:flex-row items-center justify-between gap-2"
+          className="border-t-[1.5px] border-[#38332D] bg-[#F2ECE0] px-4 py-2.5 text-center text-xs text-[#5A5143] flex flex-col md:flex-row items-center justify-between gap-2"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
             <span className="font-serif-ethiopic font-bold text-[#1E1B18]">
               {t.footerTitle}
             </span>
-            <span className="text-[#877C6A]">•</span>
+            <span className="text-[#877C6A] hidden sm:inline">•</span>
             <span className="font-serif-ethiopic">{t.footerSubtitle}</span>
+            <span className="text-[#877C6A] hidden sm:inline">•</span>
+            <span className="inline-flex items-center gap-1 font-semibold text-stone-800 bg-[#E8DFC8] px-2 py-0.5 rounded border border-[#D5C9AC]">
+              <span>👑 Sole Super Admin:</span>
+              <span className="font-bold text-stone-900">Nuriye Ahmed Adem</span>
+            </span>
           </div>
-          <div className="text-[11px] text-[#7A705E] font-serif-ethiopic">
-            {t.footerStats}
+          <div className="flex items-center gap-3 text-[11px] text-[#7A705E] font-mono">
+            <a
+              href="tel:0910097862"
+              className="hover:text-emerald-800 transition-colors"
+            >
+              📞 0910097862
+            </a>
+            <span className="text-stone-400">|</span>
+            <a
+              href="mailto:mejennur669@gmail.com"
+              className="hover:text-emerald-800 transition-colors"
+            >
+              ✉️ mejennur669@gmail.com
+            </a>
           </div>
         </footer>
       </div>

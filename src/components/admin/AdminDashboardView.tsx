@@ -21,6 +21,8 @@ import {
   ShieldAlert,
   Tag,
   Mic,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import {
   AdminActiveSubTab,
@@ -213,11 +215,34 @@ export const AdminDashboardView: React.FC = () => {
 
         {/* Sidebar Footer */}
         <div className="pt-4 mt-4 border-t border-stone-800 text-[11px] text-stone-500 space-y-2 shrink-0">
-          <div className="flex items-center justify-between">
+          {/* Sole Super Admin Profile Box */}
+          <div className="p-2.5 rounded-xl bg-stone-800/80 border border-stone-700/60 text-stone-300 space-y-1">
+            <div className="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>SUPER ADMIN (ብቸኛ ባለቤት)</span>
+            </div>
+            <div className="font-semibold text-white text-xs">Nuriye Ahmed Adem</div>
+            <a
+              href="tel:0910097862"
+              className="flex items-center gap-1.5 text-[11px] text-stone-400 hover:text-emerald-400 transition-colors"
+            >
+              <Phone className="w-3 h-3 text-stone-500" />
+              <span>0910097862</span>
+            </a>
+            <a
+              href="mailto:mejennur669@gmail.com"
+              className="flex items-center gap-1.5 text-[11px] text-stone-400 hover:text-emerald-400 transition-colors truncate"
+            >
+              <Mail className="w-3 h-3 text-stone-500 shrink-0" />
+              <span className="truncate">mejennur669@gmail.com</span>
+            </a>
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] pt-1">
             <span>Academic Year</span>
             <span className="text-stone-300 font-bold">2017 E.C.</span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between text-[10px]">
             <span>MoE Curriculum</span>
             <span className="text-emerald-400 font-bold">Grades 9–12</span>
           </div>
