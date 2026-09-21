@@ -69,7 +69,10 @@ export const AdminRevenueAnalyticsSection: React.FC = () => {
   }, [approvedPayments, startOfMonth]);
 
   const totalRevenue = useMemo(() => {
-    return approvedPayments.reduce((sum, p) => sum + (p.amountETB || 0), 0);
+    return approvedPayments.reduce((sum, p) => {
+      const amt = Number(p.amountETB);
+      return sum + (Number.isFinite(amt) ? amt : 0);
+    }, 0);
   }, [approvedPayments]);
 
   // Revenue by Grade (Approved payments only)
@@ -83,8 +86,9 @@ export const AdminRevenueAnalyticsSection: React.FC = () => {
 
     approvedPayments.forEach((p) => {
       const g = (p.grade || 9) as Grade;
+      const amt = Number(p.amountETB);
       if (counts[g]) {
-        counts[g].amount += p.amountETB || 0;
+        counts[g].amount += Number.isFinite(amt) ? amt : 0;
         counts[g].count += 1;
       }
     });
@@ -282,14 +286,15 @@ export const AdminRevenueAnalyticsSection: React.FC = () => {
 
           <div className="space-y-3 pt-2">
             {([9, 10, 11, 12] as Grade[]).map((g) => {
-              const gradeData = revenueByGrade[g];
-              const pct = totalRevenue > 0 ? Math.round((gradeData.amount / totalRevenue) * 100) : 0;
+              const gradeData = revenueByGrade[g] || { amount: 0, count: 0 };
+              const amt = Number.isFinite(gradeData.amount) ? gradeData.amount : 0;
+              const pct = totalRevenue > 0 && Number.isFinite(amt / totalRevenue) ? Math.min(100, Math.max(0, Math.round((amt / totalRevenue) * 100))) : 0;
               return (
                 <div key={g} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-stone-800">Grade {g} (ክፍል {g})</span>
                     <span className="font-mono text-stone-600">
-                      {gradeData.amount.toLocaleString()} ETB ({gradeData.count} ተማሪዎች • {pct}%)
+                      {amt.toLocaleString()} ETB ({gradeData.count} ተማሪዎች • {pct}%)
                     </span>
                   </div>
                   <div className="w-full bg-stone-100 h-2.5 rounded-full overflow-hidden">
@@ -334,13 +339,14 @@ export const AdminRevenueAnalyticsSection: React.FC = () => {
               { id: 'Bank of Abyssinia', name: 'Bank of Abyssinia (አቢሲኒያ)', color: 'bg-amber-600' },
             ].map((m) => {
               const data = revenueByMethod[m.id] || { amount: 0, count: 0 };
-              const pct = totalRevenue > 0 ? Math.round((data.amount / totalRevenue) * 100) : 0;
+              const amt = Number.isFinite(data.amount) ? data.amount : 0;
+              const pct = totalRevenue > 0 && Number.isFinite(amt / totalRevenue) ? Math.min(100, Math.max(0, Math.round((amt / totalRevenue) * 100))) : 0;
               return (
                 <div key={m.id} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-stone-800">{m.name}</span>
                     <span className="font-mono text-stone-600">
-                      {data.amount.toLocaleString()} ETB ({data.count} ክፍያዎች • {pct}%)
+                      {amt.toLocaleString()} ETB ({data.count} ክፍያዎች • {pct}%)
                     </span>
                   </div>
                   <div className="w-full bg-stone-100 h-2.5 rounded-full overflow-hidden">

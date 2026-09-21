@@ -3,6 +3,7 @@ import { Subject, Grade } from '../../types';
 import { PlotlyGraphVisualizer, GraphMode } from './PlotlyGraphVisualizer';
 import { PhysicsCanvasSimulator, SimulationType } from './PhysicsCanvasSimulator';
 import { InteractiveAnimationStudio } from '../InteractiveAnimationStudio';
+import { ProtectedMediaShield } from '../premium/ProtectedMediaShield';
 import { useLanguage } from '../../context/LanguageContext';
 import {
   TrendingUp,
@@ -25,6 +26,7 @@ interface VisualDualEngineStudioProps {
   subject: Subject;
   grade: Grade;
   onOpenAITutor?: (chapterTitle: string, mode: 'analysis' | 'chat') => void;
+  onOpenSubscriptionModal?: () => void;
   onExit?: () => void;
 }
 
@@ -34,6 +36,7 @@ export const VisualDualEngineStudio: React.FC<VisualDualEngineStudioProps> = ({
   subject,
   grade,
   onOpenAITutor,
+  onOpenSubscriptionModal,
   onExit,
 }) => {
   const { t, language } = useLanguage();
@@ -208,30 +211,57 @@ export const VisualDualEngineStudio: React.FC<VisualDualEngineStudioProps> = ({
 
       {/* Engine 1: Plotly 2D/3D Graphing Engine */}
       {activeTab === 'graphing' && (
-        <PlotlyGraphVisualizer
-          initialMode={graphMode}
-          topicTitle={subject.name}
-          subjectName={subject.name}
-          grade={grade}
-        />
+        <ProtectedMediaShield
+          contentId={`anim_graph_${subject.id}_${graphMode}`}
+          title={`${subject.name} - 2D/3D Plotly Visualizer (${graphMode.toUpperCase()})`}
+          overview="Interactive 2D & 3D mathematical curve and vector plotting engine aligned with Ethiopian curriculum."
+          contentType={graphMode === 'vector_3d' ? 'animation_3d' : 'animation_2d'}
+          mediaUrl="interactive://plotly-engine"
+          onOpenSubscriptionModal={onOpenSubscriptionModal}
+        >
+          <PlotlyGraphVisualizer
+            initialMode={graphMode}
+            topicTitle={subject.name}
+            subjectName={subject.name}
+            grade={grade}
+          />
+        </ProtectedMediaShield>
       )}
 
       {/* Engine 2: HTML5 Canvas Real-Time Physics & Biology Simulation */}
       {activeTab === 'simulation' && (
-        <PhysicsCanvasSimulator
-          initialSimulation={simType}
-          topicTitle={subject.name}
-        />
+        <ProtectedMediaShield
+          contentId={`anim_sim_${subject.id}_${simType}`}
+          title={`${subject.name} - Real-Time Canvas Simulation (${simType.replace('_', ' ').toUpperCase()})`}
+          overview="Physics & biology numerical time-step laboratory simulation with adjustable physical parameters."
+          contentType="animation_2d"
+          mediaUrl="interactive://canvas-physics-sim"
+          onOpenSubscriptionModal={onOpenSubscriptionModal}
+        >
+          <PhysicsCanvasSimulator
+            initialSimulation={simType}
+            topicTitle={subject.name}
+          />
+        </ProtectedMediaShield>
       )}
 
       {/* Engine 3: Animated Multi-Stage Process Flow Diagram */}
       {activeTab === 'flow_diagram' && (
-        <InteractiveAnimationStudio
-          subject={subject}
-          grade={grade}
-          onOpenAITutor={onOpenAITutor}
-          onExit={onExit}
-        />
+        <ProtectedMediaShield
+          contentId={`anim_flow_${subject.id}`}
+          title={`${subject.name} - Interactive Animation Studio & Node Engine`}
+          overview="Multi-stage process flow visualizer with step narration, dynamic particle flows, and Ethiopian curriculum insights."
+          contentType="animation_2d"
+          mediaUrl="interactive://animation-studio"
+          onOpenSubscriptionModal={onOpenSubscriptionModal}
+        >
+          <InteractiveAnimationStudio
+            subject={subject}
+            grade={grade}
+            onOpenAITutor={onOpenAITutor}
+            onExit={onExit}
+          />
+        </ProtectedMediaShield>
       )}
     </div>
   );

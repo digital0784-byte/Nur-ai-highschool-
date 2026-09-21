@@ -260,32 +260,39 @@ export const SubscriptionPaywallGate: React.FC<SubscriptionPaywallGateProps> = (
     );
   }
 
-  // 5. DEFAULT NO SUBSCRIPTION SCREEN
+  // 5. DEFAULT NO SUBSCRIPTION SCREEN (Part 4 requirement)
   return (
-    <div className="p-6 sm:p-10 max-w-2xl mx-auto bg-[#FAF6EC] border-[2px] border-[#38332D] rounded-2xl shadow-md my-8 text-center space-y-5">
+    <div className="p-6 sm:p-10 max-w-2xl mx-auto bg-[#FAF6EC] border-[2px] border-[#38332D] rounded-2xl shadow-[4px_4px_0px_0px_#38332D] my-8 text-center space-y-5">
       <div className="w-16 h-16 rounded-2xl bg-[#38332D] text-[#EBD9B4] flex items-center justify-center mx-auto shadow-md">
         <Lock className="w-9 h-9" />
       </div>
 
-      <div>
-        <span className="px-3 py-1 bg-[#EAE2CE] text-[#4A4237] border border-[#D5C9AC] text-xs font-bold rounded-full">
-          የተቆለፈ የትምህርት ክፍል (Subscription Required)
-        </span>
-        <h3 className="text-xl sm:text-2xl font-bold font-serif-ethiopic text-[#1E1B18] mt-2.5">
-          {featureTitle}ን ለመጠቀም ወርሃዊ ሳብስክሪፕሽን ያስፈልጋል
+      <div className="space-y-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 text-xs font-black rounded-full uppercase">
+          <Lock className="w-3.5 h-3.5" />
+          <span>🔒 Premium Content</span>
+        </div>
+        <h3 className="text-xl sm:text-2xl font-bold font-serif-ethiopic text-[#1E1B18] mt-2">
+          {featureTitle}
         </h3>
-        <p className="text-xs sm:text-sm text-stone-600 mt-2 font-serif-ethiopic max-w-lg mx-auto leading-relaxed">
-          የክፍል 9 (160 ብር)፣ ክፍል 10 (180 ብር)፣ ክፍል 11 (200 ብር)፣ ክፍል 12 (200 ብር) ወርሃዊ ክፍያ በመክፈል ሁሉንም የኑር AI የሁለተኛ ደረጃ ትምህርቶች፣ ፈተናዎችና AI ረዳት ይክፈቱ።
+        <p className="text-sm font-semibold text-stone-700 font-serif-ethiopic">
+          This content is available to NUR AI Premium members.
+        </p>
+        <p className="text-base font-black text-[#2E6B4A] font-sans">
+          Premium: 54 ETB/month
+        </p>
+        <p className="text-xs text-stone-500 font-serif-ethiopic max-w-md mx-auto">
+          በወር 54 ብር ብቻ በመክፈል ሁሉንም የኑር AI ቪዲዮዎች፣ 2D/3D አኒሜሽኖች፣ የፈተና ጥያቄዎችና የላብራቶሪ ትምህርቶች ይክፈቱ።
         </p>
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
         <button
           onClick={onNavigateToPayment}
-          className="w-full sm:w-auto px-6 py-3 bg-[#2E6B4A] hover:bg-[#235338] text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-7 py-3 bg-[#F59E0B] hover:bg-[#D97706] text-stone-950 font-black text-sm rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 border border-amber-600"
         >
-          <CreditCard className="w-4 h-4" />
-          <span>ወደ ክፍያና ምዝገባ ገጽ ሂድ (Go to Subscription)</span>
+          <Sparkles className="w-4 h-4 text-stone-950" />
+          <span>Upgrade to Premium</span>
         </button>
         <button
           onClick={onOpenFeedback}

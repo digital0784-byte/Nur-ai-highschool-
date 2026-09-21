@@ -102,9 +102,38 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     setLoading(true);
 
+    // If Super Admin, grant immediate active subscription state
+    if (isOwnerSuperAdmin) {
+      setSubscription({
+        id: `sub_${user.uid}`,
+        userId: user.uid,
+        studentName: userProfile?.displayName || 'Nuriye Ahmed Adem',
+        studentEmail: user.email || 'mejennur669@gmail.com',
+        tier: 'SUPER_ADMIN',
+        grade: 12,
+        status: 'ACTIVE',
+        startDate: '2025-01-01T00:00:00.000Z',
+        expiryDate: '2099-12-31T23:59:59.999Z',
+        autoRenew: true,
+        features: ['ALL_GRADES_UNLOCKED', 'AI_VOICE_UNLIMITED', 'ALL_MODULES_SUPER_ADMIN'],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as any);
+      setLoading(false);
+    }
+
+    // Safety timeout to prevent indefinite loading when backend is offline or reconnecting
+    const safetyTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
     // 1. Listen to user's subscription doc
     const unsubSub = subscriptionService.subscribeToUserSubscription(user.uid, (sub) => {
-      setSubscription(sub);
+      if (sub) {
+        setSubscription(sub);
+      } else if (!isOwnerSuperAdmin) {
+        setSubscription(null);
+      }
       setLoading(false);
     });
 
@@ -121,9 +150,10 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // 4. Load historical payments
     subscriptionService.getUserPayments(user.uid).then((records) => {
       setPaymentsHistory(records);
-    });
+    }).catch(() => {});
 
     return () => {
+      clearTimeout(safetyTimeout);
       unsubSub();
       unsubPay();
       unsubEnt();
@@ -159,9 +189,6 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     | 'SUSPENDED'
     | 'NONE' => {
     if (isOwnerSuperAdmin) return 'SUPER_ADMIN';
-
-    // If teacher role, also grant access
-    if (userProfile?.role === 'teacher') return 'ACTIVE';
 
     if (!subscription) {
       if (latestPayment?.status === 'PENDING') return 'PENDING';

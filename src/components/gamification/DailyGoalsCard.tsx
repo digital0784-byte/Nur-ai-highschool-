@@ -68,7 +68,7 @@ export const DailyGoalsCard: React.FC<DailyGoalsCardProps> = ({
                 : 'bg-amber-100 text-amber-900 border-amber-300'
             }`}
           >
-            {completedCount} / {totalCount} {language === 'am' ? 'ተጠናቋል' : 'Completed'}
+            {Number.isFinite(completedCount) ? completedCount : 0} / {Number.isFinite(totalCount) ? totalCount : 0} {language === 'am' ? 'ተጠናቋል' : 'Completed'}
           </span>
         </div>
       </div>
@@ -78,7 +78,9 @@ export const DailyGoalsCard: React.FC<DailyGoalsCardProps> = ({
         {goals.map((goal) => {
           const title = goal.title[language] || goal.title.en;
           const desc = goal.description[language] || goal.description.en;
-          const pct = Math.round((goal.currentCount / goal.targetCount) * 100);
+          const target = Number(goal.targetCount) > 0 ? Number(goal.targetCount) : 1;
+          const current = Number.isFinite(Number(goal.currentCount)) ? Number(goal.currentCount) : 0;
+          const pct = Math.min(100, Math.max(0, Math.round((current / target) * 100)));
 
           return (
             <div

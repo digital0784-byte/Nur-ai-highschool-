@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { X, Download, BookOpen, Search, CheckCircle, ExternalLink, Layers, GraduationCap } from 'lucide-react';
+import { X, BookOpen, Search, CheckCircle, Layers, GraduationCap, ShieldCheck, Lock } from 'lucide-react';
 import { Grade, Subject } from '../types';
 import { useLanguage } from '../context/LanguageContext';
-import { getAllTextbooksForSubject, getTextbook } from '../data/textbooksData';
-import { generateTextbookPdf } from '../utils/pdfGenerator';
+import { getAllTextbooksForSubject } from '../data/textbooksData';
 
 interface AllTextbooksModalProps {
   isOpen: boolean;
@@ -21,7 +20,6 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
   const { t, language } = useLanguage();
   const [selectedGradeFilter, setSelectedGradeFilter] = useState<Grade | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
 
   // Flatten all textbooks
   const allBooks = useMemo(() => {
@@ -70,21 +68,6 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
   }, [allBooks, selectedGradeFilter, searchQuery]);
 
   if (!isOpen) return null;
-
-  const handleDownload = (subject: Subject, grade: Grade) => {
-    const key = `${subject.id}-${grade}`;
-    setDownloadingKey(key);
-    try {
-      const textbook = getTextbook(subject.id, grade, language);
-      if (textbook) {
-        generateTextbookPdf(textbook, subject.name, grade);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setTimeout(() => setDownloadingKey(null), 500);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
@@ -160,7 +143,6 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredBooks.map((item) => {
               const key = `${item.subject.id}-${item.grade}`;
-              const isDownloading = downloadingKey === key;
 
               return (
                 <div
@@ -186,48 +168,26 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
                     </p>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#E3D8C7]">
-                    {item.officialPdfUrl ? (
-                      <a
-                        href={item.officialPdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-1 py-2 px-2.5 text-xs font-bold font-serif-ethiopic bg-[#047857] hover:bg-[#065F46] text-white border border-[#064E3B] transition-colors cursor-pointer no-underline"
-                        title="የትምህርት ሚኒስቴር ኦፊሴላዊ መጽሐፍ (PDF) በአዲስ ገጽ ክፈት"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>📘 ኦፊሴላዊ (PDF)</span>
-                      </a>
-                    ) : (
-                      <span
-                        className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-serif-ethiopic bg-[#F2ECE0] text-[#6B5E4D] border border-[#BFB29E] select-none"
-                        title="ይህ ክፍል የተጠቃለለ ዲጂታል ማስታወሻ ይዟል"
-                      >
-                        <span>📄 የተጠቃለለ ማስታወሻ</span>
-                      </span>
-                    )}
-
-                    <button
-                      onClick={() => handleDownload(item.subject, item.grade)}
-                      disabled={isDownloading}
-                      className="flex-1 min-w-[100px] flex items-center justify-center gap-1.5 py-2 px-2.5 text-xs font-bold font-serif-ethiopic bg-[#2E6B4A] hover:bg-[#235338] text-white border border-[#1D4A32] transition-colors cursor-pointer disabled:opacity-50"
-                      title="Download PDF"
+                  {/* Actions: Strictly Protected In-App Reader */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#E3D8C7]">
+                    <span
+                      className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold font-serif-ethiopic bg-[#F2ECE0] text-[#2E6B4A] border border-[#2E6B4A]/30 select-none"
+                      title="ይህ መጽሐፍ ዲጂታል ጥበቃ (DRM) ተደርጎበታል"
                     >
-                      <Download className="w-3.5 h-3.5" />
-                      {isDownloading ? t.downloadingPdfLabel : t.downloadPdfBtn}
-                    </button>
+                      <Lock className="w-3 h-3 text-[#2E6B4A]" />
+                      <span>ጥበቃ የተደረገበት (DRM)</span>
+                    </span>
 
                     <button
                       onClick={() => {
                         onSelectSubjectAndGrade(item.subject.id, item.grade);
                         onClose();
                       }}
-                      className="flex items-center justify-center gap-1 py-2 px-3 text-xs font-bold font-serif-ethiopic bg-[#FAF6EC] hover:bg-[#EBE3D3] text-[#38332D] border border-[#38332D] transition-colors cursor-pointer"
-                      title="Read in App"
+                      className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-bold font-serif-ethiopic bg-[#2E6B4A] hover:bg-[#235338] text-white border border-[#1D4A32] shadow-2xs transition-all active:scale-95 cursor-pointer"
+                      title="መጽሐፉን በመተግበሪያው ውስጥ አንብብ (Open in In-App Reader)"
                     >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      {t.textbookBtn}
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+                      <span>🔒 በመተግበሪያው አንብብ</span>
                     </button>
                   </div>
                 </div>

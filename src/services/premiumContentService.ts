@@ -167,6 +167,36 @@ class PremiumContentService {
   }
 
   /**
+   * Fetch active sessions for the current student
+   */
+  async getActiveSessions(): Promise<any[]> {
+    const token = await this.getIdToken();
+    const res = await fetch('/api/auth/active-sessions', {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.sessions || [];
+  }
+
+  /**
+   * Terminate all other sessions for security
+   */
+  async signOutAllOtherDevices(): Promise<{ success: boolean; message: string }> {
+    const token = await this.getIdToken();
+    const res = await fetch('/api/auth/sign-out-all', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    return await res.json();
+  }
+
+  /**
    * Super Admin: Fetch protected content list
    */
   async getAdminProtectedContent(): Promise<ProtectedContentItem[]> {

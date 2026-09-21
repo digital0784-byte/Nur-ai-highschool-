@@ -25,10 +25,10 @@ export const AdminPricingManagementSection: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
 
   // Form states
-  const [p9, setP9] = useState<number>(160);
-  const [p10, setP10] = useState<number>(180);
-  const [p11, setP11] = useState<number>(200);
-  const [p12, setP12] = useState<number>(200);
+  const [p9, setP9] = useState<number>(54);
+  const [p10, setP10] = useState<number>(54);
+  const [p11, setP11] = useState<number>(54);
+  const [p12, setP12] = useState<number>(54);
   const [durationDays, setDurationDays] = useState<number>(30);
   const [freeTierEnabled, setFreeTierEnabled] = useState<boolean>(false);
   const [changeReason, setChangeReason] = useState<string>('');
@@ -39,10 +39,10 @@ export const AdminPricingManagementSection: React.FC = () => {
   useEffect(() => {
     const unsub = subscriptionService.subscribeToPricingConfig((cfg) => {
       setCurrentConfig(cfg);
-      setP9(cfg.gradeMonthlyPrices[9] ?? 160);
-      setP10(cfg.gradeMonthlyPrices[10] ?? 180);
-      setP11(cfg.gradeMonthlyPrices[11] ?? 200);
-      setP12(cfg.gradeMonthlyPrices[12] ?? 200);
+      setP9(cfg.gradeMonthlyPrices[9] ?? 54);
+      setP10(cfg.gradeMonthlyPrices[10] ?? 54);
+      setP11(cfg.gradeMonthlyPrices[11] ?? 54);
+      setP12(cfg.gradeMonthlyPrices[12] ?? 54);
       setDurationDays(cfg.billingCycleDays ?? 30);
       setFreeTierEnabled(cfg.freeTierEnabled ?? false);
       setLoading(false);
@@ -51,13 +51,13 @@ export const AdminPricingManagementSection: React.FC = () => {
   }, []);
 
   const handleResetToDefaults = () => {
-    setP9(160);
-    setP10(180);
-    setP11(200);
-    setP12(200);
+    setP9(54);
+    setP10(54);
+    setP11(54);
+    setP12(54);
     setDurationDays(30);
     setFreeTierEnabled(false);
-    setChangeReason('Reset to standard Ethiopian MoE national subscription benchmarks.');
+    setChangeReason('Reset to standard NUR AI Premium 54 ETB/month.');
   };
 
   const handleSavePrices = async (e: React.FormEvent) => {
@@ -181,7 +181,7 @@ export const AdminPricingManagementSection: React.FC = () => {
           <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-stone-700">9ኛ ክፍል (Grade 9)</span>
-              <span className="text-[10px] text-stone-400 font-mono">Default: 160 ETB</span>
+              <span className="text-[10px] text-stone-400 font-mono">Default: 54 ETB</span>
             </div>
             <div className="relative">
               <input
@@ -203,7 +203,7 @@ export const AdminPricingManagementSection: React.FC = () => {
           <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-stone-700">10ኛ ክፍል (Grade 10)</span>
-              <span className="text-[10px] text-stone-400 font-mono">Default: 180 ETB</span>
+              <span className="text-[10px] text-stone-400 font-mono">Default: 54 ETB</span>
             </div>
             <div className="relative">
               <input
@@ -225,7 +225,7 @@ export const AdminPricingManagementSection: React.FC = () => {
           <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-stone-700">11ኛ ክፍል (Grade 11)</span>
-              <span className="text-[10px] text-stone-400 font-mono">Default: 200 ETB</span>
+              <span className="text-[10px] text-stone-400 font-mono">Default: 54 ETB</span>
             </div>
             <div className="relative">
               <input
@@ -247,7 +247,7 @@ export const AdminPricingManagementSection: React.FC = () => {
           <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-stone-700">12ኛ ክፍል (Grade 12)</span>
-              <span className="text-[10px] text-stone-400 font-mono">Default: 200 ETB</span>
+              <span className="text-[10px] text-stone-400 font-mono">Default: 54 ETB</span>
             </div>
             <div className="relative">
               <input

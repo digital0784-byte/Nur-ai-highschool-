@@ -20,6 +20,8 @@ import {
   Phone,
   Mail,
   ShieldCheck,
+  Settings,
+  Sparkles,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,6 +30,8 @@ interface SidebarProps {
   onSelectSubject: (subjectId: string) => void;
   selectedStream?: SubjectStream | 'all';
   onSelectStream?: (stream: SubjectStream | 'all') => void;
+  onOpenSettings?: () => void;
+  onOpenGateway?: () => void;
 }
 
 // Icon mapper for quick visual recognition alongside colored dots
@@ -69,6 +73,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectSubject,
   selectedStream = 'all',
   onSelectStream,
+  onOpenSettings,
+  onOpenGateway,
 }) => {
   const { t, isRtl } = useLanguage();
   const { getSubjectProgress } = useProgress();
@@ -90,12 +96,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return s.stream === activeStream;
   });
 
+  // Ref for nav container scrolling
+  const navRef = React.useRef<HTMLElement>(null);
+
+  const scrollNav = (direction: 'left' | 'right') => {
+    if (navRef.current) {
+      const scrollAmount = 180;
+      navRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
+
   return (
     <aside
       id="subjects-sidebar"
-      className="w-full md:w-64 lg:w-72 shrink-0 border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-[#38332D] bg-[#F4EEDB] flex flex-col"
+      className="w-full md:w-64 lg:w-72 shrink-0 border-b-[1.5px] md:border-b-0 md:border-r-[1.5px] border-[#38332D] bg-[#F4EEDB] flex flex-col md:sticky md:top-0 md:h-[calc(100vh-1rem)] md:max-h-[calc(100vh-1rem)] overflow-hidden shadow-xs"
     >
-      <div className="p-3.5 border-b-[1.5px] border-[#38332D] flex flex-col gap-2 bg-[#ECE4D0]">
+      <div className="p-3 sm:p-3.5 border-b-[1.5px] border-[#38332D] flex flex-col gap-2 bg-[#ECE4D0] shrink-0">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold uppercase tracking-wider text-[#4A4237]">
             {t.subjectsTitle}
@@ -140,12 +159,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Horizontal scroll on mobile, vertical list on desktop */}
-      <nav
-        id="subjects-nav-list"
-        aria-label={t.subjectsTitle}
-        className="flex md:flex-col overflow-x-auto md:overflow-x-visible no-scrollbar divide-x-[1.5px] md:divide-x-0 md:divide-y-[1.5px] divide-[#38332D] p-1.5 md:p-0"
-      >
+      {/* Nav List with mobile scroll buttons and desktop vertical smooth scrolling */}
+      <div className="relative flex-1 h-0 min-h-0 flex flex-col">
+        {/* Mobile scroll indicator buttons */}
+        <div className="md:hidden flex items-center justify-between px-2 py-1 bg-[#E8DFCB] border-b border-[#38332D]/20 text-[10px] text-[#6A604E]">
+          <button
+            type="button"
+            onClick={() => scrollNav('left')}
+            className="px-1.5 py-0.5 rounded bg-stone-200/80 hover:bg-stone-300 active:scale-95 text-[#38332D] font-bold"
+            title="Scroll left"
+          >
+            ◀
+          </button>
+          <span className="font-serif-ethiopic font-semibold">{t.subjectsTitle} ({filteredSubjects.length})</span>
+          <button
+            type="button"
+            onClick={() => scrollNav('right')}
+            className="px-1.5 py-0.5 rounded bg-stone-200/80 hover:bg-stone-300 active:scale-95 text-[#38332D] font-bold"
+            title="Scroll right"
+          >
+            ▶
+          </button>
+        </div>
+
+        {/* Horizontal scroll on mobile, vertical list on desktop */}
+        <nav
+          ref={navRef}
+          id="subjects-nav-list"
+          aria-label={t.subjectsTitle}
+          className="flex md:flex-col overflow-x-auto md:overflow-x-hidden md:overflow-y-auto flex-1 h-0 min-h-0 overscroll-contain touch-pan-y divide-x-[1.5px] md:divide-x-0 md:divide-y-[1.5px] divide-[#38332D] p-1.5 md:p-0 scroll-smooth custom-scrollbar"
+        >
         {filteredSubjects.map((subject) => {
           const isSelected = subject.id === selectedSubjectId;
           const progress = getSubjectProgress(subject);
@@ -223,9 +266,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
           );
         })}
       </nav>
+      </div>
+
+      {/* Gateway & Settings Navigation Shortcuts */}
+      <div className="p-2 border-t border-[#38332D]/30 bg-[#F2ECE0] shrink-0 space-y-1.5">
+        {onOpenGateway && (
+          <button
+            onClick={onOpenGateway}
+            className="w-full px-3 py-2 rounded-lg bg-amber-100 hover:bg-amber-200 border border-amber-500/60 text-xs font-bold font-serif-ethiopic text-amber-950 flex items-center justify-between cursor-pointer transition-colors shadow-2xs"
+            title="Open Welcome & Setup Screen"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+              <span>👋 መነሻ ስክሪን (Welcome)</span>
+            </div>
+            <span className="text-[10px] text-amber-800 font-mono">1-3</span>
+          </button>
+        )}
+
+        {onOpenSettings && (
+          <button
+            onClick={onOpenSettings}
+            className="w-full px-3 py-2 rounded-lg bg-white hover:bg-stone-100 border border-[#38332D]/40 text-xs font-bold font-serif-ethiopic text-[#1E1B18] flex items-center justify-between cursor-pointer transition-colors shadow-2xs"
+          >
+            <div className="flex items-center gap-2">
+              <Settings className="w-3.5 h-3.5 text-emerald-700" />
+              <span>{t.settingsBtn || 'ቅንብሮች (Settings)'}</span>
+            </div>
+            <span className="text-[10px] text-stone-500 font-sans">v3.2</span>
+          </button>
+        )}
+      </div>
 
       {/* Developer & System Owner Info */}
-      <div className="p-3 border-t-[1.5px] border-[#38332D] bg-[#ECE4D0] mt-auto">
+      <div className="p-3 border-t-[1.5px] border-[#38332D] bg-[#ECE4D0] mt-auto shrink-0">
         <div className="flex items-center gap-1.5 text-xs font-bold text-[#1E1B18] mb-1">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
           <span>Developed by Nuriye Ahmed Adem</span>

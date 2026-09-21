@@ -43,7 +43,7 @@ class AdminFirestoreService {
       const snap = await getDoc(doc(db, 'users', user.uid));
       if (snap.exists()) {
         const data = snap.data();
-        return data.role === 'admin' || data.role === 'teacher';
+        return data.role === 'admin';
       }
     } catch (e) {
       console.warn('Admin check fallback:', e);
@@ -126,7 +126,7 @@ class AdminFirestoreService {
         name: 'Grade 9 - ክፍል A (Natural Science)',
         grade: 9,
         section: 'A',
-        academicYear: '2017 E.C. (2024/2025)',
+        academicYear: '2019 E.C. (2026/2027)',
         teacherId: 'tchr_001',
         teacherName: 'መምህር አለሙ ታደሰ (Alemayehu Tadesse)',
         studentUids: ['std_001', 'std_002', 'std_003'],
@@ -139,7 +139,7 @@ class AdminFirestoreService {
         name: 'Grade 9 - ክፍል B (General Stream)',
         grade: 9,
         section: 'B',
-        academicYear: '2017 E.C. (2024/2025)',
+        academicYear: '2019 E.C. (2026/2027)',
         teacherId: 'tchr_002',
         teacherName: 'መምህርት ፋጡማ አህመድ (Fatuma Ahmed)',
         studentUids: ['std_004', 'std_005'],
@@ -152,7 +152,7 @@ class AdminFirestoreService {
         name: 'Grade 10 - ክፍል A (Preparatory)',
         grade: 10,
         section: 'A',
-        academicYear: '2017 E.C. (2024/2025)',
+        academicYear: '2019 E.C. (2026/2027)',
         teacherId: 'tchr_003',
         teacherName: 'መምህር ዳዊት ከበደ (Dawit Kebede)',
         studentUids: ['std_006', 'std_007'],
@@ -165,7 +165,7 @@ class AdminFirestoreService {
         name: 'Grade 11 - የተፈጥሮ ሳይንስ (Natural Science)',
         grade: 11,
         section: 'Nat-1',
-        academicYear: '2017 E.C. (2024/2025)',
+        academicYear: '2019 E.C. (2026/2027)',
         teacherId: 'tchr_004',
         teacherName: 'ዶ/ር ተስፋዬ ብርሃኑ (Dr. Tesfaye Berhanu)',
         studentUids: ['std_008', 'std_009'],
@@ -178,7 +178,7 @@ class AdminFirestoreService {
         name: 'Grade 11 - የማህበራዊ ሳይንስ (Social Science)',
         grade: 11,
         section: 'Soc-1',
-        academicYear: '2017 E.C. (2024/2025)',
+        academicYear: '2019 E.C. (2026/2027)',
         teacherId: 'tchr_005',
         teacherName: 'መምህርት ሀና በላይ (Hanna Belay)',
         studentUids: ['std_010'],
@@ -191,7 +191,7 @@ class AdminFirestoreService {
         name: 'Grade 12 - ESSLCE Candidate (Natural)',
         grade: 12,
         section: 'Nat-A',
-        academicYear: '2017 E.C. (2024/2025)',
+        academicYear: '2019 E.C. (2026/2027)',
         teacherId: 'tchr_006',
         teacherName: 'መምህር ዮናስ ግርማ (Yonas Girma)',
         studentUids: ['std_011', 'std_012'],
@@ -550,7 +550,7 @@ class AdminFirestoreService {
         stream: 'natural',
         textbookTitle: 'Physics Student Textbook Grade 12 (Natural Science)',
         publisher: 'FDRE Ministry of Education',
-        curriculumEdition: 'New Curriculum (2017 E.C.)',
+        curriculumEdition: 'New Curriculum (2019 E.C.)',
         pageCount: 312,
         pdfFileName: 'Grade_12_Physics.pdf',
         unitsCount: 7,
@@ -895,7 +895,7 @@ class AdminFirestoreService {
 
     return {
       schoolName: 'NUR AI High School (የኑር AI ሁለተኛ ደረጃ ትምህርት ቤት)',
-      academicYear: '2017 E.C. / 2024–2025 G.C.',
+      academicYear: '2019 E.C. / 2026–2027 G.C.',
       currentSemester: 2,
       defaultLanguage: 'am',
       aiModelPreference: 'gemini-3.8-flash',
@@ -937,13 +937,13 @@ class AdminFirestoreService {
 
     try {
       // Step 1: Admin creates system & verifies class
-      report(1, 'Admin Creates / Verifies Class', 'Creating Grade 9-A Natural Sciences class [cls_gr9_a] in Firestore with academic year 2017 E.C.');
+      report(1, 'Admin Creates / Verifies Class', 'Creating Grade 9-A Natural Sciences class [cls_gr9_a] in Firestore with academic year 2019 E.C.');
       const testClass: ClassGroup = {
         id: 'cls_gr9_a',
         name: 'Grade 9 - ክፍል A (Natural Science)',
         grade: 9,
         section: 'A',
-        academicYear: '2017 E.C. (2024/2025)',
+        academicYear: '2019 E.C. (2026/2027)',
         teacherId: 'tchr_001',
         teacherName: 'መምህር አለማየሁ ታደሰ (Alemayehu Tadesse)',
         studentUids: ['std_demo_sim'],

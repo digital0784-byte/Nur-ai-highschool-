@@ -6,8 +6,10 @@ export type PaymentStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export type PaymentMethodName =
   | 'Telebirr'
-  | 'Dashen Bank'
+  | 'CBE Birr'
+  | 'CBE Bank Transfer'
   | 'Commercial Bank of Ethiopia (CBE)'
+  | 'Dashen Bank'
   | 'Bank of Abyssinia';
 
 export interface Subscription {
@@ -16,6 +18,7 @@ export interface Subscription {
   studentName?: string;
   grade: Grade;
   planName: string;
+  plan?: 'NORMAL' | 'PREMIUM';
   priceETB: number;
   startDate: string; // ISO string
   expiryDate: string; // ISO string
@@ -31,6 +34,7 @@ export interface PaymentRecord {
   studentName: string;
   studentEmail?: string;
   grade: Grade;
+  plan?: 'NORMAL' | 'PREMIUM';
   amountETB: number;
   paymentMethod: PaymentMethodName;
   transactionReference: string;
@@ -85,10 +89,11 @@ export interface PaymentMethodConfig {
 }
 
 export interface SubscriptionPricingConfig {
-  grade9Price: number;
-  grade10Price: number;
-  grade11Price: number;
-  grade12Price: number;
+  grade9Price: number; // 160 ETB (Normal)
+  grade10Price: number; // 180 ETB (Normal)
+  grade11Price: number; // 200 ETB (Normal)
+  grade12Price: number; // 200 ETB (Normal)
+  premiumPrice: number; // 54 ETB (All grades)
   subscriptionDurationDays: number;
   renewalReminderDays: number;
   methods: Record<PaymentMethodName, PaymentMethodConfig>;
@@ -96,6 +101,7 @@ export interface SubscriptionPricingConfig {
 
 export interface PricingConfig {
   gradeMonthlyPrices: Record<Grade, number>;
+  premiumMonthlyPrice?: number;
   billingCycleDays: number;
   currency: string;
   freeTierEnabled?: boolean;

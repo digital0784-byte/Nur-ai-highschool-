@@ -333,13 +333,13 @@ export const StudentOfflineManager: React.FC<StudentOfflineManagerProps> = ({
                 የተያዘ የአካባቢ ማከማቻ (Offline Cache Storage)
               </h3>
               <p className={`text-xs ${textSecondary} mt-0.5`}>
-                {cachedItems.length} የተመረጡ ይዘቶች ወርደዋል • ድምር መጠን፡ {Math.round(storageQuota.usedBytes / 1024)} KB / 50 MB
+                {cachedItems.length} የተመረጡ ይዘቶች ወርደዋል • ድምር መጠን፡ {Math.round((Number(storageQuota?.usedBytes) || 0) / 1024)} KB / 50 MB
               </p>
               {/* Progress Bar */}
               <div className="w-full max-w-md h-2 bg-gray-200 dark:bg-gray-700 rounded-full mt-3 overflow-hidden">
                 <div
                   className="h-full bg-[#6750A4] rounded-full transition-all duration-300"
-                  style={{ width: `${Math.max(2, storageQuota.usagePercentage)}%` }}
+                  style={{ width: `${Math.max(2, Math.min(100, Number(storageQuota?.usagePercentage) || 0))}%` }}
                 />
               </div>
             </div>
@@ -687,8 +687,12 @@ export const StudentOfflineManager: React.FC<StudentOfflineManagerProps> = ({
               </div>
               <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
                 <span className="text-gray-500 block">አሁን የተያዘ (Used Cache):</span>
-                <span className="text-lg font-black text-[#6750A4]">{Math.round(storageQuota.usedBytes / 1024)} KB</span>
-                <span className="text-[10px] text-gray-400 block mt-1">ከአጠቃላይ በጀቱ {storageQuota.usagePercentage}%</span>
+                <span className="text-lg font-black text-[#6750A4]">
+                  {Math.round((Number(storageQuota?.usedBytes) || 0) / 1024)} KB
+                </span>
+                <span className="text-[10px] text-gray-400 block mt-1">
+                  ከአጠቃላይ በጀቱ {Number.isFinite(storageQuota?.usagePercentage) ? storageQuota.usagePercentage : 0}%
+                </span>
               </div>
               <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
                 <span className="text-gray-500 block">የተጣራ የዳታ ስርጭት (Delta Sync):</span>

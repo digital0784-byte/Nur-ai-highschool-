@@ -158,22 +158,22 @@ export const MockExamView: React.FC<MockExamViewProps> = ({
     const totalQuestions = examQuestions.length;
     const attemptedCount = Object.keys(userAnswers).length;
     const unansweredCount = totalQuestions - attemptedCount;
-    const percentage = Math.round((correctCount / Math.max(1, totalQuestions)) * 100);
+    const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
     const accuracy = attemptedCount > 0 ? Math.round((correctCount / attemptedCount) * 100) : 0;
-    const timeUsedSeconds = selectedExam.durationMinutes * 60 - timeRemainingSeconds;
+    const timeUsedSeconds = Math.max(0, selectedExam.durationMinutes * 60 - timeRemainingSeconds);
 
     const subjectBreakdown: Record<string, { score: number; total: number; percentage: number }> = {};
     Object.values(subjectMap).forEach((s) => {
       subjectBreakdown[s.subject] = {
         score: s.score,
         total: s.total,
-        percentage: Math.round((s.score / s.total) * 100),
+        percentage: s.total > 0 ? Math.round((s.score / s.total) * 100) : 0,
       };
     });
 
     const topicBreakdown: Record<string, TopicPerformance> = {};
     Object.values(topicMap).forEach((t) => {
-      const pct = Math.round((t.score / t.total) * 100);
+      const pct = t.total > 0 ? Math.round((t.score / t.total) * 100) : 0;
       topicBreakdown[t.topic] = {
         topic: t.topic,
         subject: t.subject,
@@ -189,7 +189,7 @@ export const MockExamView: React.FC<MockExamViewProps> = ({
       difficultyBreakdown[d.diff] = {
         score: d.score,
         total: d.total,
-        percentage: Math.round((d.score / d.total) * 100),
+        percentage: d.total > 0 ? Math.round((d.score / d.total) * 100) : 0,
       };
     });
 
@@ -296,7 +296,7 @@ export const MockExamView: React.FC<MockExamViewProps> = ({
             <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/80 text-center space-y-1">
               <span className="text-xs text-stone-500 font-semibold">የተወሰደ ጊዜ</span>
               <div className="text-xl font-bold text-stone-900">
-                {Math.floor(completedAttempt.timeUsedSeconds / 60)} ደቂቃ
+                {Math.floor((Number(completedAttempt.timeUsedSeconds) || 0) / 60)} ደቂቃ
               </div>
             </div>
             <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/80 text-center space-y-1">
@@ -321,11 +321,11 @@ export const MockExamView: React.FC<MockExamViewProps> = ({
                   <div className="space-y-0.5">
                     <span className="text-xs font-bold text-stone-800">{subj}</span>
                     <p className="text-[10px] text-stone-500">
-                      {data.score} ከ {data.total} ትክክል
+                      {Number.isFinite(data.score) ? data.score : 0} ከ {Number.isFinite(data.total) ? data.total : 0} ትክክል
                     </p>
                   </div>
                   <span className="text-xs font-bold text-stone-900 px-2 py-1 bg-white rounded-lg border border-stone-200">
-                    {data.percentage}%
+                    {Number.isFinite(data.percentage) ? data.percentage : 0}%
                   </span>
                 </div>
               ))}

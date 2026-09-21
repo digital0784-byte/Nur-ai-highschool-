@@ -19,7 +19,23 @@ export interface Entitlement {
   updatedAt: string;
 }
 
-export type ProtectedContentType = 'video' | 'animation_2d' | 'animation_3d';
+export type ProtectedContentType =
+  | 'video'
+  | 'animation_2d'
+  | 'animation_3d'
+  | 'final_exam'
+  | 'laboratory'
+  | 'experiment'
+  | 'audio_weekly'
+  | 'premium_reference'
+  | 'VIDEO'
+  | 'ANIMATION_2D'
+  | 'ANIMATION_3D'
+  | 'FINAL_EXAM'
+  | 'LABORATORY'
+  | 'EXPERIMENT'
+  | 'AUDIO_WEEKLY'
+  | 'PREMIUM_REFERENCE';
 
 export interface ProtectedContentItem {
   contentId: string;
@@ -30,6 +46,7 @@ export interface ProtectedContentItem {
   chapter: string;
   topic?: string;
   contentType: ProtectedContentType;
+  accessLevel?: 'PREMIUM' | 'FREE';
   premiumRequired: boolean; // default true, editable only by Super Admin
   storagePath: string;
   duration?: string;

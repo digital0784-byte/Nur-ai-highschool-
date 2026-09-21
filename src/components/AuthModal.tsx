@@ -378,36 +378,14 @@ export const AuthModal: React.FC = () => {
               {/* If Register: Role & Name Selection */}
               {mode === 'register' && (
                 <>
-                  <div>
-                    <label className="block text-xs font-bold font-serif-ethiopic text-[#4A4237] mb-1">
-                      የአካውንት አይነት (Account Role):
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setRole('student')}
-                        className={`p-2 rounded-lg border text-xs font-bold font-serif-ethiopic flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                          role === 'student'
-                            ? 'bg-[#2E6B4A] text-white border-[#1D4A32] shadow-xs'
-                            : 'bg-white text-[#4A4237] border-[#38332D]/30 hover:bg-[#EDE5D2]'
-                        }`}
-                      >
-                        <GraduationCap className="w-4 h-4" />
-                        <span>ተማሪ (Student)</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setRole('teacher')}
-                        className={`p-2 rounded-lg border text-xs font-bold font-serif-ethiopic flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                          role === 'teacher'
-                            ? 'bg-[#1D4ED8] text-white border-[#1E3A8A] shadow-xs'
-                            : 'bg-white text-[#4A4237] border-[#38332D]/30 hover:bg-[#EDE5D2]'
-                        }`}
-                      >
-                        <Briefcase className="w-4 h-4" />
-                        <span>መምህር (Teacher)</span>
-                      </button>
+                  <div className="p-2.5 rounded-lg border border-[#2E6B4A]/30 bg-[#EAF3ED] text-xs font-bold flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[#1D4A32] font-serif-ethiopic">
+                      <GraduationCap className="w-4 h-4 text-[#2E6B4A]" />
+                      <span>የተማሪ አካውንት (High School Student Account)</span>
                     </div>
+                    <span className="text-[10px] text-[#2E6B4A] font-normal bg-white/80 px-2 py-0.5 rounded font-sans">
+                      AI Tutor & Examiner
+                    </span>
                   </div>
 
                   <div>
@@ -419,34 +397,32 @@ export const AuthModal: React.FC = () => {
                       required
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder={role === 'teacher' ? 'መምህር አበበ ከበደ' : 'ተማሪ ዮናስ አለሙ'}
+                      placeholder="ተማሪ ዮናስ አለሙ"
                       className="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-[#38332D]/40 rounded-lg focus:outline-none focus:border-[#2E6B4A] text-[#1E1B18]"
                     />
                   </div>
 
-                  {role === 'student' && (
-                    <div>
-                      <label className="block text-xs font-bold font-serif-ethiopic text-[#4A4237] mb-1">
-                        ክፍል (Grade Level):
-                      </label>
-                      <div className="grid grid-cols-4 gap-1.5">
-                        {([9, 10, 11, 12] as Grade[]).map((g) => (
-                          <button
-                            key={g}
-                            type="button"
-                            onClick={() => setGrade(g)}
-                            className={`py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                              grade === g
-                                ? 'bg-[#38332D] text-[#FAF6EC] border-[#1E1B18] shadow-xs'
-                                : 'bg-white text-[#4A4237] border-[#38332D]/30 hover:bg-[#EDE5D2]'
-                            }`}
-                          >
-                            ክፍል {g}
-                          </button>
-                        ))}
-                      </div>
+                  <div>
+                    <label className="block text-xs font-bold font-serif-ethiopic text-[#4A4237] mb-1">
+                      ክፍል (Grade Level):
+                    </label>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {([9, 10, 11, 12] as Grade[]).map((g) => (
+                        <button
+                          key={g}
+                          type="button"
+                          onClick={() => setGrade(g)}
+                          className={`py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                            grade === g
+                              ? 'bg-[#38332D] text-[#FAF6EC] border-[#1E1B18] shadow-xs'
+                              : 'bg-white text-[#4A4237] border-[#38332D]/30 hover:bg-[#EDE5D2]'
+                          }`}
+                        >
+                          ክፍል {g}
+                        </button>
+                      ))}
                     </div>
-                  )}
+                  </div>
                 </>
               )}
 
@@ -511,11 +487,7 @@ export const AuthModal: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full py-2.5 rounded-lg text-white font-bold font-serif-ethiopic text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer ${
-                  role === 'teacher' && mode === 'register'
-                    ? 'bg-[#1D4ED8] hover:bg-[#1E40AF]'
-                    : 'bg-[#2E6B4A] hover:bg-[#235338]'
-                } disabled:opacity-50`}
+                className="w-full py-2.5 rounded-lg text-white font-bold font-serif-ethiopic text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer bg-[#2E6B4A] hover:bg-[#235338] disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
@@ -530,7 +502,7 @@ export const AuthModal: React.FC = () => {
                 ) : (
                   <>
                     <UserPlus className="w-4 h-4" />
-                    <span>{role === 'teacher' ? 'የመምህር አካውንት ፍጠር' : 'የተማሪ አካውንት ፍጠር'}</span>
+                    <span>የተማሪ አካውንት ፍጠር (Create Account)</span>
                   </>
                 )}
               </button>

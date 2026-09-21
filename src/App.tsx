@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Grade, ActiveTab, Topic, SubjectStream } from './types';
 import { getCurriculum } from './data/curriculumData';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
@@ -23,7 +23,6 @@ import { AllTextbooksModal } from './components/AllTextbooksModal';
 import { NewCurriculumModal } from './components/NewCurriculumModal';
 import { AIChapterTutorModal } from './components/AIChapterTutorModal';
 import { AuthModal } from './components/AuthModal';
-import { TeacherDashboardModal } from './components/TeacherDashboardModal';
 import { StudentLearningReviewView } from './components/StudentLearningReviewView';
 import { EthiopianCurriculumEngineView } from './components/EthiopianCurriculumEngineView';
 import { EthiopianAITutorView } from './components/EthiopianAITutorView';
@@ -46,7 +45,13 @@ import { SystemFeedbackModal } from './components/feedback/SystemFeedbackModal';
 import { SystemFeedbackView } from './components/feedback/SystemFeedbackView';
 import { CareerExplorationView } from './components/career/CareerExplorationView';
 import { EntranceExamPrepView } from './components/entrance/EntranceExamPrepView';
+import { PremiumLearningCenter } from './components/premium/PremiumLearningCenter';
+import { AcademicWorkHubView } from './components/assessment/AcademicWorkHubView';
 import { useGamification } from './context/GamificationContext';
+import { SystemModulesDropdownDrawer } from './components/navigation/SystemModulesDropdownDrawer';
+import { DirectSystemPaymentModal } from './components/subscription/DirectSystemPaymentModal';
+import { SettingsModal, SettingsTabId } from './components/settings/SettingsModal';
+import { FrontendGatewayModal } from './components/gateway/FrontendGatewayModal';
 
 function TutorialAppContent() {
   const { language, t } = useLanguage();
@@ -57,13 +62,30 @@ function TutorialAppContent() {
   const { sendNotification } = useNotifications();
 
   // Application State
-  const [selectedGrade, setSelectedGrade] = useState<Grade>(9);
+  const [selectedGrade, setSelectedGrade] = useState<Grade>(() => {
+    const saved = localStorage.getItem('nur_selected_grade');
+    if (saved && [9, 10, 11, 12].includes(Number(saved))) {
+      return Number(saved) as Grade;
+    }
+    return 9;
+  });
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('math');
   const [activeTab, setActiveTab] = useState<ActiveTab>('student_app');
-  const [selectedStream, setSelectedStream] = useState<SubjectStream | 'all'>('all');
+  const [selectedStream, setSelectedStream] = useState<SubjectStream | 'all'>(() => {
+    const saved = localStorage.getItem('nur_selected_stream');
+    if (saved && ['all', 'natural', 'social'].includes(saved)) {
+      return saved as SubjectStream | 'all';
+    }
+    return 'all';
+  });
+  const [isGatewayOpen, setIsGatewayOpen] = useState<boolean>(false);
+
+  // Ref to track if initial routing for the user has occurred
+  const initialAdminRoutedRef = useRef<boolean>(false);
 
   // PART 15 — Super Admin & Student Routing Enforcement:
-  // IF authenticated user is SUPER_ADMIN: open Admin Dashboard.
+  // IF authenticated user is SUPER_ADMIN: defaults to Admin Dashboard on login,
+  // but has UNRESTRICTED ACCESS to inspect every section, student tab, and grade.
   // IF authenticated user is STUDENT:
   //   IF active subscription: open Student Dashboard.
   //   ELSE: open Subscription/Payment screen.
@@ -71,11 +93,18 @@ function TutorialAppContent() {
   useEffect(() => {
     if (subscriptionLoading) return;
 
-    if (isOwnerSuperAdmin) {
-      setActiveTab((prev) =>
-        prev === 'student_app' || prev === 'subscription_payment' ? 'admin_dashboard' : prev
-      );
-    } else {
+    if (!initialAdminRoutedRef.current) {
+      initialAdminRoutedRef.current = true;
+      if (isOwnerSuperAdmin) {
+        setActiveTab('admin_dashboard');
+      } else if (!hasLearningAccess) {
+        setActiveTab('subscription_payment');
+      }
+      return;
+    }
+
+    // Only guard non-super-admin users from admin routes or unpaid access
+    if (!isOwnerSuperAdmin) {
       setActiveTab((prev) => {
         if (prev === 'admin_dashboard' || prev === 'security_fortress') {
           return hasLearningAccess ? 'student_app' : 'subscription_payment';
@@ -89,7 +118,7 @@ function TutorialAppContent() {
   }, [userProfile?.uid, isOwnerSuperAdmin, hasLearningAccess, subscriptionLoading]);
 
   const handleTabChange = (newTab: ActiveTab) => {
-    if (newTab === 'admin_dashboard' && !isOwnerSuperAdmin) {
+    if ((newTab === 'admin_dashboard' || newTab === 'security_fortress') && !isOwnerSuperAdmin) {
       setActiveTab(hasLearningAccess ? 'student_app' : 'subscription_payment');
       return;
     }
@@ -101,21 +130,24 @@ function TutorialAppContent() {
   const [isCertificateOpen, setIsCertificateOpen] = useState<boolean>(false);
   const [isAllTextbooksOpen, setIsAllTextbooksOpen] = useState<boolean>(false);
   const [isNewCurriculumOpen, setIsNewCurriculumOpen] = useState<boolean>(false);
-  const [isTeacherDashboardOpen, setIsTeacherDashboardOpen] = useState<boolean>(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
+  const [isModulesDropdownOpen, setIsModulesDropdownOpen] = useState<boolean>(false);
+  const [isDirectPaymentModalOpen, setIsDirectPaymentModalOpen] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [settingsTab, setSettingsTab] = useState<SettingsTabId>('security');
 
   // AI Tutor / Deep-Dive Modal State
   const [aiTutorState, setAiTutorState] = useState<{
     isOpen: boolean;
     chapterTitle: string;
-    mode: 'analysis' | 'chat';
+    mode: 'analysis' | 'chat' | 'research';
   }>({
     isOpen: false,
     chapterTitle: '',
     mode: 'analysis',
   });
 
-  const handleOpenAITutor = (chapterTitle: string, mode: 'analysis' | 'chat' = 'analysis') => {
+  const handleOpenAITutor = (chapterTitle: string, mode: 'analysis' | 'chat' | 'research' = 'analysis') => {
     setAiTutorState({
       isOpen: true,
       chapterTitle,
@@ -158,6 +190,7 @@ function TutorialAppContent() {
   // Handler for changing grade: also synchronizes topic tier
   const handleSelectGrade = (grade: Grade) => {
     setSelectedGrade(grade);
+    localStorage.setItem('nur_selected_grade', grade.toString());
     const newTopic = getTopicForGrade(currentSubject, grade);
     setSelectedTopicId(newTopic.id);
   };
@@ -202,9 +235,19 @@ function TutorialAppContent() {
           onOpenCertificate={() => setIsCertificateOpen(true)}
           onOpenAllTextbooks={() => setIsAllTextbooksOpen(true)}
           onOpenNewCurriculum={() => setActiveTab('curriculum_engine')}
-          onOpenTeacherDashboard={() => setIsTeacherDashboardOpen(true)}
           onOpenSubscription={() => setActiveTab('subscription_payment')}
           onOpenFeedback={() => setIsFeedbackModalOpen(true)}
+          onOpenModulesDropdown={() => setIsModulesDropdownOpen(true)}
+          onOpenDirectPayment={() => setIsDirectPaymentModalOpen(true)}
+          onOpenSettings={() => {
+            setSettingsTab('security');
+            setIsSettingsOpen(true);
+          }}
+          onOpenGateway={() => setIsGatewayOpen(true)}
+          activeTab={activeTab}
+          onToggleAdminDashboard={() =>
+            setActiveTab((prev) => (prev === 'admin_dashboard' ? 'student_app' : 'admin_dashboard'))
+          }
         />
 
         {/* Workspace: Sidebar + Content */}
@@ -215,7 +258,15 @@ function TutorialAppContent() {
             selectedSubjectId={currentSubject.id}
             onSelectSubject={handleSelectSubject}
             selectedStream={selectedStream}
-            onSelectStream={setSelectedStream}
+            onSelectStream={(stream) => {
+              setSelectedStream(stream);
+              localStorage.setItem('nur_selected_stream', stream);
+            }}
+            onOpenGateway={() => setIsGatewayOpen(true)}
+            onOpenSettings={() => {
+              setSettingsTab('security');
+              setIsSettingsOpen(true);
+            }}
           />
 
           {/* Main Study Panel */}
@@ -240,6 +291,26 @@ function TutorialAppContent() {
 
             {/* Tab Contents */}
             <div className="flex-1 overflow-y-auto bg-[#FAF6EC]">
+              {activeTab === 'academic_work_hub' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  <AcademicWorkHubView
+                    onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                    selectedGrade={selectedGrade}
+                    onGradeChange={setSelectedGrade}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'premium_learning_center' && (
+                <div className="p-2 sm:p-4 lg:p-6">
+                  <PremiumLearningCenter
+                    onNavigateToPayment={() => setActiveTab('subscription_payment')}
+                    selectedGrade={selectedGrade}
+                    onGradeChange={setSelectedGrade}
+                  />
+                </div>
+              )}
+
               {activeTab === 'entrance_prep' && (
                 <SubscriptionPaywallGate
                   featureTitle="የዩኒቨርሲቲ መግቢያ ፈተና ዝግጅት ሞተር (University Entrance Exam Prep Engine)"
@@ -644,17 +715,75 @@ function TutorialAppContent() {
         onClose={() => setIsFeedbackModalOpen(false)}
       />
 
-      {/* Teacher / Educator Students Analytics Dashboard */}
-      {userProfile?.role === 'teacher' && (
-        <TeacherDashboardModal
-          isOpen={isTeacherDashboardOpen}
-          onClose={() => setIsTeacherDashboardOpen(false)}
-          teacherProfile={userProfile}
-        />
-      )}
-
       {/* Real-time Notification In-App Toast */}
       <NotificationToast />
+
+      {/* System Modules Dropdown Drawer matching Screenshot style */}
+      <SystemModulesDropdownDrawer
+        isOpen={isModulesDropdownOpen}
+        onClose={() => setIsModulesDropdownOpen(false)}
+        activeTab={activeTab}
+        onSelectTab={(tab) => {
+          handleTabChange(tab);
+          setIsModulesDropdownOpen(false);
+        }}
+        isSuperAdmin={isOwnerSuperAdmin}
+        userEmail={userProfile?.email}
+        onOpenDirectPayment={() => {
+          setIsModulesDropdownOpen(false);
+          setIsDirectPaymentModalOpen(true);
+        }}
+        onOpenResearch={() => {
+          setActiveTab('supplementary');
+          setIsModulesDropdownOpen(false);
+        }}
+        onOpenSettings={() => {
+          setIsModulesDropdownOpen(false);
+          setSettingsTab('security');
+          setIsSettingsOpen(true);
+        }}
+      />
+
+      {/* Direct In-System Payment Modal with Telebirr 0910097862 and CBE 1000382883776 */}
+      <DirectSystemPaymentModal
+        isOpen={isDirectPaymentModalOpen}
+        onClose={() => setIsDirectPaymentModalOpen(false)}
+        selectedGrade={selectedGrade}
+        onPaymentComplete={() => {
+          setActiveTab('student_app');
+        }}
+      />
+
+      {/* Comprehensive System Settings Modal (Part 18 Mandate) */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        initialTab={settingsTab}
+        onOpenRecovery={() => {
+          setIsSettingsOpen(false);
+        }}
+        onOpenSubscription={() => {
+          setIsSettingsOpen(false);
+          setIsDirectPaymentModalOpen(true);
+        }}
+      />
+
+      {/* 3-Screen Frontend Gateway Modal (Welcome -> Language & Grade -> Payment & Login) */}
+      <FrontendGatewayModal
+        isOpen={isGatewayOpen}
+        onClose={() => setIsGatewayOpen(false)}
+        selectedGrade={selectedGrade}
+        onSelectGrade={handleSelectGrade}
+        selectedStream={selectedStream}
+        onSelectStream={(stream) => {
+          setSelectedStream(stream);
+          localStorage.setItem('nur_selected_stream', stream);
+        }}
+        onDirectPaymentOpen={() => {
+          setIsGatewayOpen(false);
+          setIsDirectPaymentModalOpen(true);
+        }}
+      />
     </div>
   );
 }

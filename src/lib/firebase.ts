@@ -1,7 +1,18 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  getFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  memoryLocalCache,
+  setLogLevel,
+  Firestore,
+} from 'firebase/firestore';
 import appletConfig from '../../firebase-applet-config.json';
+
+// Suppress transient offline/reconnect warnings ('info'/'warn') in sandbox/iframe environments
+setLogLevel('error');
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || appletConfig.apiKey,
@@ -18,8 +29,37 @@ export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfi
 // Initialize Firebase Auth
 export const auth = getAuth(app);
 
-// Initialize Cloud Firestore with dedicated databaseId
+// Initialize Cloud Firestore with target databaseId and resilient cache
 const databaseId = import.meta.env.VITE_FIREBASE_DATABASE_ID || appletConfig.firestoreDatabaseId || '(default)';
-export const db = databaseId && databaseId !== '(default)'
-  ? getFirestore(app, databaseId)
-  : getFirestore(app);
+const targetDbId = databaseId && databaseId !== '(default)' ? databaseId : undefined;
+
+function createFirestoreInstance(): Firestore {
+  try {
+    return initializeFirestore(
+      app,
+      {
+        experimentalAutoDetectLongPolling: true,
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      },
+      targetDbId
+    );
+  } catch {
+    try {
+      return initializeFirestore(
+        app,
+        {
+          experimentalAutoDetectLongPolling: true,
+          localCache: memoryLocalCache(),
+        },
+        targetDbId
+      );
+    } catch {
+      return targetDbId ? getFirestore(app, targetDbId) : getFirestore(app);
+    }
+  }
+}
+
+export const db = createFirestoreInstance();
+

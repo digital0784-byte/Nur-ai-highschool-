@@ -281,11 +281,11 @@ class StudentAppFirestoreService {
     current.totalTimeSpentSeconds += timeSpentSeconds;
     current.lastStudiedAt = new Date().toISOString();
 
-    const percentage = Math.round((correctCount / totalCount) * 100);
+    const percentage = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
     // Exponential smoothing for continuous mastery score
     current.masteryScore = current.attemptsCount === 1
       ? percentage
-      : Math.round(current.masteryScore * 0.4 + percentage * 0.6);
+      : Math.round((Number(current.masteryScore) || 0) * 0.4 + percentage * 0.6);
 
     // Adaptive Mastery Level Classification:
     // Not Started | Learning | Developing | Mastered
@@ -414,29 +414,33 @@ class StudentAppFirestoreService {
     const masteries = await this.getAllTopicMasteries();
     const totalLessonsCompleted = masteries.filter((m) => m.completed).length;
     const totalStudyMinutes = Math.round(
-      masteries.reduce((acc, m) => acc + m.totalTimeSpentSeconds, 0) / 60
+      masteries.reduce((acc, m) => acc + (Number(m.totalTimeSpentSeconds) || 0), 0) / 60
     );
     const masteredCount = masteries.filter((m) => m.masteryLevel === 'mastered').length;
     const developingCount = masteries.filter((m) => m.masteryLevel === 'developing').length;
     const weakCount = masteries.filter((m) => m.needsRevision).length;
 
-    const quizAttempts = masteries.filter((m) => m.attemptsCount > 0);
+    const quizAttempts = masteries.filter((m) => (m.attemptsCount || 0) > 0);
+    const validScores = quizAttempts
+      .map((m) => Number(m.masteryScore))
+      .filter((s) => Number.isFinite(s));
     const averageQuizScore =
-      quizAttempts.length > 0
-        ? Math.round(
-            quizAttempts.reduce((acc, m) => acc + m.masteryScore, 0) / quizAttempts.length
-          )
+      validScores.length > 0
+        ? Math.round(validScores.reduce((acc, s) => acc + s, 0) / validScores.length)
         : 0;
 
     const lastStudied = masteries.sort(
       (a, b) => new Date(b.lastStudiedAt).getTime() - new Date(a.lastStudiedAt).getTime()
     )[0];
 
+    const safeTotalMinutes = Number.isFinite(totalStudyMinutes) ? totalStudyMinutes : 0;
+    const safeAvgScore = Number.isFinite(averageQuizScore) ? averageQuizScore : 0;
+
     return {
       totalLessonsCompleted,
-      totalStudyMinutes,
+      totalStudyMinutes: safeTotalMinutes,
       currentStreakDays: 3, // Initialized active streak
-      averageQuizScore,
+      averageQuizScore: safeAvgScore,
       masteredTopicsCount: masteredCount,
       developingTopicsCount: developingCount,
       weakTopicsCount: weakCount,

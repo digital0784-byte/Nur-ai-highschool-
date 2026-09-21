@@ -40,12 +40,9 @@ service cloud.firestore {
       );
     }
 
-    // Teacher role check (includes Admin escalation)
+    // Strictly No Teacher Role: AI handles generation, examining & grading; administrative actions belong to Super Admin
     function isTeacher() {
-      return isAuthenticated() && (
-        isAdmin() ||
-        (hasUserDoc() && (getUserData().role == 'teacher' || getUserData().role == 'admin'))
-      );
+      return isAdmin();
     }
 
     // Student role check
@@ -173,6 +170,21 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Protected digital books metadata & reading sessions (Student download prevention)
+    match /protected_books/{bookId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    match /book_read_sessions/{sessionId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.studentId == request.auth.uid || isAdmin());
+      allow write: if isAuthenticated() && (request.resource.data.studentId == request.auth.uid || isAdmin());
+    }
+    match /book_access_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
     // Legacy curriculum paths fallback
     match /subjects/{subjectId} {
       allow read: if isAuthenticated();
@@ -227,9 +239,34 @@ service cloud.firestore {
       allow write: if isTeacher();
     }
 
-    match /assignments/{assignmentId} {
+    // AI Homework Engine: Accessible to Normal Students
+    match /homework/{homeworkId} {
       allow read: if isAuthenticated();
-      allow write: if isTeacher();
+      allow write: if isAdmin();
+    }
+
+    // AI Premium Assignment Engine: Premium Only access
+    match /assignments/{assignmentId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        !('premiumRequired' in resource.data) ||
+        resource.data.premiumRequired == false ||
+        isAdmin() ||
+        (hasUserDoc() && getUserData().plan == 'PREMIUM')
+      );
+      allow write: if isAdmin();
+    }
+
+    // AI Premium Project Engine: Premium Only access
+    match /projects/{projectId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        !('premiumRequired' in resource.data) ||
+        resource.data.premiumRequired == false ||
+        isAdmin() ||
+        (hasUserDoc() && getUserData().plan == 'PREMIUM')
+      );
+      allow write: if isAdmin();
     }
 
     match /quizzes/{quizId} {

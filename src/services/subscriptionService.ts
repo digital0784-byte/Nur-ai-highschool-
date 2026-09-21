@@ -54,30 +54,53 @@ export const DEFAULT_PRICING_CONFIG: SubscriptionPricingConfig = {
   grade10Price: 180,
   grade11Price: 200,
   grade12Price: 200,
+  premiumPrice: 54,
   subscriptionDurationDays: 30,
   renewalReminderDays: 5,
   methods: {
     'Telebirr': {
       id: 'Telebirr',
       displayName: 'ቴሌብር (Telebirr)',
-      accountName: 'NUR AI High School Tutor',
-      accountNumber: '0911 23 45 67',
-      shortCodeOrTill: '892144 (Merchant/Till)',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: '0910097862',
+      shortCodeOrTill: '0910097862',
       iconName: 'Smartphone',
       badgeColor: 'bg-amber-50 text-amber-900 border-amber-300',
-      instructionsAm: 'በቴሌብር መተግበሪያ ወደ 0911234567 ወይም በነጋዴ ኮድ (Till Number) 892144 ክፍያ ይፈጽሙ። የክፍያውን ሚስጥር ቁጥር (Transaction ID) እና ደረሰኝ ከታች ያስገቡ።',
-      instructionsEn: 'Pay via Telebirr App to 0911234567 or Merchant Till Number 892144. Enter the Transaction Reference and upload receipt screenshot.',
+      instructionsAm: 'በቴሌብር (Telebirr) መተግበሪያ ወይም በ *127# በቀጥታ ወደ 0910097862 (Nuriye Ahmed Adem) ይክፈሉ። መደበኛ (Normal)፡ 9ኛ ክፍል 160 ETB፣ 10ኛ ክፍል 180 ETB፣ 11-12ኛ ክፍል 200 ETB። ፕሪሚየም (Premium)፡ ለሁሉም ክፍሎች 54 ETB። የክፍያውን ማረጋገጫ (Transaction ID) ከታች ያስገቡ።',
+      instructionsEn: 'Pay directly via Telebirr App or *127# to 0910097862 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the Transaction Reference below.',
+      isEnabled: true,
+    },
+    'CBE Birr': {
+      id: 'CBE Birr',
+      displayName: 'ሲቢኢ ብር (CBE Birr)',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: '0910097862',
+      iconName: 'Smartphone',
+      badgeColor: 'bg-purple-50 text-purple-900 border-purple-300',
+      instructionsAm: 'በ CBE Birr ወደ 0910097862 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
+      instructionsEn: 'Transfer via CBE Birr to 0910097862 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the FT reference code below.',
+      isEnabled: true,
+    },
+    'CBE Bank Transfer': {
+      id: 'CBE Bank Transfer',
+      displayName: 'የኢትዮጵያ ንግድ ባንክ (CBE Bank Transfer)',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: '1000382883776',
+      iconName: 'Building2',
+      badgeColor: 'bg-purple-50 text-purple-900 border-purple-300',
+      instructionsAm: 'በኢትዮጵያ ንግድ ባንክ (CBE) በሞባይል ባንኪንግ ወይም በቅርንጫፍ ወደ ሂሳብ ቁጥር 1000382883776 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
+      instructionsEn: 'Transfer via CBE Mobile Banking to Account 1000382883776 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the FT reference code below.',
       isEnabled: true,
     },
     'Commercial Bank of Ethiopia (CBE)': {
       id: 'Commercial Bank of Ethiopia (CBE)',
-      displayName: 'የኢትዮጵያ ንግድ ባንክ (CBE)',
-      accountName: 'NUR AI High School Academy',
-      accountNumber: '1000 4892 1039 5',
+      displayName: 'የኢትዮጵያ ንግድ ባንክ (CBE Bank Transfer)',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: '1000382883776',
       iconName: 'Building2',
       badgeColor: 'bg-purple-50 text-purple-900 border-purple-300',
-      instructionsAm: 'በ CBE Birr ወይም በሞባይል ባንኪንግ ወደ ሂሳብ ቁጥር 1000489210395 ያስተላልፉ። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
-      instructionsEn: 'Transfer via CBE Birr or Mobile Banking to Account 1000489210395. Enter the FT reference code below.',
+      instructionsAm: 'በኢትዮጵያ ንግድ ባንክ (CBE) በሞባይል ባንኪንግ ወይም በቅርንጫፍ ወደ ሂሳብ ቁጥር 1000382883776 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
+      instructionsEn: 'Transfer via CBE Mobile Banking to Account 1000382883776 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the FT reference code below.',
       isEnabled: true,
     },
     'Dashen Bank': {
@@ -87,8 +110,8 @@ export const DEFAULT_PRICING_CONFIG: SubscriptionPricingConfig = {
       accountNumber: '5219 0382 9102 1',
       iconName: 'Landmark',
       badgeColor: 'bg-blue-50 text-blue-900 border-blue-300',
-      instructionsAm: 'በዳሸን ባንክ ወይም በአሞሌ (Amole) ወደ ሂሳብ ቁጥር 5219038291021 ያስተላልፉ። የማረጋገጫውን ቁጥር ያስገቡ።',
-      instructionsEn: 'Transfer via Dashen Mobile / Amole to Account 5219038291021. Enter the transaction reference.',
+      instructionsAm: 'በዳሸን ባንክ ወይም በአሞሌ (Amole) ወደ ሂሳብ ቁጥር 5219038291021 ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የማረጋገጫውን ቁጥር ያስገቡ።',
+      instructionsEn: 'Transfer via Dashen Mobile / Amole to Account 5219038291021. Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the transaction reference.',
       isEnabled: true,
     },
     'Bank of Abyssinia': {
@@ -98,8 +121,8 @@ export const DEFAULT_PRICING_CONFIG: SubscriptionPricingConfig = {
       accountNumber: '8910 2341 0291',
       iconName: 'CreditCard',
       badgeColor: 'bg-amber-50 text-amber-950 border-amber-400',
-      instructionsAm: 'በቦአ (BoA) ሞባይል ባንኪንግ ወደ ሂሳብ ቁጥር 891023410291 ይላኩ። የማረጋገጫ ደረሰኝ ኮድ ያስገቡ።',
-      instructionsEn: 'Transfer via BoA Mobile Banking to Account 891023410291. Enter transaction reference number.',
+      instructionsAm: 'በቦአ (BoA) ሞባይል ባንኪንግ ወደ ሂሳብ ቁጥር 891023410291 ይላኩ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የማረጋገጫ ደረሰኝ ኮድ ያስገቡ።',
+      instructionsEn: 'Transfer via BoA Mobile Banking to Account 891023410291. Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter transaction reference number.',
       isEnabled: true,
     },
   },
@@ -119,14 +142,28 @@ class SubscriptionService {
   async getPricingConfig(): Promise<SubscriptionPricingConfig> {
     try {
       const docRef = doc(db, SETTINGS_COLLECTION, 'subscription_pricing');
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
+      const snap = await Promise.race([
+        getDoc(docRef),
+        new Promise<any>((resolve) => setTimeout(() => resolve(null), 2000)),
+      ]);
+      if (snap && snap.exists()) {
+        const d = snap.data();
+        const g9 = Number(d.grade9Price ?? d.gradeMonthlyPrices?.[9]);
+        const g10 = Number(d.grade10Price ?? d.gradeMonthlyPrices?.[10]);
+        const g11 = Number(d.grade11Price ?? d.gradeMonthlyPrices?.[11]);
+        const g12 = Number(d.grade12Price ?? d.gradeMonthlyPrices?.[12]);
+        const prem = Number(d.premiumPrice ?? d.premiumMonthlyPrice);
         return {
           ...DEFAULT_PRICING_CONFIG,
-          ...snap.data(),
+          ...d,
+          grade9Price: Number.isFinite(g9) && g9 > 0 ? g9 : DEFAULT_PRICING_CONFIG.grade9Price,
+          grade10Price: Number.isFinite(g10) && g10 > 0 ? g10 : DEFAULT_PRICING_CONFIG.grade10Price,
+          grade11Price: Number.isFinite(g11) && g11 > 0 ? g11 : DEFAULT_PRICING_CONFIG.grade11Price,
+          grade12Price: Number.isFinite(g12) && g12 > 0 ? g12 : DEFAULT_PRICING_CONFIG.grade12Price,
+          premiumPrice: Number.isFinite(prem) && prem > 0 ? prem : DEFAULT_PRICING_CONFIG.premiumPrice,
           methods: {
             ...DEFAULT_PRICING_CONFIG.methods,
-            ...(snap.data().methods || {}),
+            ...(d.methods || {}),
           },
         } as SubscriptionPricingConfig;
       }
@@ -148,11 +185,12 @@ class SubscriptionService {
           const d = snap.data();
           callback({
             gradeMonthlyPrices: {
-              9: d.grade9Price ?? d.gradeMonthlyPrices?.[9] ?? 160,
-              10: d.grade10Price ?? d.gradeMonthlyPrices?.[10] ?? 180,
-              11: d.grade11Price ?? d.gradeMonthlyPrices?.[11] ?? 200,
-              12: d.grade12Price ?? d.gradeMonthlyPrices?.[12] ?? 200,
+              9: d.grade9Price ?? d.gradeMonthlyPrices?.[9] ?? DEFAULT_PRICING_CONFIG.grade9Price,
+              10: d.grade10Price ?? d.gradeMonthlyPrices?.[10] ?? DEFAULT_PRICING_CONFIG.grade10Price,
+              11: d.grade11Price ?? d.gradeMonthlyPrices?.[11] ?? DEFAULT_PRICING_CONFIG.grade11Price,
+              12: d.grade12Price ?? d.gradeMonthlyPrices?.[12] ?? DEFAULT_PRICING_CONFIG.grade12Price,
             },
+            premiumMonthlyPrice: d.premiumPrice ?? d.premiumMonthlyPrice ?? DEFAULT_PRICING_CONFIG.premiumPrice,
             billingCycleDays: d.subscriptionDurationDays ?? d.billingCycleDays ?? 30,
             currency: d.currency ?? 'ETB',
             freeTierEnabled: d.freeTierEnabled ?? false,
@@ -167,6 +205,7 @@ class SubscriptionService {
               11: DEFAULT_PRICING_CONFIG.grade11Price,
               12: DEFAULT_PRICING_CONFIG.grade12Price,
             },
+            premiumMonthlyPrice: DEFAULT_PRICING_CONFIG.premiumPrice,
             billingCycleDays: DEFAULT_PRICING_CONFIG.subscriptionDurationDays,
             currency: 'ETB',
             freeTierEnabled: false,
@@ -176,7 +215,13 @@ class SubscriptionService {
       (err) => {
         console.warn('Could not subscribe to pricing config:', err);
         callback({
-          gradeMonthlyPrices: { 9: 160, 10: 180, 11: 200, 12: 200 },
+          gradeMonthlyPrices: {
+            9: DEFAULT_PRICING_CONFIG.grade9Price,
+            10: DEFAULT_PRICING_CONFIG.grade10Price,
+            11: DEFAULT_PRICING_CONFIG.grade11Price,
+            12: DEFAULT_PRICING_CONFIG.grade12Price,
+          },
+          premiumMonthlyPrice: DEFAULT_PRICING_CONFIG.premiumPrice,
           billingCycleDays: 30,
           currency: 'ETB',
           freeTierEnabled: false,
@@ -320,11 +365,12 @@ class SubscriptionService {
     const grade10 = config.gradeMonthlyPrices ? config.gradeMonthlyPrices[10] : config.grade10Price;
     const grade11 = config.gradeMonthlyPrices ? config.gradeMonthlyPrices[11] : config.grade11Price;
     const grade12 = config.gradeMonthlyPrices ? config.gradeMonthlyPrices[12] : config.grade12Price;
+    const premiumPrice = (config as any).premiumPrice ?? (config as any).premiumMonthlyPrice ?? 54;
     const durationDays = config.billingCycleDays || config.subscriptionDurationDays || 30;
 
     // 2. Strict validation: prices must be positive numbers
-    if (grade9 <= 0 || grade10 <= 0 || grade11 <= 0 || grade12 <= 0) {
-      throw new Error('Validation error: All grade prices must be positive numbers greater than 0.');
+    if (grade9 <= 0 || grade10 <= 0 || grade11 <= 0 || grade12 <= 0 || premiumPrice <= 0) {
+      throw new Error('Validation error: All grade and premium prices must be positive numbers greater than 0.');
     }
     if (durationDays <= 0) {
       throw new Error('Validation error: Subscription duration must be greater than 0 days.');
@@ -337,6 +383,7 @@ class SubscriptionService {
       grade10Price: Number(grade10),
       grade11Price: Number(grade11),
       grade12Price: Number(grade12),
+      premiumPrice: Number(premiumPrice),
       subscriptionDurationDays: Number(durationDays),
       renewalReminderDays: config.renewalReminderDays || 3,
       methods: config.methods || DEFAULT_PRICING_CONFIG.methods,
@@ -346,6 +393,7 @@ class SubscriptionService {
         11: Number(grade11),
         12: Number(grade12),
       },
+      premiumMonthlyPrice: Number(premiumPrice),
       billingCycleDays: Number(durationDays),
       currency: config.currency || 'ETB',
       freeTierEnabled: config.freeTierEnabled ?? false,
@@ -356,9 +404,9 @@ class SubscriptionService {
     await setDoc(docRef, payload, { merge: true });
 
     const oldPricesStr = oldConfig
-      ? `G9: ${oldConfig.grade9Price} ETB, G10: ${oldConfig.grade10Price} ETB, G11: ${oldConfig.grade11Price} ETB, G12: ${oldConfig.grade12Price} ETB`
+      ? `Normal G9: ${oldConfig.grade9Price}, G10: ${oldConfig.grade10Price}, G11: ${oldConfig.grade11Price}, G12: ${oldConfig.grade12Price} ETB | Premium: ${oldConfig.premiumPrice} ETB`
       : 'Previous default config';
-    const newPricesStr = `G9: ${grade9} ETB, G10: ${grade10} ETB, G11: ${grade11} ETB, G12: ${grade12} ETB`;
+    const newPricesStr = `Normal G9: ${grade9}, G10: ${grade10}, G11: ${grade11}, G12: ${grade12} ETB | Premium: ${premiumPrice} ETB`;
 
     await this.logPaymentAudit({
       action: 'PRICING_UPDATED',
@@ -384,21 +432,30 @@ class SubscriptionService {
   }
 
   /**
-   * Get price in ETB for a given grade
+   * Get price in ETB for a given grade and plan
+   * Normal: G9-10 (160 ETB), G11-12 (180 ETB)
+   * Premium: All grades (54 ETB)
    */
-  getPriceForGrade(grade: Grade, config?: SubscriptionPricingConfig): number {
+  getPriceForGrade(
+    grade: Grade,
+    config?: SubscriptionPricingConfig,
+    plan: 'NORMAL' | 'PREMIUM' = 'NORMAL'
+  ): number {
     const cfg = config || DEFAULT_PRICING_CONFIG;
+    if (plan === 'PREMIUM') {
+      return cfg.premiumPrice || 54;
+    }
     switch (grade) {
       case 9:
-        return cfg.grade9Price;
+        return cfg.grade9Price || 160;
       case 10:
-        return cfg.grade10Price;
+        return cfg.grade10Price || 180;
       case 11:
-        return cfg.grade11Price;
+        return cfg.grade11Price || 200;
       case 12:
-        return cfg.grade12Price;
+        return cfg.grade12Price || 200;
       default:
-        return 160;
+        return grade === 9 ? 160 : grade === 10 ? 180 : 200;
     }
   }
 
@@ -621,21 +678,22 @@ class SubscriptionService {
     const subRef = doc(db, SUBSCRIPTIONS_COLLECTION, params.studentUserId);
     await updateDoc(subRef, {
       status: 'ACTIVE',
+      planName: 'PREMIUM',
       startDate: nowIso,
       expiryDate,
-      priceETB: params.amountETB,
+      priceETB: params.amountETB || 54,
       grade: params.grade,
       paymentId: params.paymentId,
       updatedAt: nowIso,
     });
 
-    // 2b. PART 4 & 7: Provision Server-Side Verified Entitlement
+    // 2b. Provision Server-Side Verified Entitlement
     const entitlementRef = doc(db, ENTITLEMENTS_COLLECTION, params.studentUserId);
     const entitlementData: Entitlement = {
       id: params.studentUserId,
       studentId: params.studentUserId,
       entitlementType: 'ALL_PREMIUM',
-      plan: `Grade ${params.grade} Monthly Premium`,
+      plan: 'PREMIUM',
       premium: true,
       grade: params.grade,
       status: 'ACTIVE',

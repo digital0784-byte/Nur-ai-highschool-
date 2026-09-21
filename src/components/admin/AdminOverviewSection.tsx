@@ -152,7 +152,7 @@ export const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                NUR AI High School • 2017 E.C.
+                NUR AI High School • 2019 E.C.
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                 FDRE MoE Curriculum

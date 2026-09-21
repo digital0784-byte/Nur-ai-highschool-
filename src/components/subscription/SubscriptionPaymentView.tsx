@@ -19,6 +19,7 @@ import {
   FileCheck2,
   Phone,
   Mail,
+  ChevronDown,
 } from 'lucide-react';
 import { useSubscription } from '../../context/SubscriptionContext';
 import { useAuth } from '../../context/AuthContext';
@@ -49,6 +50,7 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
     isOwnerSuperAdmin,
   } = useSubscription();
 
+  const [selectedPlan, setSelectedPlan] = useState<'NORMAL' | 'PREMIUM'>('NORMAL');
   const [selectedGrade, setSelectedGrade] = useState<Grade>(
     userProfile?.grade || initialGrade || 9
   );
@@ -61,21 +63,34 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Derive price for current selected grade
+  // Derive price for current selected grade and plan:
+  // Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB)
+  // Premium: All grades (54 ETB)
   const currentPrice = React.useMemo(() => {
+    if (selectedPlan === 'PREMIUM') {
+      const prem = Number(pricingConfig.premiumPrice);
+      return Number.isFinite(prem) && prem > 0 ? prem : 54;
+    }
+    let p = 160;
     switch (selectedGrade) {
       case 9:
-        return pricingConfig.grade9Price;
+        p = pricingConfig.grade9Price || 160;
+        break;
       case 10:
-        return pricingConfig.grade10Price;
+        p = pricingConfig.grade10Price || 180;
+        break;
       case 11:
-        return pricingConfig.grade11Price;
+        p = pricingConfig.grade11Price || 200;
+        break;
       case 12:
-        return pricingConfig.grade12Price;
+        p = pricingConfig.grade12Price || 200;
+        break;
       default:
-        return 160;
+        p = selectedGrade === 9 ? 160 : selectedGrade === 10 ? 180 : 200;
     }
-  }, [selectedGrade, pricingConfig]);
+    const num = Number(p);
+    return Number.isFinite(num) && num > 0 ? num : (selectedGrade === 9 ? 160 : selectedGrade === 10 ? 180 : 200);
+  }, [selectedPlan, selectedGrade, pricingConfig]);
 
   const activeMethodConfig = pricingConfig.methods[selectedMethod] || pricingConfig.methods['Telebirr'];
 
@@ -158,13 +173,13 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-400/20 text-amber-300 text-xs font-bold rounded-full mb-3 border border-amber-400/30">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>የ 9-12 ክፍል ኑር AI ፕሪሚየም የትምህርት ምዝገባ</span>
+              <span>NUR AI Premium — 54 ETB/month</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold font-serif-ethiopic text-white">
-              የኑር AI ሳብስክሪፕሽንና ክፍያ ማረጋገጫ
+              የሳብስክሪፕሽን ክፍያ (Subscription Payment)
             </h2>
-            <p className="text-xs sm:text-sm text-[#D8CEBC] mt-1 font-serif-ethiopic max-w-2xl">
-              በኢትዮጵያ አዲሱ ስርዓተ-ትምህርት መሰረት የተዘጋጁ 18+ መጽሐፍት፣ AI የግል አስተማሪ፣ የፈተናዎች ሞተርና የላብራቶሪ ማስመሰያዎችን በወርሃዊ ክፍያ ያግኙ።
+            <p className="text-xs sm:text-sm text-[#D8CEBC] mt-1 font-serif-ethiopic max-w-2xl leading-relaxed">
+              Normal ክፍያ በወር፡ ለ9ኛ ክፍል 160 ብር፤ ለ10ኛ ክፍል 180 ብር፤ ለ11ኛ እና 12ኛ ክፍል በወር 200 ብር። ለሁሉም የትምህርት ደረጃዎች Premium ክፍያ በወር 54 ብር (ETB)።
             </p>
           </div>
 
@@ -272,11 +287,84 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Grade Pricing & Instructions (5 Cols) */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Step 1: Select Grade & Pricing Card */}
+          {/* Step 1: Select Plan (Normal vs Premium) */}
           <div className="bg-[#FAF6EC] border-[1.5px] border-[#38332D] rounded-xl p-4 sm:p-5 shadow-xs">
             <div className="flex items-center gap-2 mb-3">
               <span className="w-6 h-6 rounded-full bg-[#38332D] text-white text-xs font-bold flex items-center justify-center">
                 1
+              </span>
+              <h3 className="font-bold font-serif-ethiopic text-sm text-[#1E1B18]">
+                የእቅድ ዓይነት ይምረጡ (Select Plan)
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Normal Plan Card */}
+              <button
+                type="button"
+                onClick={() => setSelectedPlan('NORMAL')}
+                className={`p-3 rounded-lg border text-left transition-all cursor-pointer relative ${
+                  selectedPlan === 'NORMAL'
+                    ? 'border-[#2E6B4A] bg-[#EAF3ED] ring-2 ring-[#2E6B4A]/30 shadow-xs'
+                    : 'border-[#D8CEBC] bg-white hover:bg-[#F2EDE1]'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-[#1E1B18] font-serif-ethiopic">
+                    መደበኛ (Normal)
+                  </span>
+                  {selectedPlan === 'NORMAL' && <Check className="w-4 h-4 text-[#2E6B4A]" />}
+                </div>
+                <div className="mt-1.5 space-y-0.5 text-stone-800">
+                  <div className="text-xs font-serif-ethiopic">
+                    9ኛ: <span className="font-black text-sm text-[#2E6B4A]">{pricingConfig.grade9Price || 160}</span> <span className="text-[10px] text-stone-600">ETB/ወር</span>
+                    <span className="mx-1 text-stone-400">|</span>
+                    10ኛ: <span className="font-black text-sm text-[#2E6B4A]">{pricingConfig.grade10Price || 180}</span> <span className="text-[10px] text-stone-600">ETB/ወር</span>
+                  </div>
+                  <div className="text-xs font-serif-ethiopic">
+                    11-12ኛ: <span className="font-black text-sm text-[#2E6B4A]">{pricingConfig.grade11Price || 200}</span> <span className="text-[10px] text-stone-600">ETB/ወር</span>
+                  </div>
+                </div>
+                <div className="text-[10px] text-stone-500 mt-1.5">
+                  የመማሪያ መጽሐፍት፣ AI አስጠኚ እና መደበኛ ፈተናዎች
+                </div>
+              </button>
+
+              {/* Premium Plan Card */}
+              <button
+                type="button"
+                onClick={() => setSelectedPlan('PREMIUM')}
+                className={`p-3 rounded-lg border text-left transition-all cursor-pointer relative ${
+                  selectedPlan === 'PREMIUM'
+                    ? 'border-amber-600 bg-amber-50 ring-2 ring-amber-500/30 shadow-xs'
+                    : 'border-[#D8CEBC] bg-white hover:bg-[#F2EDE1]'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-amber-950 font-serif-ethiopic flex items-center gap-1">
+                    👑 ፕሪሚየም (Premium)
+                  </span>
+                  {selectedPlan === 'PREMIUM' && <Check className="w-4 h-4 text-amber-700" />}
+                </div>
+                <div className="mt-1.5 flex items-baseline gap-1">
+                  <span className="text-lg font-black text-amber-700">{pricingConfig.premiumPrice || 54}</span>
+                  <span className="text-xs text-stone-600 font-bold">ETB / ወር</span>
+                </div>
+                <div className="text-[10px] text-amber-900 font-medium mt-0.5 font-serif-ethiopic">
+                  ለሁሉም ደረጃዎች (9-12)
+                </div>
+                <div className="text-[10px] text-stone-500 mt-1">
+                  ቪዲዮ፣ 2D/3D አኒሜሽን፣ የፈተና ዝግጅትና ላብራቶሪ
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Step 2: Select Grade & Pricing Card */}
+          <div className="bg-[#FAF6EC] border-[1.5px] border-[#38332D] rounded-xl p-4 sm:p-5 shadow-xs">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-6 h-6 rounded-full bg-[#38332D] text-white text-xs font-bold flex items-center justify-center">
+                2
               </span>
               <h3 className="font-bold font-serif-ethiopic text-sm text-[#1E1B18]">
                 ክፍል ይምረጡ (Select Grade)
@@ -287,13 +375,15 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
               {([9, 10, 11, 12] as Grade[]).map((g) => {
                 const isSelected = selectedGrade === g;
                 const price =
-                  g === 9
-                    ? pricingConfig.grade9Price
+                  selectedPlan === 'PREMIUM'
+                    ? (pricingConfig.premiumPrice || 54)
+                    : g === 9
+                    ? (pricingConfig.grade9Price || 160)
                     : g === 10
-                    ? pricingConfig.grade10Price
+                    ? (pricingConfig.grade10Price || 180)
                     : g === 11
-                    ? pricingConfig.grade11Price
-                    : pricingConfig.grade12Price;
+                    ? (pricingConfig.grade11Price || 200)
+                    : (pricingConfig.grade12Price || 200);
 
                 return (
                   <button
@@ -302,7 +392,9 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
                     onClick={() => setSelectedGrade(g)}
                     className={`p-3 rounded-lg border text-left transition-all cursor-pointer relative ${
                       isSelected
-                        ? 'border-[#2E6B4A] bg-[#EAF3ED] ring-2 ring-[#2E6B4A]/30 shadow-xs'
+                        ? selectedPlan === 'PREMIUM'
+                          ? 'border-amber-600 bg-amber-50 ring-2 ring-amber-500/30 shadow-xs'
+                          : 'border-[#2E6B4A] bg-[#EAF3ED] ring-2 ring-[#2E6B4A]/30 shadow-xs'
                         : 'border-[#D8CEBC] bg-white hover:bg-[#F2EDE1]'
                     }`}
                   >
@@ -310,14 +402,32 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
                       <span className="font-bold text-sm text-[#1E1B18] font-serif-ethiopic">
                         ክፍል {g}
                       </span>
-                      {isSelected && <Check className="w-4 h-4 text-[#2E6B4A]" />}
+                      {isSelected && (
+                        <Check
+                          className={`w-4 h-4 ${
+                            selectedPlan === 'PREMIUM' ? 'text-amber-700' : 'text-[#2E6B4A]'
+                          }`}
+                        />
+                      )}
                     </div>
                     <div className="mt-1 flex items-baseline gap-1">
-                      <span className="text-lg font-black text-[#2E6B4A]">{price}</span>
+                      <span
+                        className={`text-lg font-black ${
+                          selectedPlan === 'PREMIUM' ? 'text-amber-700' : 'text-[#2E6B4A]'
+                        }`}
+                      >
+                        {price}
+                      </span>
                       <span className="text-xs text-stone-600 font-bold">ETB / ወር</span>
                     </div>
                     <div className="text-[10px] text-stone-500 mt-0.5">
-                      {g <= 10 ? 'አጠቃላይ የሁለተኛ ደረጃ' : 'የዩኒቨርሲቲ መግቢያ ዝግጅት'}
+                      {selectedPlan === 'PREMIUM'
+                        ? 'ሙሉ ፕሪሚየም ፈቃድ'
+                        : g === 9
+                        ? 'መደበኛ (160 ETB)'
+                        : g === 10
+                        ? 'መደበኛ (180 ETB)'
+                        : 'መደበኛ (200 ETB)'}
                     </div>
                   </button>
                 );
@@ -326,9 +436,11 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
 
             <div className="mt-4 p-3 bg-[#EDE6D4] rounded-lg border border-[#D5C9AC] flex items-center justify-between">
               <div>
-                <span className="text-xs text-stone-600">የተመረጠው ወርሃዊ ክፍያ፡</span>
+                <span className="text-xs text-stone-600 font-serif-ethiopic">
+                  {selectedPlan === 'PREMIUM' ? 'የተመረጠው ፕሪሚየም ክፍያ፡' : 'የተመረጠው መደበኛ ክፍያ፡'}
+                </span>
                 <div className="text-base font-extrabold text-[#1E1B18] font-serif-ethiopic">
-                  ክፍል {selectedGrade} — {currentPrice} ብር (ETB)
+                  ክፍል {selectedGrade} ({selectedPlan === 'PREMIUM' ? 'ፕሪሚየም' : 'መደበኛ'}) — {currentPrice} ብር (ETB)
                 </div>
               </div>
               <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-[11px] font-bold rounded-md border border-emerald-300">
@@ -337,18 +449,52 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
             </div>
           </div>
 
-          {/* Step 2: Payment Method Details Card */}
+          {/* Step 3: Payment Method Details Card */}
           <div className="bg-[#FAF6EC] border-[1.5px] border-[#38332D] rounded-xl p-4 sm:p-5 shadow-xs">
             <div className="flex items-center gap-2 mb-3">
               <span className="w-6 h-6 rounded-full bg-[#38332D] text-white text-xs font-bold flex items-center justify-center">
-                2
+                3
               </span>
               <h3 className="font-bold font-serif-ethiopic text-sm text-[#1E1B18]">
-                የመክፈያ መንገድ ይምረጡ (Payment Method)
+                የመክፈያ መንገድ ይምረጡ (Payment Method Dropdown)
               </h3>
             </div>
 
-            {/* Method Tabs */}
+            {/* Payment Method Dropdown Selector matching user request */}
+            <div className="mb-3 space-y-1">
+              <label
+                htmlFor="payment-method-select-dropdown"
+                className="text-xs font-bold text-stone-700 block font-serif-ethiopic"
+              >
+                የክፍያ ዘዴ በ Dropdown ይምረጡ (Telebirr ወይም CBE):
+              </label>
+              <div className="relative">
+                <select
+                  id="payment-method-select-dropdown"
+                  value={selectedMethod}
+                  onChange={(e) => setSelectedMethod(e.target.value as PaymentMethodName)}
+                  className="w-full py-2.5 pl-3 pr-9 bg-white border-2 border-[#38332D] rounded-xl text-xs sm:text-sm font-bold text-stone-900 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2E6B4A] shadow-xs"
+                >
+                  <option value="Telebirr">
+                    📱 ቴሌብር (Telebirr) — 0910097862 (Nuriye Ahmed Adem)
+                  </option>
+                  <option value="Commercial Bank of Ethiopia (CBE)">
+                    🏛️ የኢትዮጵያ ንግድ ባንክ (CBE) — 1000382883776 (Nuriye Ahmed Adem)
+                  </option>
+                  <option value="Dashen Bank">
+                    🏦 ዳሸን ባንክ (Dashen Bank)
+                  </option>
+                  <option value="Bank of Abyssinia">
+                    🏦 አቢሲኒያ ባንክ (Bank of Abyssinia)
+                  </option>
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-700">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+
+            {/* Method Quick Tabs */}
             <div className="grid grid-cols-2 gap-1.5 mb-4">
               {(
                 [
@@ -618,7 +764,7 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
                 ) : (
                   <>
                     <FileCheck2 className="w-4 h-4" />
-                    <span>ክፍያውን አረጋግጥና አስገባ (Submit Payment - {currentPrice} ETB)</span>
+                    <span>PAY 54 ETB (ክፍያውን ይመዝግቡ)</span>
                   </>
                 )}
               </button>
@@ -626,7 +772,7 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
               <div className="text-center pt-1">
                 <p className="text-[11px] text-stone-500 flex items-center justify-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5 text-stone-400" />
-                  <span>ክፍያዎ በሲስተም ባለቤቱ ብቻ በጥንቃቄ ተገምግሞ ይጸድቃል።</span>
+                  <span>ክፍያው በሰርቨር ሲረጋገጥ ብቻ ፕሪሚየም ይከፈታል። በራስ ሰር ክፍያ አይከፈትም።</span>
                 </p>
               </div>
             </form>

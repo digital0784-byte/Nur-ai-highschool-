@@ -14,7 +14,7 @@ import { adminFirestoreService } from '../../services/adminFirestore';
 
 export const AdminSettingsSection: React.FC = () => {
   const [schoolName, setSchoolName] = useState('NUR AI High School (ኑር AI ሁለተኛ ደረጃ ት/ቤት)');
-  const [academicYear, setAcademicYear] = useState('2017 E.C. (2024/2025)');
+  const [academicYear, setAcademicYear] = useState('2019 E.C. (2026/2027)');
   const [primaryModel, setPrimaryModel] = useState('gemini-2.5-flash');
   const [fallbackModel, setFallbackModel] = useState('gemini-3.1-flash-lite');
   const [offlineSync, setOfflineSync] = useState(true);
@@ -52,7 +52,7 @@ export const AdminSettingsSection: React.FC = () => {
             <span>የስርዓት እና የትምህርት ቤት ማስተካከያዎች (System Settings)</span>
           </h3>
           <p className="text-xs text-stone-500">
-            School identity, 2017 E.C. academic calendar, resilient AI fallbacks, and database backup
+            School identity, 2019 E.C. academic calendar, resilient AI fallbacks, and database backup
           </p>
         </div>
 

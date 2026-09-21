@@ -114,11 +114,25 @@ export const ProtectedMediaShield: React.FC<ProtectedMediaShieldProps> = ({
     e.preventDefault();
   };
 
+  // Prevent save, print, and view-source shortcuts
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (
+      (e.ctrlKey || e.metaKey) &&
+      (e.key === 's' || e.key === 'u' || e.key === 'p' || e.key === 'S' || e.key === 'U' || e.key === 'P')
+    ) {
+      e.preventDefault();
+    }
+  };
+
+  const isAnimation = contentType === 'animation_2d' || contentType === 'animation_3d';
+
   return (
     <div
       id={`protected-media-${contentId}`}
       onContextMenu={handleContextMenu}
-      className="relative rounded-2xl overflow-hidden border-[2px] border-[#38332D] shadow-[4px_4px_0px_0px_#38332D] bg-[#1E1B18] select-none"
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      className="relative rounded-2xl overflow-hidden border-[2px] border-[#38332D] shadow-[4px_4px_0px_0px_#38332D] bg-[#1E1B18] select-none focus:outline-none"
     >
       {/* Verifying Loader State */}
       {isVerifying ? (
@@ -148,17 +162,23 @@ export const ProtectedMediaShield: React.FC<ProtectedMediaShieldProps> = ({
 
           {/* Paywall Container */}
           <div className="relative z-10 max-w-lg mx-4 p-5 sm:p-7 rounded-2xl bg-[#FAF6EC]/95 border-[2px] border-[#38332D] shadow-2xl text-center text-[#1E1B18] backdrop-blur-xs space-y-3.5">
-            {/* Top Amber Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-stone-950 font-black text-[11px] uppercase tracking-wider shadow-xs border border-amber-600">
-              <Crown className="w-3.5 h-3.5" />
-              <span>ፕሪሚየም ይዘት (PREMIUM ONLY)</span>
+            {/* Top Amber Badge matching exact specification */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-stone-950 font-black text-xs uppercase tracking-wider shadow-xs border border-amber-600">
+              <Lock className="w-3.5 h-3.5" />
+              <span>🔒 Premium Content</span>
             </div>
 
-            {/* Title & Teaser */}
+            {/* Title & Exact Subtitle & Pricing */}
             <div>
               <h3 className="font-serif-ethiopic font-bold text-base sm:text-lg text-[#1E1B18] line-clamp-2">
                 {title}
               </h3>
+              <p className="text-sm font-bold text-[#2E6B4A] font-serif-ethiopic mt-1">
+                This content is available to NUR AI Premium members.
+              </p>
+              <p className="text-base font-black text-[#B45309] font-sans mt-0.5">
+                Premium: 54 ETB/month
+              </p>
               {overview && (
                 <p className="text-xs text-[#5A5143] font-serif-ethiopic mt-1 line-clamp-2 leading-relaxed">
                   {overview}
@@ -193,7 +213,7 @@ export const ProtectedMediaShield: React.FC<ProtectedMediaShieldProps> = ({
               </p>
             )}
 
-            {/* Action Buttons */}
+            {/* Action Buttons matching [ Upgrade to Premium ] */}
             <div className="pt-1 flex flex-col sm:flex-row items-center justify-center gap-2">
               {!user ? (
                 <button
@@ -208,8 +228,8 @@ export const ProtectedMediaShield: React.FC<ProtectedMediaShieldProps> = ({
                   onClick={onOpenSubscriptionModal}
                   className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-stone-950 font-black font-serif-ethiopic text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-600"
                 >
-                  <Flame className="w-4 h-4 fill-current text-stone-950" />
-                  <span>ፕሪሚየም ይክፈቱ (Unlock with Premium)</span>
+                  <Sparkles className="w-4 h-4 fill-current text-stone-950" />
+                  <span>Upgrade to Premium</span>
                 </button>
               )}
             </div>

@@ -42,31 +42,16 @@ export function normalizeSubjectId(subjectId: string): string {
   return s;
 }
 
-export const OFFICIAL_PDF_MAP: Record<string, Partial<Record<Grade, string>>> = {
-  math: { 9: '/textbooks/math/grade-9.pdf', 10: '/textbooks/math/grade-10.pdf' },
-  physics: { 9: '/textbooks/physics/grade-9.pdf', 10: '/textbooks/physics/grade-10.pdf' },
-  chemistry: { 9: '/textbooks/chemistry/grade-9.pdf', 10: '/textbooks/chemistry/grade-10.pdf' },
-  biology: { 9: '/textbooks/biology/grade-9.pdf', 10: '/textbooks/biology/grade-10.pdf' },
-  amharic: { 9: '/textbooks/amharic/grade-9.pdf', 10: '/textbooks/amharic/grade-10.pdf' },
-  geography: { 9: '/textbooks/geography/grade-9.pdf' },
-  ict: { 9: '/textbooks/ict/grade-9.pdf', 10: '/textbooks/ict/grade-10.pdf' },
-  it: { 9: '/textbooks/ict/grade-9.pdf', 10: '/textbooks/ict/grade-10.pdf' },
-  economics: { 9: '/textbooks/economics/grade-9.pdf', 10: '/textbooks/economics/grade-10.pdf' },
-  english: { 10: '/textbooks/english/grade-10.pdf' },
-  citizenship: { 10: '/textbooks/citizenship/grade-10.pdf' },
-  'social-studies': { 10: '/textbooks/social-studies/grade-10.pdf' },
-  history: { 10: '/textbooks/social-studies/grade-10.pdf' },
-};
+// SECURITY: Direct public downloadable PDF file paths are strictly removed.
+// All textbooks are protected digital assets served exclusively via authenticated in-app page viewer.
+export const OFFICIAL_PDF_MAP: Record<string, Partial<Record<Grade, string>>> = {};
 
 export function withOfficialPdf(textbook: SubjectTextbook): SubjectTextbook {
   if (!textbook) return textbook;
-  const normId = normalizeSubjectId(textbook.subjectId);
-  const pdfUrl =
-    (OFFICIAL_PDF_MAP[normId] && OFFICIAL_PDF_MAP[normId]![textbook.grade]) ||
-    (OFFICIAL_PDF_MAP[textbook.subjectId] && OFFICIAL_PDF_MAP[textbook.subjectId]![textbook.grade]);
   return {
     ...textbook,
-    officialPdfUrl: pdfUrl || textbook.officialPdfUrl,
+    officialPdfUrl: undefined,
+    isProtected: true,
   };
 }
 

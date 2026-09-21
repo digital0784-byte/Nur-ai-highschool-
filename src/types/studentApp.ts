@@ -75,7 +75,23 @@ export interface OfflineCachedUnit {
   data: any; // Full unit content
 }
 
-export type StudentTab = 'home' | 'search' | 'subjects' | 'learn' | 'knowledge_map' | 'quiz' | 'photo_solver' | 'voice_tutor' | 'offline' | 'gamification';
+export type StudentTab =
+  | 'home'
+  | 'learn'
+  | 'ai_tutor'
+  | 'practice'
+  | 'books'
+  | 'exams'
+  | 'progress'
+  | 'profile'
+  | 'search'
+  | 'subjects'
+  | 'knowledge_map'
+  | 'quiz'
+  | 'photo_solver'
+  | 'voice_tutor'
+  | 'offline'
+  | 'gamification';
 
 export type LearningPageSection =
   | 'read'

@@ -668,7 +668,7 @@ export const AdminPaymentDashboardSection: React.FC = () => {
               <span>የክፍሎች ወርሃዊ የዋጋ ተመን (Monthly Prices in ETB)</span>
             </h3>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1 font-serif-ethiopic">
                   ክፍል 9 (Grade 9 ETB):
@@ -730,6 +730,22 @@ export const AdminPaymentDashboardSection: React.FC = () => {
                     setPricingForm({ ...pricingForm, grade12Price: Number(e.target.value) })
                   }
                   className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm font-bold"
+                />
+              </div>
+
+              <div className="col-span-2 sm:col-span-1 bg-amber-50 p-2 rounded-lg border border-amber-300">
+                <label className="block text-xs font-bold text-amber-950 mb-1 font-serif-ethiopic flex items-center gap-1">
+                  <span>👑 ፕሪሚየም (Premium ETB):</span>
+                </label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  value={pricingForm.premiumPrice || 54}
+                  onChange={(e) =>
+                    setPricingForm({ ...pricingForm, premiumPrice: Number(e.target.value) })
+                  }
+                  className="w-full px-3 py-2 border border-amber-400 bg-white rounded-lg text-sm font-bold text-amber-950"
                 />
               </div>
             </div>

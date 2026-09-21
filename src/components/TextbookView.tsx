@@ -20,19 +20,21 @@ import {
   ListOrdered,
   ListFilter,
   ExternalLink,
+  Library,
 } from 'lucide-react';
 import { Grade, Subject, LanguageCode } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { getTextbook, getAllTextbooksForSubject } from '../data/textbooksData';
-import { generateTextbookPdf } from '../utils/pdfGenerator';
 import { TableOfContentsModal } from './TableOfContentsModal';
+import { SecureBookReaderModal } from './SecureBookReaderModal';
+import { ShieldCheck, Lock, Shield } from 'lucide-react';
 
 interface TextbookViewProps {
   subject: Subject;
   selectedGrade: Grade;
   onSelectGrade: (grade: Grade) => void;
   onOpenAllTextbooksModal?: () => void;
-  onOpenAITutor?: (chapterTitle: string, mode: 'analysis' | 'chat') => void;
+  onOpenAITutor?: (chapterTitle: string, mode: 'analysis' | 'chat' | 'research') => void;
   onTakeObjectivesExam?: (unitNumber: number) => void;
   onExit?: () => void;
 }
@@ -50,7 +52,7 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
   const [activeUnitNumber, setActiveUnitNumber] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [fontSizeLevel, setFontSizeLevel] = useState<'normal' | 'large' | 'xlarge'>('normal');
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState<boolean>(false);
+  const [isSecureReaderOpen, setIsSecureReaderOpen] = useState<boolean>(false);
   const [isTocModalOpen, setIsTocModalOpen] = useState<boolean>(false);
   const [targetSectionToScroll, setTargetSectionToScroll] = useState<number | null>(null);
 
@@ -126,25 +128,13 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
     xlarge: 'text-lg leading-loose',
   }[fontSizeLevel];
 
-  // Handle PDF Download
-  const handleDownloadPdf = () => {
-    setIsGeneratingPdf(true);
-    try {
-      generateTextbookPdf(currentTextbook, subject.name, selectedGrade);
-    } catch (err) {
-      console.error('PDF Generation failed:', err);
-    } finally {
-      setTimeout(() => setIsGeneratingPdf(false), 500);
-    }
-  };
-
-  // Handle Print / Save as PDF
-  const handlePrint = () => {
-    window.print();
+  // DRM & Security: Open protected in-app reader modal
+  const handleOpenSecureReader = () => {
+    setIsSecureReaderOpen(true);
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 select-none">
       {/* Textbook Header Banner */}
       <div
         id="textbook-header-card"
@@ -169,8 +159,19 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
           </p>
         </div>
 
-        {/* Actions: TOC, Download PDF, Print, Exit & Grade Switcher */}
+        {/* Actions: In-App Reader, TOC, DRM Shield Badge & Exit */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Prominent Secure In-App Reader Button */}
+          <button
+            id="open-secure-reader-modal-btn"
+            onClick={handleOpenSecureReader}
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold font-serif-ethiopic bg-[#2E6B4A] hover:bg-[#235338] text-white border-[1.5px] border-[#1D4A32] shadow-sm transition-all active:scale-95 cursor-pointer"
+            title="መጽሐፉን ሙሉ ስክሪን በተጠበቀ የንባብ ገጽ ክፈት (Open in Protected In-App Reader)"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-300" />
+            <span>🔒 ሙሉውን በመተግበሪያው አንብብ (Secure Reader)</span>
+          </button>
+
           {/* Prominent Table of Contents (ማውጫ) Button */}
           <button
             id="open-textbook-toc-btn"
@@ -179,32 +180,18 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
             title="የመጽሐፉን ሙሉ ማውጫ ክፈት (Open Table of Contents)"
           >
             <ListOrdered className="w-4 h-4" />
-            <span>📋 ማውጫ (Table of Contents)</span>
+            <span>📋 ማውጫ (TOC)</span>
           </button>
 
-          {/* Official Ministry of Education PDF Button or Summarized Badge */}
-          {currentTextbook.officialPdfUrl ? (
-            <a
-              id="view-official-pdf-btn"
-              href={currentTextbook.officialPdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold font-serif-ethiopic bg-[#047857] hover:bg-[#065F46] text-white border-[1.5px] border-[#064E3B] shadow-sm transition-all active:scale-95 cursor-pointer no-underline"
-              title="የትምህርት ሚኒስቴር ኦፊሴላዊ የተማሪ መጽሐፍ (PDF) በአዲስ ገጽ ክፈት"
-            >
-              <ExternalLink className="w-4 h-4" />
-              <span>📘 ኦፊሴላዊ መጽሐፍ (PDF)</span>
-            </a>
-          ) : (
-            <span
-              id="summarized-note-badge"
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium font-serif-ethiopic bg-[#F2ECE0] text-[#5C5346] border border-[#BFB29E] select-none"
-              title="ይህ ክፍል የተጠቃለለ ዲጂታል ማስታወሻ ይዟል"
-            >
-              <FileText className="w-3.5 h-3.5 text-[#8C806E]" />
-              <span>የተጠቃለለ ዲጂታል ማስታወሻ</span>
-            </span>
-          )}
+          {/* Security & DRM Shield Badge */}
+          <span
+            id="secure-book-drm-badge"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold font-serif-ethiopic bg-[#FAF6EC] text-[#2E6B4A] border border-[#2E6B4A]/40 rounded-xs select-none"
+            title="የኢ.ፌ.ዲ.ሪ ትምህርት ሚኒስቴር የተጠበቀ ዲጂታል መጽሐፍ"
+          >
+            <Lock className="w-3.5 h-3.5 text-[#2E6B4A]" />
+            <span>ጥበቃ የተደረገበት ዲጂታል መጽሐፍ</span>
+          </span>
 
           {onExit && (
             <button
@@ -214,30 +201,9 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
               title="ከመጽሐፍ ውጣ / ወደ ዋናው ትምህርት ተመለስ (Exit Book)"
             >
               <LogOut className="w-4 h-4" />
-              <span>መውጫ / ውጣ (Exit)</span>
+              <span>መውጫ (Exit)</span>
             </button>
           )}
-
-          <button
-            id="download-textbook-pdf-btn"
-            onClick={handleDownloadPdf}
-            disabled={isGeneratingPdf}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold font-serif-ethiopic bg-[#2E6B4A] hover:bg-[#24573B] text-white border-[1.5px] border-[#1D4A32] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
-            title="Download full PDF textbook"
-          >
-            <Download className="w-4 h-4" />
-            {isGeneratingPdf ? t.downloadingPdfLabel : t.downloadPdfBtn}
-          </button>
-
-          <button
-            id="print-textbook-btn"
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium font-serif-ethiopic bg-[#FAF6EC] hover:bg-[#EBE3D3] text-[#2D2821] border-[1.5px] border-[#38332D] shadow-sm transition-colors cursor-pointer"
-            title="Print or Save as PDF via browser"
-          >
-            <Printer className="w-4 h-4" />
-            {t.printPdfBtn}
-          </button>
         </div>
       </div>
 
@@ -527,6 +493,15 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
                   <span>የAI አስተማሪ ጠይቅ (Ask AI Tutor)</span>
                 </button>
 
+                <button
+                  onClick={() => onOpenAITutor?.(activeUnit.title, 'research')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-500 text-emerald-950 text-xs font-bold font-serif-ethiopic shadow-2xs cursor-pointer"
+                  title="ባለ 6-ደረጃ የኢትዮጵያ ስርዓተ-ትምህርትና የአካዳሚክ ማስረጃ ትንታኔ"
+                >
+                  <Library className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>የምርምር ማስረጃ ትንታኔ (Research)</span>
+                </button>
+
                 {onTakeObjectivesExam && (
                   <button
                     onClick={() => onTakeObjectivesExam(activeUnit.unitNumber)}
@@ -676,11 +651,12 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
               )}
 
               <button
-                onClick={handleDownloadPdf}
+                onClick={handleOpenSecureReader}
                 className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold font-serif-ethiopic bg-[#2E6B4A] hover:bg-[#235338] text-white border-[1.5px] border-[#1D4A32] cursor-pointer"
+                title="መጽሐፉን በተጠበቀ የንባብ ገጽ ክፈት (Open in Protected Reader)"
               >
-                <Download className="w-3.5 h-3.5" />
-                {t.downloadPdfBtn}
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+                <span>🔒 በመተግበሪያው አንብብ</span>
               </button>
             </div>
 
@@ -718,6 +694,18 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
           onTakeObjectivesExam?.(unitNum);
           setIsTocModalOpen(false);
         }}
+      />
+
+      {/* Strict DRM Protected In-App Book Reader Modal */}
+      <SecureBookReaderModal
+        isOpen={isSecureReaderOpen}
+        onClose={() => setIsSecureReaderOpen(false)}
+        textbook={currentTextbook}
+        initialUnitNumber={activeUnit.unitNumber}
+        title={`${subject.name} - ክፍል ${selectedGrade}`}
+        subtitle={currentTextbook.description}
+        badge={currentTextbook.curriculumBadge}
+        accentColor={subject.accentColor}
       />
     </div>
   );

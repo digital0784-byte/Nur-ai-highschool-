@@ -6,7 +6,7 @@ export interface ClassGroup {
   name: string; // e.g. "Grade 9-A Natural", "Grade 10-C"
   grade: Grade;
   section: string; // 'A', 'B', 'C', etc.
-  academicYear: string; // e.g. "2017 E.C. (2024/25)"
+  academicYear: string; // e.g. "2019 E.C. (2026/27)"
   teacherId: string;
   teacherName: string;
   studentUids: string[];
@@ -239,6 +239,11 @@ export interface SystemSettings {
 export type AdminActiveSubTab =
   | 'overview'
   | 'students'
+  | 'curriculum'
+  | 'books'
+  | 'question_bank'
+  | 'finance'
+  | 'analytics'
   | 'voice_tutor_analytics'
   | 'research_sources'
   | 'payments_billing'
@@ -254,7 +259,6 @@ export type AdminActiveSubTab =
   | 'teachers'
   | 'parents'
   | 'classes'
-  | 'curriculum'
   | 'assessments'
   | 'ai_assistant'
   | 'rag_analytics'

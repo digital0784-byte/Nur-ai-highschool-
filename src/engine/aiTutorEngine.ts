@@ -123,12 +123,17 @@ export class EthiopianAITutorEngine {
     }));
 
     // Step 1.5: Check if this is a PART 20 Deep Research / Multi-Source Analysis request
+    const detectedIntent = researchAnalysisService.detectIntent(searchQuery);
     const isResearchQuery =
       req.feature === 'deep_research_analysis' ||
       req.allowExternalResearch === true ||
-      req.researchMode !== undefined;
+      req.researchMode !== undefined ||
+      (req.feature === 'ask_question' && (detectedIntent.explicitAdvanced || (detectedIntent.mode !== 'curriculum' && req.allowExternalResearch !== false)));
 
     if (isResearchQuery) {
+      if (!req.researchMode && detectedIntent.mode !== 'curriculum') {
+        req.researchMode = detectedIntent.mode;
+      }
       return this.handleDeepResearchAnalysis(
         req,
         ai,
@@ -651,9 +656,21 @@ ${externalContext}`;
         }
 
         if (aiText) {
+          const structuredResult = researchAnalysisService.generateDeterministicAnalysisFallback(
+            questionText,
+            subjectName,
+            grade,
+            topicTitle,
+            req.researchMode || 'deep_analysis',
+            language,
+            matchedSources
+          );
+          structuredResult.deeperExplanation = aiText;
+
           return {
             feature: 'deep_research_analysis',
             answer: aiText,
+            deepAnalysisResult: structuredResult,
             citations,
             externalCitations,
             groundedInTextbook: citations.length > 0,

@@ -48,6 +48,7 @@ import {
   PhotoQuestionSolution,
 } from '../types/aiTutor';
 import { AnalysisMode, DeepAnalysisResult, ValidatedCitation } from '../types/researchAnalysis';
+import { DeepAnalysisResultView } from './DeepAnalysisResultView';
 import { aiTutorFirestore } from '../services/aiTutorFirestore';
 
 interface EthiopianAITutorViewProps {
@@ -853,20 +854,9 @@ export const EthiopianAITutorView: React.FC<EthiopianAITutorViewProps> = ({
                       {msg.content}
                     </div>
 
-                    {/* Deep Analysis Real-World Context Card if available */}
-                    {msg.metadata?.deepAnalysisResult?.realWorldApplications && msg.metadata.deepAnalysisResult.realWorldApplications.length > 0 && (
-                      <div className="mt-3 p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 text-emerald-950 text-xs">
-                        <div className="font-extrabold flex items-center gap-1 text-emerald-900 mb-1">
-                          <span>🇪🇹</span>
-                          <span>ተጨባጭ የሀገር ውስጥ አተገባበር (Ethiopian Real-World Application):</span>
-                        </div>
-                        {msg.metadata.deepAnalysisResult.realWorldApplications.map((app: any, aIdx: number) => (
-                          <div key={aIdx} className="text-[11px] text-stone-700 mt-1">
-                            <span className="font-bold text-emerald-800">• {app.domain} ({app.ethiopianContext}): </span>
-                            <span>{app.application}</span>
-                          </div>
-                        ))}
-                      </div>
+                    {/* 13-Point Complete Deep Analysis Synthesis View if available */}
+                    {msg.metadata?.deepAnalysisResult && (
+                      <DeepAnalysisResultView analysis={msg.metadata.deepAnalysisResult} />
                     )}
 
                     {/* Evaluation Box if present */}
@@ -979,6 +969,35 @@ export const EthiopianAITutorView: React.FC<EthiopianAITutorViewProps> = ({
                   Layer 1 + Layer 2
                 </span>
               )}
+            </div>
+
+            {/* Quick Research Prompts from PART 20 Spec */}
+            <div className="max-w-4xl mx-auto mb-2 flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
+              <span className="text-[10px] font-bold text-[#857B6C] shrink-0">ፈጣን ጥያቄዎች:</span>
+              {[
+                { label: '📖 በስርዓተ-ትምህርቱ መሰረት', q: 'Explain this according to the Ethiopian curriculum' },
+                { label: '📚 በአጋዥ መጻሕፍት መሰረት', q: 'Explain this using other reference books' },
+                { label: '🔬 ጥልቅ ትንታኔ ስጠኝ', q: 'Give me a deeper analysis' },
+                { label: '⚖️ ከሌሎች እይታዎች ጋር አወዳድር', q: 'Compare the Ethiopian curriculum explanation with other academic explanations' },
+                { label: '🌍 ተጨባጭ ምሳሌዎችን ስጠኝ', q: 'Give me real-world examples' },
+                { label: '🎓 በዩኒቨርሲቲ ደረጃ', q: 'Explain this at university level' },
+                { label: '👥 የተለያዩ አመለካከቶች', q: 'Give me different viewpoints' },
+                { label: '📖 ተጨማሪ መጻሕፍት ጠቁመኝ', q: 'Recommend books to study this topic further' },
+                { label: '📑 የተጠቀምካቸውን ምንጮች አሳየኝ', q: 'Show me the sources you used' },
+              ].map((item, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    const current = inputText.trim();
+                    const prompt = current ? `${current} - ${item.q}` : item.q;
+                    triggerTutorAction('ask_question', prompt);
+                  }}
+                  className="px-2 py-0.5 rounded-full bg-white text-stone-700 hover:bg-amber-50 hover:text-amber-900 border border-stone-300 font-medium shrink-0 cursor-pointer shadow-2xs transition-all"
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
 
             <div className="max-w-4xl mx-auto flex items-center gap-2">

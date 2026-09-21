@@ -778,7 +778,9 @@ export const PhotoQuestionSolverView: React.FC = () => {
                   <Zap className="w-3.5 h-3.5 text-emerald-600" />
                   <span>
                     Low-Data Optimized: {compressionStats.originalKB}KB → {compressionStats.compressedKB}KB (
-                    {Math.round((1 - compressionStats.compressedKB / compressionStats.originalKB) * 100)}% saved)
+                    {compressionStats.originalKB > 0 && Number.isFinite(compressionStats.compressedKB / compressionStats.originalKB)
+                      ? Math.max(0, Math.round((1 - compressionStats.compressedKB / compressionStats.originalKB) * 100))
+                      : 0}% saved)
                   </span>
                 </div>
               )}

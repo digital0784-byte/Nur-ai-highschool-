@@ -28,15 +28,24 @@ service firebase.storage {
         request.resource.contentType.matches('image/.*');
     }
 
-    // 2. Curriculum Files (Textbooks, Diagrams, Laboratory Media): Admin write only
-    match /curriculum/{grade}/{subject}/{fileName} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin() &&
-        request.resource.size < 50 * 1024 * 1024 &&
-        (request.resource.contentType.matches('application/pdf') ||
-         request.resource.contentType.matches('application/epub\\+zip') ||
-         request.resource.contentType.matches('image/.*') ||
-         request.resource.contentType.matches('application/json'));
+    // 2. Protected Curriculum Textbooks, Reference Books & Media
+    // CRITICAL SECURITY: Direct client access/download from students or public is strictly FORBIDDEN.
+    // Textbooks and reference books are stored in private Firebase Storage and served only
+    // through the authenticated server page streaming proxy. Never expose public storage URLs.
+    match /curriculum/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /textbooks/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /books/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /protected_materials/{allPaths=**} {
+      allow read, write: if isAdmin();
     }
 
     // 3. Question Diagrams & Laboratory Figures: Teachers and Admin can upload

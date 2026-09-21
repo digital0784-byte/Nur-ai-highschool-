@@ -190,9 +190,16 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const topProgressRef = doc(db, 'progress', user.uid);
         const reviewDocRef = doc(db, 'reviews', user.uid);
 
+        const fetchWithTimeout = async (docRef: any) => {
+          return Promise.race([
+            getDoc(docRef),
+            new Promise<any>((resolve) => setTimeout(() => resolve(null), 2000)),
+          ]).catch(() => null);
+        };
+
         const [snap, reviewSnap] = await Promise.all([
-          getDoc(progressDocRef),
-          getDoc(reviewDocRef).catch(() => null),
+          fetchWithTimeout(progressDocRef),
+          fetchWithTimeout(reviewDocRef),
         ]);
 
         if (!isMounted) return;
@@ -206,7 +213,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           } catch {}
         }
 
-        if (snap.exists()) {
+        if (snap && snap.exists()) {
           const cloudData = snap.data();
           const cloudMap = (cloudData.progressMap || {}) as CourseProgressMap;
 

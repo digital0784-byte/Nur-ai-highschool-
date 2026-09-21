@@ -85,82 +85,109 @@ class ResearchAnalysisService {
   } {
     const q = question.toLowerCase();
 
-    // Check for explicit query templates requested in PART 20
+    // 1. Explicit Curriculum Only
     if (
       q.includes('according to the ethiopian curriculum') ||
+      q.includes('በኢትዮጵያ ስርዓተ-ትምህርት መሰረት') ||
+      q.includes('በስርዓተ-ትምህርቱ መሰረት') ||
       q.includes('ከስርዓተ-ትምህርቱ') ||
       q.includes('ስርዓተ ትምህርቱን መሰረት') ||
-      q.includes('curriculum only')
+      q.includes('curriculum only') ||
+      q.includes('ከመማሪያ መጽሐፍ ብቻ')
     ) {
       return { mode: 'curriculum', explicitAdvanced: false, adaptiveDepth: 'Standard Curriculum' };
     }
 
+    // 2. Recommend Books & Further Reading
     if (
+      q.includes('recommend books to study this topic further') ||
+      q.includes('recommend books') ||
       q.includes('other reference books') ||
+      q.includes('ተጨማሪ የምጠናባቸው መጻሕፍት ጠቁመኝ') ||
+      q.includes('መጻሕፍት ጠቁመኝ') ||
+      q.includes('በሌሎች አጋዥ መጻሕፍት መሰረት') ||
       q.includes('አጋዥ መጻሕፍት') ||
       q.includes('reference book') ||
-      q.includes('recommend books') ||
-      q.includes('መጽሐፍ ጠቁመኝ') ||
-      q.includes('further reading')
+      q.includes('further reading') ||
+      q.includes('ማመሳከሪያ መጻሕፍት')
     ) {
       return { mode: 'book_recommendations', explicitAdvanced: true, adaptiveDepth: 'Reference Exploration' };
     }
 
+    // 3. Compare Viewpoints & Academic Explanations
     if (
+      q.includes('compare the ethiopian curriculum explanation with other academic explanations') ||
+      q.includes('ከሌሎች የአካዳሚክ እይታዎች ጋር አወዳድር') ||
       q.includes('compare') ||
       q.includes('አወዳድር') ||
+      q.includes('different viewpoints') ||
       q.includes('የተለያዩ አመለካከቶች') ||
       q.includes('viewpoints') ||
       q.includes('perspectives') ||
-      q.includes('different viewpoints')
+      q.includes('comparison')
     ) {
       return { mode: 'comparative', explicitAdvanced: true, adaptiveDepth: 'Comparative Scholarly' };
     }
 
+    // 4. Real-world Examples & Ethiopian Application
     if (
-      q.includes('real-world') ||
+      q.includes('give me real-world examples') ||
+      q.includes('ተጨባጭ ምሳሌዎችን ስጠኝ') ||
+      q.includes('የገሃዱ አለም ምሳሌዎች') ||
+      q.includes('real-world application') ||
       q.includes('በእውነተኛው አለም') ||
-      q.includes('ተግባራዊ') ||
+      q.includes('ተግባራዊ ተሞክሮ') ||
       q.includes('real world') ||
       q.includes('application')
     ) {
       return { mode: 'real_world', explicitAdvanced: false, adaptiveDepth: 'Applied Contextual' };
     }
 
+    // 5. University Level & Advanced Analysis
     if (
+      q.includes('explain this at university level') ||
+      q.includes('በዩኒቨርሲቲ ደረጃ አብራራልኝ') ||
+      q.includes('ዩኒቨርሲቲ ደረጃ') ||
       q.includes('university level') ||
-      q.includes('የዩኒቨርሲቲ ደረጃ') ||
-      q.includes('advanced analysis') ||
-      q.includes('ጥልቅ ትንታኔ') ||
-      q.includes('analyze this topic') ||
       q.includes('higher education')
     ) {
       return { mode: 'university_level', explicitAdvanced: true, adaptiveDepth: 'Advanced University Prep' };
     }
 
+    // 6. Deeper Analysis / Analyze this Topic
     if (
+      q.includes('give me a deeper analysis') ||
+      q.includes('ጥልቅ ትንታኔ ስጠኝ') ||
+      q.includes('analyze this topic') ||
+      q.includes('ይህንን ርዕስ ተንትነው') ||
+      q.includes('ይህንን ርዕስ ተንትን') ||
+      q.includes('deeper explanation') ||
+      q.includes('ጥልቅ ማብራሪያ') ||
+      q.includes('advanced analysis') ||
+      q.includes('broader scientific') ||
+      q.includes('broader economic') ||
+      q.includes('broader historical')
+    ) {
+      return { mode: 'deep_analysis', explicitAdvanced: true, adaptiveDepth: 'Deep Multi-Source Analysis' };
+    }
+
+    // 7. Show Sources Used
+    if (
+      q.includes('show me the sources you used') ||
+      q.includes('የተጠቀምካቸውን ምንጮች አሳየኝ') ||
+      q.includes('ምንጮቹን አሳየኝ') ||
       q.includes('sources you used') ||
-      q.includes('ምንጮች') ||
-      q.includes('citations') ||
-      q.includes('references')
+      q.includes('citations used') ||
+      q.includes('show sources')
     ) {
       return { mode: 'sources_used', explicitAdvanced: false, adaptiveDepth: 'Bibliographic Audit' };
     }
 
-    // Default: Check if question asks for deep explanation or simple
-    const isAnalytical =
-      q.includes('why') ||
-      q.includes('how') ||
-      q.includes('ለምን') ||
-      q.includes('እንዴት') ||
-      q.includes('explain in detail') ||
-      q.includes('አብራራ') ||
-      q.includes('deep');
-
+    // Standard high school queries default strictly to Ethiopian Curriculum (Layer 1)
     return {
-      mode: isAnalytical ? 'deep_analysis' : 'curriculum',
+      mode: 'curriculum',
       explicitAdvanced: false,
-      adaptiveDepth: isAnalytical ? 'Deep Analytical' : 'Standard Curriculum',
+      adaptiveDepth: 'Standard Curriculum',
     };
   }
 

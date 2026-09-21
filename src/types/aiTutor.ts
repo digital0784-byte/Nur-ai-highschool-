@@ -1,5 +1,6 @@
 import { GradeLevel, QuestionType, DifficultyLevel } from './curriculumEngine';
 import { LanguageCode } from '../types';
+import { AnalysisMode } from './researchAnalysis';
 
 export type LearningMode = 'beginner' | 'guided' | 'practice' | 'mastery';
 
@@ -294,5 +295,5 @@ export interface TutorActionRequest {
   sessionId?: string;
   userId?: string;
   allowExternalResearch?: boolean;
-  researchMode?: 'curriculum' | 'deep_analysis' | 'comparative' | 'real_world' | 'university_level' | 'book_recommendations' | 'sources_used';
+  researchMode?: AnalysisMode;
 }

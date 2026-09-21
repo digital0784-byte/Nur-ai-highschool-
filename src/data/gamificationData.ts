@@ -518,7 +518,7 @@ export function calculateLevelProgress(xp: number): {
 
   const span = next.minXp - current.minXp;
   const inLevel = Math.max(0, xp - current.minXp);
-  const pct = Math.min(100, Math.round((inLevel / span) * 100));
+  const pct = span > 0 ? Math.min(100, Math.max(0, Math.round((inLevel / span) * 100))) : 100;
 
   return {
     currentLevel: current,

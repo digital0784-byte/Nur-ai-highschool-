@@ -88,6 +88,8 @@ export interface Subject {
 }
 
 export type ActiveTab =
+  | 'academic_work_hub'
+  | 'premium_learning_center'
   | 'entrance_prep'
   | 'subscription_payment'
   | 'system_feedback'
@@ -149,6 +151,9 @@ export interface SubjectTextbook {
   description: string;
   units: TextbookUnit[];
   officialPdfUrl?: string;
+  isProtected?: boolean;
+  totalPages?: number;
+  requiresAuth?: boolean;
 }
 
 export interface SupplementaryBookChapter {
@@ -370,6 +375,46 @@ export interface UITranslations {
   refreshReviewBtn?: string;
   curatedVideosTitle?: string;
   liveVideosTitle?: string;
+  // Global & Header Bilingual Controls
+  ethiopiaAiSchool?: string;
+  userAccountId?: string;
+  signInBtn?: string;
+  signOutBtn?: string;
+  subActive?: string;
+  subPending?: string;
+  subSuperAdmin?: string;
+  subExpired?: string;
+  subPay?: string;
+  directPaymentBtn?: string;
+  systemTestBtn?: string;
+  modulesMenuBtn?: string;
+  settingsBtn?: string;
+  feedbackBtn?: string;
+  // Bilingual Tabs
+  tabAcademicWorkHub?: string;
+  tabPremiumCenter?: string;
+  tabEntrancePrep?: string;
+  tabSubscription?: string;
+  tabSystemFeedback?: string;
+  tabCareerPathways?: string;
+  tabSystemIntegration?: string;
+  tabSmartSearch?: string;
+  tabGamification?: string;
+  tabPhotoVoice?: string;
+  tabAssessmentEngine?: string;
+  tabSecurityFortress?: string;
+  tabAdminDashboard?: string;
+  tabStudentApp?: string;
+  tabAiTutor?: string;
+  tabCurriculumEngine?: string;
+  // Academic Work Hub
+  academicWorkHubTitle?: string;
+  academicWorkHubSubtitle?: string;
+  tabHwEngine?: string;
+  tabAsgnEngine?: string;
+  tabProjectEngine?: string;
+  tabPortfolioEngine?: string;
+  tabAdminEngine?: string;
 }
 
 export interface StudentWeakArea {
@@ -415,6 +460,8 @@ export type UserRole = 'student' | 'teacher' | 'admin' | 'parent';
 export interface UserProfile {
   uid: string;
   email: string;
+  phoneNumber?: string;
+  preferredLanguage?: LanguageCode;
   displayName: string;
   role: UserRole;
   grade?: Grade;
@@ -422,6 +469,7 @@ export interface UserProfile {
   isSuspended?: boolean;
   suspendedAt?: string | null;
   suspensionReason?: string | null;
+  subscriptionStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED' | 'ACTIVE' | 'NONE';
   createdAt: string;
   updatedAt: string;
 }

@@ -27,6 +27,8 @@ import {
 } from '../types/knowledgeMap';
 import { ETHIOPIAN_KNOWLEDGE_MAP_NODES } from '../data/curriculumKnowledgeMapData';
 import { offlineSyncEngine } from './offlineSyncEngine';
+import { researchAnalysisService } from './researchAnalysisService';
+import { ApprovedSource } from '../types/researchAnalysis';
 
 class KnowledgeMapService {
   private nodes: KnowledgeTopicNode[] = ETHIOPIAN_KNOWLEDGE_MAP_NODES;
@@ -1030,6 +1032,45 @@ class KnowledgeMapService {
     }
 
     return context;
+  }
+
+  // PART 20: Knowledge Graph Traversal: Grade -> Subject -> Unit -> Topic -> Concept -> Related Concepts -> External References
+  public getKnowledgeGraphResearchNode(topicIdOrTitle: string): {
+    grade: Grade;
+    subject: string;
+    unitNumber: number;
+    unitTitle: string;
+    topic: string;
+    concept: string;
+    relatedConcepts: string[];
+    externalReferences: ApprovedSource[];
+  } | null {
+    const node = this.nodes.find(
+      (n) =>
+        n.id === topicIdOrTitle ||
+        n.topicTitle.toLowerCase().includes(topicIdOrTitle.toLowerCase()) ||
+        topicIdOrTitle.toLowerCase().includes(n.topicTitle.toLowerCase())
+    ) || this.nodes[0];
+
+    if (!node) return null;
+
+    const externalSources = researchAnalysisService.searchApprovedSources({
+      subject: node.subject,
+      grade: node.grade as any,
+      topic: node.topicTitle,
+      limit: 3,
+    });
+
+    return {
+      grade: node.grade,
+      subject: node.subject,
+      unitNumber: node.unitNumber,
+      unitTitle: node.unitTitle,
+      topic: node.topicTitle,
+      concept: node.lessonTitle,
+      relatedConcepts: node.learningOutcomes.map((o) => o.description.substring(0, 45)),
+      externalReferences: externalSources,
+    };
   }
 }
 

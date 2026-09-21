@@ -566,7 +566,7 @@ export const PlotlyGraphVisualizer: React.FC<PlotlyGraphVisualizerProps> = ({
                   className="w-full accent-sky-600 cursor-pointer"
                 />
                 <span className="text-[10px] text-[#665C4D]">
-                  ወቅት (Period T) = {( (2 * Math.PI) / freq ).toFixed(2)} radians
+                  ወቅት (Period T) = {freq > 0 && Number.isFinite((2 * Math.PI) / freq) ? ((2 * Math.PI) / freq).toFixed(2) : '0.00'} radians
                 </span>
               </div>
 

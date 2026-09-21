@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grade, Subject } from '../types';
+import { Grade, Subject, ActiveTab } from '../types';
 import {
   BookOpen,
   GraduationCap,
@@ -20,6 +20,9 @@ import {
   MessageSquare,
   Clock,
   AlertTriangle,
+  LayoutGrid,
+  Settings,
+  Eye,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useProgress } from '../context/ProgressContext';
@@ -35,9 +38,14 @@ interface HeaderProps {
   onOpenCertificate: () => void;
   onOpenAllTextbooks?: () => void;
   onOpenNewCurriculum?: () => void;
-  onOpenTeacherDashboard?: () => void;
   onOpenSubscription?: () => void;
   onOpenFeedback?: () => void;
+  onOpenModulesDropdown?: () => void;
+  onOpenDirectPayment?: () => void;
+  onOpenSettings?: () => void;
+  onOpenGateway?: () => void;
+  activeTab?: ActiveTab;
+  onToggleAdminDashboard?: () => void;
 }
 
 const grades: Grade[] = [9, 10, 11, 12];
@@ -50,9 +58,14 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCertificate,
   onOpenAllTextbooks,
   onOpenNewCurriculum,
-  onOpenTeacherDashboard,
   onOpenSubscription,
   onOpenFeedback,
+  onOpenModulesDropdown,
+  onOpenDirectPayment,
+  onOpenSettings,
+  onOpenGateway,
+  activeTab,
+  onToggleAdminDashboard,
 }) => {
   const { language, setLanguage, t, languages } = useLanguage();
   const { getOverallProgress, isSyncing, isCloudSynced } = useProgress();
@@ -71,19 +84,16 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-3">
           <div
             id="app-logo-badge"
-            className="w-10 h-10 rounded-xs bg-[#38332D] text-[#FAF6EC] flex items-center justify-center shrink-0 border border-[#38332D] shadow-xs"
+            className="w-11 h-11 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 border border-red-700 shadow-md"
           >
-            <GraduationCap className="w-6 h-6 text-[#EBD9B4]" />
+            <GraduationCap className="w-6 h-6 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1
-                id="main-app-title"
-                className="font-serif-ethiopic text-lg sm:text-2xl font-bold tracking-tight text-[#1E1B18]"
-              >
-                {t.appTitle}
-              </h1>
-              <span className="text-[11px] font-semibold uppercase tracking-wider bg-[#E8DFC8] text-[#4A4237] px-2 py-0.5 border border-[#D5C9AC]">
+              <span className="text-[10.5px] font-black uppercase tracking-wider text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded font-serif-ethiopic">
+                {t.ethiopiaAiSchool || (language === 'en' ? 'Ethiopia AI Academy' : 'ኢትዮጵያ AI ትምህርት ቤት')}
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider bg-[#E8DFC8] text-[#4A4237] px-1.5 py-0.5 border border-[#D5C9AC]">
                 {t.countryBadge}
               </span>
 
@@ -100,46 +110,212 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
             </div>
-            <p className="text-xs sm:text-sm text-[#665C4D] mt-0.5 font-serif-ethiopic">
-              {t.appSubtitle}
+            <h1
+              id="main-app-title"
+              className="font-serif-ethiopic text-base sm:text-xl font-black tracking-tight text-[#1E1B18] mt-0.5"
+            >
+              {t.appTitle}
+            </h1>
+            <p className="text-xs text-[#665C4D] font-serif-ethiopic hidden sm:block">
+              {t.appSubtitle} (Grades 9–12)
             </p>
           </div>
         </div>
 
-        {/* Right Section: Language Selector & Grade Selector */}
+        {/* Right Section: User ID Card matching screenshot */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 self-start lg:self-auto">
-          {/* Language Selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-[#5A5143] whitespace-nowrap flex items-center gap-1">
-              <Globe className="w-3.5 h-3.5 text-[#665C4D]" />
-              <span className="hidden sm:inline">{t.languageSelectorLabel}:</span>
-            </span>
-            <div
-              id="language-selector-group"
-              className="inline-flex border-[1.5px] border-[#38332D] bg-[#EFE8D6] p-0.5 flex-wrap"
-            >
-              {languages.map((langMeta) => {
-                const isSelected = language === langMeta.code;
-                return (
+          {/* User Account / Auth Section */}
+          <div className="flex items-center gap-2">
+            {!user ? (
+              <button
+                id="header-signin-btn"
+                onClick={() => openAuthModal('login')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#2E6B4A] hover:bg-[#235338] text-white text-xs font-bold border border-[#1D4A32] rounded-lg cursor-pointer transition-colors shadow-xs"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span className="font-serif-ethiopic">{t.signInBtn || (language === 'en' ? 'Sign In / Register' : 'ግባ / ተመዝገብ')}</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                {/* User ID card matching screenshot */}
+                <div className="flex items-center gap-2 bg-white border border-[#D5C9AC] px-3 py-1.5 rounded-xl shadow-xs">
+                  <div className="w-8 h-8 rounded-lg bg-red-100 border border-red-200 text-red-600 flex items-center justify-center shrink-0 font-bold relative">
+                    <User className="w-4 h-4" />
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-600" />
+                  </div>
+                  <div className="truncate max-w-[130px] sm:max-w-[190px]">
+                    <span className="text-[9.5px] text-stone-500 block leading-tight font-serif-ethiopic">
+                      {t.userAccountId || (language === 'en' ? 'User Account' : 'የተጠቃሚ መለያ')}
+                    </span>
+                    <span className="text-xs font-bold text-stone-900 truncate block">
+                      {userProfile?.displayName || user.email?.split('@')[0] || 'mejennur669'}
+                      {isOwnerSuperAdmin && (
+                        <span className="text-amber-800 ml-1 font-black">(Super Admin)</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-700 text-[10px] font-bold shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="font-serif-ethiopic">{language === 'en' ? 'Online' : 'መስመር ላይ'}</span>
+                  </div>
+                </div>
+
+                {/* Subscription Status Pill */}
+                {onOpenSubscription && (
                   <button
-                    key={langMeta.code}
-                    id={`lang-btn-${langMeta.code}`}
-                    onClick={() => setLanguage(langMeta.code)}
-                    className={`px-2 py-0.5 sm:py-1 text-xs font-semibold transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#38332D] text-[#FAF6EC] shadow-xs'
-                        : 'text-[#4A4237] hover:bg-[#E5DCB9]'
+                    onClick={onOpenSubscription}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                      accessStatus === 'ACTIVE'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200'
+                        : accessStatus === 'PENDING'
+                        ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200 animate-pulse'
+                        : accessStatus === 'SUPER_ADMIN'
+                        ? 'bg-amber-100 text-amber-900 border-amber-400 font-black'
+                        : accessStatus === 'EXPIRED'
+                        ? 'bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200'
+                        : 'bg-stone-200 text-stone-800 border-stone-300 hover:bg-stone-300'
                     }`}
-                    title={langMeta.name}
-                    aria-pressed={isSelected}
+                    title={language === 'en' ? 'Subscription & Payment Details' : 'የሳብስክሪፕሽንና ክፍያ ዝርዝር'}
                   >
-                    {langMeta.nativeName}
+                    <CreditCard className="w-3.5 h-3.5" />
+                    <span className="font-serif-ethiopic hidden sm:inline">
+                      {accessStatus === 'ACTIVE'
+                        ? (language === 'en' ? `Sub Active (${remainingDays}d)` : `ክፍያ የጸደቀ (${remainingDays}ቀን)`)
+                        : accessStatus === 'PENDING'
+                        ? (language === 'en' ? 'Pending Approval' : 'በማረጋገጥ ላይ')
+                        : accessStatus === 'SUPER_ADMIN'
+                        ? (language === 'en' ? 'Super Admin' : 'ባለቤት (Super Admin)')
+                        : accessStatus === 'EXPIRED'
+                        ? (language === 'en' ? 'Expired' : 'ጊዜው ያለፈ')
+                        : (language === 'en' ? 'Subscription / Pay' : 'ክፍያ / Sub')}
+                    </span>
                   </button>
-                );
-              })}
+                )}
+
+                {/* Feedback Button */}
+                {onOpenFeedback && (
+                  <button
+                    onClick={onOpenFeedback}
+                    className="p-1.5 text-[#665C4D] hover:text-[#1E1B18] hover:bg-[#E5DCB9] rounded-lg transition-colors cursor-pointer"
+                    title={language === 'en' ? 'System Feedback' : 'ስለ ሲስተሙ አስተያዬት ስጥ (System Feedback)'}
+                  >
+                    <MessageSquare className="w-4 h-4 text-cyan-800" />
+                  </button>
+                )}
+
+                {/* Settings Button */}
+                {onOpenSettings && (
+                  <button
+                    id="header-settings-btn"
+                    onClick={onOpenSettings}
+                    className="p-1.5 text-[#665C4D] hover:text-[#1E1B18] hover:bg-[#E5DCB9] rounded-lg transition-colors cursor-pointer"
+                    title={language === 'en' ? 'Settings & Security' : 'ቅንብሮች (Settings & Security)'}
+                  >
+                    <Settings className="w-4 h-4 text-emerald-800" />
+                  </button>
+                )}
+
+                {/* Logout button */}
+                <button
+                  id="header-logout-btn"
+                  onClick={logout}
+                  className="p-1.5 text-[#665C4D] hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                  title={language === 'en' ? 'Sign Out' : 'ውጣ (Sign Out)'}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Notification Bell with Badge & Drawer */}
+            <div className="pl-1 sm:pl-2 border-l border-[#38332D]/30">
+              <NotificationBell />
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* Action Navigation Row */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#38332D]/20">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Button 0: Welcome Screen / Gateway */}
+          {onOpenGateway && (
+            <button
+              id="header-open-gateway-btn"
+              onClick={onOpenGateway}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-black rounded-lg transition-all cursor-pointer shadow-xs border border-amber-600 active:scale-98 font-serif-ethiopic"
+              title={language === 'en' ? 'Open Welcome & Setup Screen' : 'የመነሻ ስክሪን ክፈት (Welcome Screen)'}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-stone-950" />
+              <span>{language === 'en' ? '👋 Welcome Screen' : '👋 መነሻ ስክሪን'}</span>
+            </button>
+          )}
+
+          {/* Super Admin Inspection & Switcher Button */}
+          {isOwnerSuperAdmin && onToggleAdminDashboard && (
+            <button
+              id="header-superadmin-inspect-btn"
+              onClick={onToggleAdminDashboard}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-black rounded-lg transition-all cursor-pointer shadow-md border font-serif-ethiopic active:scale-98 ${
+                activeTab === 'admin_dashboard'
+                  ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-800'
+                  : 'bg-emerald-800 hover:bg-emerald-900 text-amber-200 border-emerald-950'
+              }`}
+              title={
+                activeTab === 'admin_dashboard'
+                  ? 'የተማሪዎችን መማሪያ፣ መጻሕፍትና ጥያቄዎች ለመፈተሽ'
+                  : 'ወደ ሱፐር አድሚን ዳሽቦርድ ለመመለስ'
+              }
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+              <span>
+                {activeTab === 'admin_dashboard'
+                  ? (language === 'en' ? '👁️ Inspect Student Modules' : '👁️ የተማሪ ክፍሎችን ፈትሽ')
+                  : (language === 'en' ? '⚡ Super Admin Dashboard' : '⚡ ሱፐር አድሚን ዳሽቦርድ')}
+              </span>
+            </button>
+          )}
+
+          {/* Button 1: Sides / Modules */}
+          {onOpenModulesDropdown && (
+            <button
+              id="header-modules-btn"
+              onClick={onOpenModulesDropdown}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0B132B] hover:bg-[#15234A] text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs border border-slate-700 active:scale-98 font-serif-ethiopic"
+              title={t.modulesMenuBtn || 'የሲስተም ሳይዶችና ክፍሎች'}
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-amber-400" />
+              <span>{t.modulesMenuBtn ? `📑 ${t.modulesMenuBtn}` : '📑 ሳይዶች / ክፍሎች'}</span>
+            </button>
+          )}
+
+          {/* Button 2: Vibrant Red ALL MODULES DROPDOWN */}
+          {onOpenModulesDropdown && (
+            <button
+              onClick={onOpenModulesDropdown}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-black rounded-lg transition-all cursor-pointer shadow-md shadow-red-900/20 border border-red-700 active:scale-98 font-serif-ethiopic"
+              title={language === 'en' ? 'Explore all system modules' : 'የሲስተም ክፍሎች በሙሉ (30 Modules Dropdown)'}
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-white" />
+              <span>{language === 'en' ? '📋 Open All Modules' : '📋 ሁሉንም ክፍሎች ክፈት (All Modules)'}</span>
+            </button>
+          )}
+
+          {/* Button 3: Direct In-System Payment */}
+          {onOpenDirectPayment && (
+            <button
+              onClick={onOpenDirectPayment}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs border border-emerald-900 font-serif-ethiopic"
+              title={language === 'en' ? 'Direct payment via Telebirr 0910097862 or CBE 1000382883776' : 'ቀጥታ ክፍያ በቴሌብር 0910097862 ወይም CBE 1000382883776'}
+            >
+              <CreditCard className="w-3.5 h-3.5 text-emerald-200" />
+              <span>{language === 'en' ? '💳 Direct Payment (Telebirr / CBE)' : '💳 ቀጥታ ክፍያ (0910097862 / 1000382883776)'}</span>
+            </button>
+          )}
+        </div>
+
+        {/* Grade Selector & Language Selector */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {/* Grade Selector */}
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-semibold text-[#5A5143] whitespace-nowrap flex items-center gap-1">
@@ -148,7 +324,7 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
             <div
               id="grade-selector-group"
-              className="inline-flex border-[1.5px] border-[#38332D] bg-[#EFE8D6] p-0.5"
+              className="inline-flex border-[1.5px] border-[#38332D] bg-[#EFE8D6] p-0.5 rounded"
             >
               {grades.map((grade) => {
                 const isSelected = selectedGrade === grade;
@@ -171,113 +347,55 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* User Account / Auth Section */}
-          <div className="flex items-center gap-1.5 pl-1 sm:pl-2 sm:border-l border-[#38332D]/30">
-            {!user ? (
-              <button
-                id="header-signin-btn"
-                onClick={() => openAuthModal('login')}
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#2E6B4A] hover:bg-[#235338] text-white text-xs font-bold border border-[#1D4A32] rounded cursor-pointer transition-colors shadow-xs"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span className="font-serif-ethiopic">ግባ / ተመዝገብ (Sign In)</span>
-              </button>
-            ) : (
-              <div className="flex items-center gap-2">
-                {/* Role and User Badge */}
-                <div className="flex items-center gap-1.5 bg-[#EAE2CE] border border-[#38332D]/40 px-2 py-0.5 rounded">
-                  <span className="text-xs font-bold font-serif-ethiopic text-[#1E1B18] flex items-center gap-1">
-                    {isOwnerSuperAdmin ? (
-                      <span className="text-amber-800 font-black flex items-center gap-1">
-                        <span>👑</span>
-                        <span className="hidden md:inline">ብቸኛ SUPER_ADMIN:</span>
-                        <span className="text-amber-900">Nuriye Ahmed Adem</span>
-                      </span>
-                    ) : userProfile?.role === 'teacher' ? (
-                      <span className="text-[#1D4ED8] font-bold">👨‍🏫 መምህር</span>
-                    ) : (
-                      <span className="text-emerald-700 font-bold">🎓 ተማሪ</span>
-                    )}
-                    {!isOwnerSuperAdmin && (
-                      <span className="font-semibold text-[11px] truncate max-w-[90px] sm:max-w-[120px]">
-                        {userProfile?.displayName || user.email?.split('@')[0]}
-                      </span>
-                    )}
-                  </span>
-                </div>
+          {/* Language Selector: Full 6 Ethiopian & Regional Languages Switcher */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-[#38332D] whitespace-nowrap flex items-center gap-1 font-serif-ethiopic">
+              <Globe className="w-3.5 h-3.5 text-emerald-800" />
+              <span className="hidden md:inline">{language === 'en' ? 'Language:' : language === 'ar' ? 'اللغة:' : language === 'ti' ? 'ቋንቋ:' : language === 'om' ? 'Afaan:' : language === 'so' ? 'Luqadda:' : 'ቋንቋ:'}</span>
+            </span>
 
-                {/* Subscription Status Pill */}
-                {onOpenSubscription && (
+            {/* Responsive Desktop 6-Language Pill Switcher */}
+            <div
+              id="language-selector-group"
+              className="hidden sm:inline-flex border-2 border-[#1E1B18] bg-white p-0.5 rounded-lg shadow-2xs divide-x divide-stone-200"
+            >
+              {languages.map((l) => {
+                const isSelected = language === l.code;
+                return (
                   <button
-                    onClick={onOpenSubscription}
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded border transition-all cursor-pointer ${
-                      accessStatus === 'ACTIVE'
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200'
-                        : accessStatus === 'PENDING'
-                        ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200 animate-pulse'
-                        : accessStatus === 'SUPER_ADMIN'
-                        ? 'bg-amber-100 text-amber-900 border-amber-400 font-black'
-                        : accessStatus === 'EXPIRED'
-                        ? 'bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200'
-                        : 'bg-stone-200 text-stone-800 border-stone-300 hover:bg-stone-300'
+                    key={l.code}
+                    id={`lang-btn-${l.code}`}
+                    onClick={() => setLanguage(l.code)}
+                    className={`px-2 py-1 text-xs font-bold transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap ${
+                      isSelected
+                        ? 'bg-[#1E1B18] text-amber-300 shadow-xs font-black'
+                        : 'text-[#38332D] hover:bg-stone-100 font-semibold'
                     }`}
-                    title="የሳብስክሪፕሽንና ክፍያ ዝርዝር"
+                    title={`${l.name} (${l.nativeName})`}
+                    aria-pressed={isSelected}
                   >
-                    <CreditCard className="w-3.5 h-3.5" />
-                    <span className="font-serif-ethiopic hidden sm:inline">
-                      {accessStatus === 'ACTIVE'
-                        ? `ክፍያ የጸደቀ (${remainingDays}ቀን)`
-                        : accessStatus === 'PENDING'
-                        ? 'በማረጋገጥ ላይ'
-                        : accessStatus === 'SUPER_ADMIN'
-                        ? 'ባለቤት'
-                        : accessStatus === 'EXPIRED'
-                        ? 'ጊዜው ያለፈ'
-                        : 'ክፍያ / Sub'}
-                    </span>
+                    <span>{l.flagOrLabel}</span>
+                    <span>{l.nativeName}</span>
                   </button>
-                )}
+                );
+              })}
+            </div>
 
-                {/* Feedback Button */}
-                {onOpenFeedback && (
-                  <button
-                    onClick={onOpenFeedback}
-                    className="p-1 text-[#665C4D] hover:text-[#1E1B18] hover:bg-[#E5DCB9] rounded transition-colors cursor-pointer"
-                    title="ስለ ሲስተሙ አስተያዬት ስጥ (System Feedback)"
-                  >
-                    <MessageSquare className="w-4 h-4 text-cyan-800" />
-                  </button>
-                )}
-
-                {/* If Teacher, prominent button in top bar */}
-                {userProfile?.role === 'teacher' && onOpenTeacherDashboard && (
-                  <button
-                    id="header-teacher-dashboard-btn"
-                    onClick={onOpenTeacherDashboard}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white text-xs font-bold border border-[#1E3A8A] rounded cursor-pointer transition-all shadow-xs"
-                    title="የተማሪዎችን የትምህርት እድገት መከታተያ ዳሽቦርድ"
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                    <span className="font-serif-ethiopic hidden sm:inline">የተማሪዎች ዳሽቦርድ</span>
-                    <span className="font-serif-ethiopic sm:hidden">ዳሽቦርድ</span>
-                  </button>
-                )}
-
-                {/* Logout button */}
-                <button
-                  id="header-logout-btn"
-                  onClick={logout}
-                  className="p-1 text-[#665C4D] hover:text-red-700 hover:bg-red-50 rounded transition-colors cursor-pointer"
-                  title="ውጣ (Sign Out)"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* Notification Bell with Badge & Drawer */}
-            <div className="pl-1 sm:pl-2 sm:border-l border-[#38332D]/30">
-              <NotificationBell />
+            {/* Mobile Dropdown for small screens */}
+            <div className="sm:hidden flex items-center">
+              <select
+                id="language-mobile-select"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as any)}
+                aria-label="Select Language"
+                className="bg-white border-2 border-[#1E1B18] rounded-md text-xs font-bold py-1 px-2 text-[#1E1B18] shadow-2xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-700"
+              >
+                {languages.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.flagOrLabel} {l.nativeName}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -326,18 +444,6 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Interactive Buttons for Textbooks, Checklist & Certificate */}
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          {/* Prominent Teacher Dashboard Button in second row too if Teacher */}
-          {userProfile?.role === 'teacher' && onOpenTeacherDashboard && (
-            <button
-              id="header-teacher-dashboard-prominent-btn"
-              onClick={onOpenTeacherDashboard}
-              className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#1D4ED8] hover:bg-[#1E40AF] text-white text-xs font-bold border border-[#172554] rounded cursor-pointer transition-colors shadow-xs"
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span className="font-serif-ethiopic">👥 የተማሪዎች ዳሽቦርድ (Students)</span>
-            </button>
-          )}
-
           {onOpenNewCurriculum && (
             <button
               id="header-curriculum-guide-btn"

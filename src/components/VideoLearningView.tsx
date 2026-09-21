@@ -216,6 +216,7 @@ export const VideoLearningView: React.FC<VideoLearningViewProps> = ({
           subject={subject}
           grade={grade}
           onOpenAITutor={onOpenAITutor}
+          onOpenSubscriptionModal={() => setShowPaymentModal(true)}
           onExit={onExit}
         />
       )}

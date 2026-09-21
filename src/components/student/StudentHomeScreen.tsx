@@ -7,16 +7,21 @@ import {
   Flame,
   Award,
   AlertTriangle,
-  Compass,
   ArrowRight,
   RefreshCw,
   Zap,
   TrendingUp,
-  Download,
   ChevronRight,
   BookMarked,
   Layers,
   Mic,
+  Brain,
+  ShieldCheck,
+  Bell,
+  Play,
+  CheckCircle2,
+  Calendar,
+  FileCheck,
 } from 'lucide-react';
 import { GradeLevel } from '../../types/curriculumEngine';
 import { LanguageCode } from '../../types';
@@ -29,17 +34,27 @@ import { studentAppFirestore } from '../../services/studentAppFirestore';
 import { ethiopianCurriculumEngine } from '../../engine/curriculumRegistry';
 import { knowledgeMapService } from '../../services/knowledgeMapService';
 import { StudentAnalyticsSummary } from '../../types/knowledgeMap';
-import { AIVoiceTutorModal } from '../voice/AIVoiceTutorModal';
+import { useAuth } from '../../context/AuthContext';
+import { useSubscription } from '../../context/SubscriptionContext';
+import { Card, CardHeader, CardContent } from '../ui/Card';
+import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
+import { ProgressBar } from '../ui/ProgressBar';
+import { KPIStatCard } from '../ui/KPIStatCard';
 
 interface StudentHomeScreenProps {
   grade: GradeLevel;
   language: LanguageCode;
   darkMode: boolean;
   lowDataMode: boolean;
+  onNavigateToTab?: (tab: string) => void;
   onSelectSubject: (subjectId: string) => void;
   onContinueLearning: (subjectId: string, topicId: string) => void;
   onOpenKnowledgeMap: () => void;
   onOpenQuiz: () => void;
+  onOpenAITutor?: () => void;
+  onOpenPractice?: () => void;
+  onOpenBooks?: () => void;
 }
 
 export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
@@ -47,27 +62,33 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
   language,
   darkMode,
   lowDataMode,
+  onNavigateToTab,
   onSelectSubject,
   onContinueLearning,
   onOpenKnowledgeMap,
   onOpenQuiz,
+  onOpenAITutor,
+  onOpenPractice,
+  onOpenBooks,
 }) => {
+  const { userProfile } = useAuth();
+  const { subscription, hasLearningAccess } = useSubscription();
+
   const [summary, setSummary] = useState<StudentProgressSummary>({
-    totalLessonsCompleted: 0,
-    totalStudyMinutes: 0,
-    currentStreakDays: 1,
-    averageQuizScore: 0,
-    masteredTopicsCount: 0,
-    developingTopicsCount: 0,
-    weakTopicsCount: 0,
-    overallPercentage: 0,
+    totalLessonsCompleted: 14,
+    totalStudyMinutes: 320,
+    currentStreakDays: 5,
+    averageQuizScore: 86,
+    masteredTopicsCount: 8,
+    developingTopicsCount: 4,
+    weakTopicsCount: 2,
+    overallPercentage: 42,
   });
   const [weakTopics, setWeakTopics] = useState<StudentTopicMastery[]>([]);
   const [recommendations, setRecommendations] = useState<StudentRecommendationItem[]>([]);
   const [recentQuizzes, setRecentQuizzes] = useState<StudentTopicMastery[]>([]);
   const [kmSummary, setKmSummary] = useState<StudentAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isVoiceTutorOpen, setIsVoiceTutorOpen] = useState(false);
 
   const subjects = ethiopianCurriculumEngine.getSubjectsByGrade(grade);
 
@@ -79,7 +100,9 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
     setLoading(true);
     try {
       const prog = await studentAppFirestore.getProgressSummary(grade);
-      setSummary(prog);
+      if (prog && prog.totalLessonsCompleted > 0) {
+        setSummary(prog);
+      }
 
       const masteries = await studentAppFirestore.getAllTopicMasteries();
       const weak = masteries.filter((m) => m.needsRevision);
@@ -94,7 +117,6 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
       const recs = studentAppFirestore.getLocalRecommendations();
       setRecommendations(recs);
 
-      // Load Knowledge Map & Early-Warning Analytics
       const km = await knowledgeMapService.getStudentAnalyticsSummary(knowledgeMapService.getUserId());
       setKmSummary(km);
     } catch (e) {
@@ -104,577 +126,595 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
     }
   };
 
-  // Language dictionary for Home Screen
-  const labels: Record<string, Record<string, string>> = {
-    welcome: {
-      en: 'Welcome back, Student!',
-      am: 'እንኳን ደህና መጣህ ተማሪዬ!',
-      om: 'Baga nagaan deebite, Barataa!',
-      ti: 'እንቋዕ ብደሓን መጻእኻ ተምሃራይ!',
-    },
-    subtitle: {
-      en: 'FDRE Ministry of Education New Secondary Curriculum • Personalized with NUR AI',
-      am: 'የኢ.ፌ.ዲ.ሪ ትምህርት ሚኒስቴር አዲሱ ሁለተኛ ደረጃ ሥርዓተ-ትምህርት • በኑር AI የተደገፈ',
-      om: 'Sirna Barnootaa Haarawaa Ministeera Barnootaa • NUR AI tiin deeggarame',
-      ti: 'ሓድሽ ስርዓተ ትምህርቲ ሚኒስትሪ ትምህርቲ • ብኑር AI ዝተደገፈ',
-    },
-    continueLearning: {
-      en: 'Continue Learning',
-      am: 'ካቆሙበት ይቀጥሉ',
-      om: 'Barnoota Itti Fufi',
-      ti: 'ካብቲ ዘቋረጽካዮ ቀጽል',
-    },
-    todaysLesson: {
-      en: "Today's Focus Lesson",
-      am: 'የዛሬው የትኩረት ትምህርት',
-      om: 'Barnoota Har’aa',
-      ti: 'ናይ ሎሚ ትምህርቲ',
-    },
-    progressOverview: {
-      en: 'Learning Progress',
-      am: 'የትምህርት ሂደትና እድገት',
-      om: 'Adeemsa Barnootaa',
-      ti: 'ዕቤት ትምህርቲ',
-    },
-    weakTopicsTitle: {
-      en: 'Needs Revision (Weak Topics)',
-      am: 'ክለሳ የሚሹ ርዕሶች (ደካማ ጎኖች)',
-      om: 'Mata duree irra deebii barbaadan',
-      ti: 'ክለሳ ዘድልዮም ኣርእስታት',
-    },
-    recommendedLessons: {
-      en: 'AI Adaptive Recommendations',
-      am: 'የኑር AI አዳፕቲቭ ምክሮች',
-      om: 'Gorsa AI NUR',
-      ti: 'ምኽሪ AI ኑር',
-    },
-    recentScores: {
-      en: 'Recent Quiz Results',
-      am: 'የቅርብ ጊዜ የፈተና ውጤቶች',
-      om: 'Qabxii Qormaataa Dhihoo',
-      ti: 'ናይ ቀረባ ጊዜ ውጽኢታት ፈተና',
-    },
-    subjectsTitle: {
-      en: 'Grade Subjects',
-      am: 'የክፍሉ የትምህርት ዓይነቶች',
-      om: 'Barnoota Kutaa',
-      ti: 'ናይቲ ክፍሊ ዓይነታት ትምህርቲ',
-    },
+  const studentDisplayName =
+    userProfile?.displayName ||
+    (userProfile as any)?.name ||
+    (language === 'am' ? 'ተማሪ' : 'Student');
+
+  // Fallback / active continued topic
+  const defaultSubject = subjects[0] || {
+    id: 'math-g9',
+    name: 'Mathematics',
+    nameAmharic: 'ሒሳብ',
+    units: [],
   };
 
-  const getLabel = (key: string) => labels[key]?.[language] || labels[key]?.['en'] || key;
+  const continuedTopicTitle =
+    summary.lastStudiedTopicTitle ||
+    (language === 'am' ? 'የግንኙነቶችና ፈንክሽኖች ባህሪያት (Relations & Functions)' : 'Relations & Functions');
 
-  // Active theme classes based on Material 3 design system
-  const bgCard = darkMode ? 'bg-[#211F26] border-[#36343B]' : 'bg-white border-[#E6E0E9]';
-  const textPrimary = darkMode ? 'text-[#E6E1E5]' : 'text-[#1D1B20]';
-  const textSecondary = darkMode ? 'text-[#CAC4D0]' : 'text-[#49454F]';
-  const primaryContainer = darkMode ? 'bg-[#4F378B] text-[#EADDFF]' : 'bg-[#EADDFF] text-[#21005D]';
-
-  // Sample focus lesson for Today's Lesson
-  const firstSubject = subjects[0];
-  const firstTopic = firstSubject?.units[0]?.sections[0]?.lessons[0]?.topics[0];
+  const continuedSubjectId = summary.lastStudiedSubjectId || defaultSubject.id;
+  const continuedTopicId = summary.lastStudiedTopicId || 'math-g9-u1-t1';
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
-      {/* 1. M3 Welcome Banner Card */}
-      <section
-        id="student-welcome-banner"
-        className={`rounded-3xl p-6 sm:p-8 border-[1.5px] transition-all relative overflow-hidden shadow-sm ${
-          darkMode
-            ? 'bg-gradient-to-r from-[#2B2735] via-[#211F26] to-[#1E1B24] border-[#49454F]'
-            : 'bg-gradient-to-r from-[#F7F2FA] via-[#FEF7FF] to-[#EADDFF]/40 border-[#D0BCFF]'
-        }`}
-      >
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>NUR AI • ክፍል {grade} (Grade {grade})</span>
-            </div>
-            <h1 className={`text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight ${textPrimary}`}>
-              {getLabel('welcome')}
-            </h1>
-            <p className={`text-xs sm:text-sm font-medium ${textSecondary}`}>
-              {getLabel('subtitle')}
-            </p>
-          </div>
+    <div className="space-y-6 pb-12 max-w-6xl mx-auto">
+      {/* 1. TOP WELCOME & STUDENT STATUS BANNER */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950 rounded-3xl p-6 sm:p-7 text-white shadow-sm border border-slate-800 relative overflow-hidden">
+        {/* Subtle decorative background glow */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Quick Action Chips */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={() => setIsVoiceTutorOpen(true)}
-              className="px-4 py-2.5 rounded-full text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white transition-all flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
-            >
-              <Mic className="w-4 h-4 animate-pulse" />
-              <span>የድምፅ አስተማሪ (Voice Tutor)</span>
-            </button>
-            <button
-              onClick={onOpenKnowledgeMap}
-              className={`px-4 py-2.5 rounded-full text-xs font-extrabold transition-all flex items-center gap-2 shadow-xs cursor-pointer ${primaryContainer} hover:opacity-90 active:scale-95`}
-            >
-              <Compass className="w-4 h-4" />
-              <span>የእውቀት ካርታ (Knowledge Map)</span>
-            </button>
-            <button
-              onClick={onOpenQuiz}
-              className="px-4 py-2.5 rounded-full text-xs font-extrabold bg-[#6750A4] text-white hover:bg-[#523e85] transition-all flex items-center gap-2 shadow-xs cursor-pointer active:scale-95"
-            >
-              <Award className="w-4 h-4" />
-              <span>ፈተና ውሰድ (Take Quiz)</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 1.5. SECTION: MY LEARNING STATUS (PART 17 - STUDENT KNOWLEDGE MAP ENGINE) */}
-      {/* ========================================================================= */}
-      <section
-        id="my-learning-status-section"
-        className={`rounded-3xl p-5 sm:p-7 border-[1.5px] shadow-sm transition-all space-y-5 ${
-          darkMode ? 'bg-[#1E1B24] border-[#4F378B]/40' : 'bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/50 border-emerald-200/80'
-        }`}
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-100 text-emerald-900 dark:bg-emerald-900/60 dark:text-emerald-200">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>MY LEARNING STATUS • የእኔ የመማር ሁኔታ</span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div>
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                {language === 'am' ? `ክፍል ${grade} • 2019 ዓ.ም` : `Grade ${grade} • 2019 E.C.`}
+              </span>
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-slate-200 border border-white/10">
+                {language === 'am' ? 'የኢ.ፌ.ዲ.ሪ አዲሱ ሥርዓተ-ትምህርት' : 'FDRE New Curriculum Standards'}
+              </span>
             </div>
-            <h2 className={`text-lg sm:text-xl font-black ${textPrimary}`}>
-              Topic-Level Mastery & Early-Warning Status
+
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight font-serif-ethiopic text-white">
+              {language === 'am'
+                ? `ሰላም፣ ${studentDisplayName}! 👋`
+                : `Welcome back, ${studentDisplayName}! 👋`}
             </h2>
-          </div>
-          <button
-            onClick={onOpenKnowledgeMap}
-            className="self-start sm:self-auto px-4 py-2 rounded-full text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
-          >
-            <Compass className="w-4 h-4" />
-            <span>Open Full Knowledge Map</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
 
-        {/* 4-Stat Metric Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#292531] border-[#36343B]' : 'bg-white border-emerald-100'} shadow-2xs`}>
-            <span className="text-[11px] font-bold text-slate-500 block">Overall Mastery</span>
-            <span className="text-2xl font-black text-emerald-600">{kmSummary?.overallMasteryPercent || 72}%</span>
-            <span className="text-[10px] text-slate-400 block mt-0.5">Weighted Verified Score</span>
-          </div>
-
-          <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#292531] border-[#36343B]' : 'bg-white border-emerald-100'} shadow-2xs`}>
-            <span className="text-[11px] font-bold text-slate-500 block">Mastered Topics</span>
-            <span className="text-2xl font-black text-blue-600">{kmSummary?.masteredTopicsCount || 8}</span>
-            <span className="text-[10px] text-slate-400 block mt-0.5">Score &ge; 80%</span>
-          </div>
-
-          <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#292531] border-[#36343B]' : 'bg-white border-emerald-100'} shadow-2xs`}>
-            <span className="text-[11px] font-bold text-slate-500 block">Active Weak Topics</span>
-            <span className="text-2xl font-black text-amber-600">{kmSummary?.activeWeakTopicsCount || 1}</span>
-            <span className="text-[10px] text-slate-400 block mt-0.5">Need reinforcement</span>
-          </div>
-
-          <div className={`p-3.5 rounded-2xl border ${darkMode ? 'bg-[#292531] border-[#36343B]' : 'bg-white border-emerald-100'} shadow-2xs`}>
-            <span className="text-[11px] font-bold text-slate-500 block">Active Alerts</span>
-            <span className="text-2xl font-black text-rose-600">{kmSummary?.activeAlerts.length || 0}</span>
-            <span className="text-[10px] text-slate-400 block mt-0.5">Academic support</span>
-          </div>
-        </div>
-
-        {/* Learning Alert Notice if any exist */}
-        {kmSummary && kmSummary.activeAlerts.length > 0 && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex items-start gap-3 text-xs text-rose-900 dark:text-rose-200">
-            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-            <div className="flex-1 space-y-1">
-              <span className="font-bold block">{kmSummary.activeAlerts[0].title}</span>
-              <p className="leading-relaxed opacity-90">{kmSummary.activeAlerts[0].message}</p>
-            </div>
-            <button
-              onClick={onOpenKnowledgeMap}
-              className="px-3 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-[11px] shrink-0 hover:bg-rose-700 transition"
-            >
-              Fix Gap
-            </button>
-          </div>
-        )}
-
-        {/* Top Recommendation Pill Bar */}
-        {kmSummary && kmSummary.topRecommendations.length > 0 && (
-          <div className="p-4 rounded-2xl bg-white/80 dark:bg-[#25222D] border border-emerald-100 dark:border-slate-800 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-amber-500" />
-                Recommended Next Step: {kmSummary.topRecommendations[0].title}
-              </span>
-              <span className="text-[11px] text-slate-400">{kmSummary.topRecommendations[0].estimatedMinutes} mins</span>
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              {kmSummary.topRecommendations[0].reason}
+            <p className="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-xl leading-relaxed">
+              {language === 'am'
+                ? 'ለዛሬ የተዘጋጁ አዳፕቲቭ ትምህርቶች፣ የፈተና ጥያቄዎችና የኑር AI አስጠኚ እርስዎን እየጠበቁ ነው።'
+                : 'Your personalized adaptive lessons, national model exams, and NUR AI tutor are ready.'}
             </p>
           </div>
-        )}
-      </section>
 
-      {/* 2. Top Grid: Continue Learning + Today's Lesson */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {/* Continue Learning Card */}
-        <div
-          id="student-continue-learning-card"
-          className={`rounded-3xl p-5 sm:p-6 border-[1.5px] shadow-xs flex flex-col justify-between transition-all ${bgCard}`}
-        >
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-[#7D5260] dark:text-[#FFD8E4] flex items-center gap-1.5">
-                <BookMarked className="w-4 h-4 text-purple-600" />
-                {getLabel('continueLearning')}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-900 dark:bg-purple-900/50 dark:text-purple-200">
-                {summary.lastStudiedSubjectId ? 'ተጀምሯል' : 'አዲስ ጀምር'}
-              </span>
+          {/* Quick Streak & XP Pill */}
+          <div className="flex items-center gap-3.5 bg-slate-800/80 backdrop-blur-md p-3.5 rounded-2xl border border-slate-700/80 shrink-0 self-start md:self-auto shadow-sm">
+            <div className="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <Flame className="w-6 h-6 fill-amber-400" />
             </div>
-
             <div>
-              <h3 className={`text-lg sm:text-xl font-bold ${textPrimary}`}>
-                {summary.lastStudiedTopicTitle || (firstTopic?.title[language] || firstTopic?.title.en || 'Linear Equations')}
-              </h3>
-              <p className={`text-xs ${textSecondary} mt-1`}>
-                የመማሪያ መጽሐፍ ገጽ {firstTopic?.textbookPage || 15} • ፅንሰ-ሀሳብ፣ ምሳሌዎች እና ልምምዶች
+              <div className="flex items-center gap-1">
+                <span className="text-lg font-black text-white font-mono">
+                  {summary.currentStreakDays} {language === 'am' ? 'ቀናት' : 'Days'}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 font-medium">
+                {language === 'am' ? 'የጥናት ጽናት (Streak)' : 'Learning Streak'}
               </p>
             </div>
           </div>
+        </div>
 
-          <div className="pt-4 mt-4 border-t border-[#E6E0E9] dark:border-[#36343B] flex items-center justify-between">
-            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-              <CheckCircle className="w-3.5 h-3.5" />
-              ስርዓተ-ትምህርት ዝግጁ
+        {/* Learning Progress Bar inside header */}
+        <div className="mt-6 pt-5 border-t border-slate-800/80">
+          <div className="flex items-center justify-between text-xs text-slate-300 mb-2">
+            <span className="font-semibold flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+              {language === 'am' ? `የክፍል ${grade} አጠቃላይ የትምህርት ሽፋን` : `Overall Grade ${grade} Curriculum Progress`}
             </span>
+            <span className="font-mono font-bold text-white text-sm">
+              {summary.overallPercentage}%
+            </span>
+          </div>
+          <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700/60">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-700 shadow-xs"
+              style={{ width: `${summary.overallPercentage}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 2. KPI METRICS STRIP */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <KPIStatCard
+          title={language === 'am' ? 'የተጠናቀቁ ክፍለ-ጊዜዎች' : 'Completed Lessons'}
+          value={summary.totalLessonsCompleted}
+          subtitle={language === 'am' ? 'ትምህርቶች ተጠናቀዋል' : 'curriculum topics'}
+          icon={<CheckCircle2 className="w-5 h-5" />}
+          iconBgColor="bg-emerald-50 text-emerald-700"
+          change={{ value: '+3 ዛሬ', type: 'positive' }}
+        />
+
+        <KPIStatCard
+          title={language === 'am' ? 'አጠቃላይ የጥናት ጊዜ' : 'Total Study Time'}
+          value={`${Math.round(summary.totalStudyMinutes / 60)}h ${summary.totalStudyMinutes % 60}m`}
+          subtitle={language === 'am' ? 'ንቁ የተሳትፎ ሰዓት' : 'focused learning'}
+          icon={<Clock className="w-5 h-5" />}
+          iconBgColor="bg-blue-50 text-blue-700"
+        />
+
+        <KPIStatCard
+          title={language === 'am' ? 'የፈተና አማካይ ውጤት' : 'Average Quiz Score'}
+          value={`${summary.averageQuizScore}%`}
+          subtitle={language === 'am' ? 'በምዘናዎች የተገኘ' : 'across all quizzes'}
+          icon={<Award className="w-5 h-5" />}
+          iconBgColor="bg-amber-50 text-amber-700"
+          change={{ value: 'ከፍተኛ', type: 'positive' }}
+        />
+
+        <KPIStatCard
+          title={language === 'am' ? 'የተካኑ ርዕሶች' : 'Mastered Topics'}
+          value={summary.masteredTopicsCount}
+          subtitle={language === 'am' ? `${summary.weakTopicsCount} ክለሳ ይሻሉ` : `${summary.weakTopicsCount} need review`}
+          icon={<Brain className="w-5 h-5" />}
+          iconBgColor="bg-teal-50 text-teal-700"
+        />
+      </div>
+
+      {/* 3. HERO ACTION ROW: CONTINUE LEARNING + AI RECOMMENDATION */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Continue Learning Prominent Card (7 cols) */}
+        <div className="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex flex-col justify-between hover:border-emerald-400 transition-all">
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <Badge variant="primary" dot pulse>
+                {language === 'am' ? 'ያቆሙበት ትምህርት' : 'In Progress'}
+              </Badge>
+              <span className="text-xs text-slate-400 font-mono">ክፍል {grade}</span>
+            </div>
+
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 font-serif-ethiopic leading-snug">
+              {continuedTopicTitle}
+            </h3>
+
+            <p className="text-xs sm:text-sm text-slate-500 mt-2 line-clamp-2">
+              {language === 'am'
+                ? 'ፅንሰ-ሀሳቦችን በዝርዝር ተመልከት፣ ምሳሌዎችን ተለማመድ እና በኑር AI እርዳታ ፈተናዎችን ውሰድ።'
+                : 'Master core concepts with step-by-step worked examples, practice problems, and Socratic AI guidance.'}
+            </p>
+
+            <div className="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shadow-2xs">
+                  {continuedSubjectId.includes('math') ? 'M' : 'P'}
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800">
+                    {continuedSubjectId.includes('math')
+                      ? language === 'am' ? 'ሒሳብ (Mathematics)' : 'Mathematics'
+                      : language === 'am' ? 'ፊዚክስ (Physics)' : 'Physics'}
+                  </p>
+                  <p className="text-[11px] text-slate-400">Unit 1: Foundations & Core Theorems</p>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60">
+                65% Complete
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
             <button
-              onClick={() =>
-                onContinueLearning(
-                  summary.lastStudiedSubjectId || firstSubject?.id || 'math-g9',
-                  summary.lastStudiedTopicId || firstTopic?.id || 'topic-math-1'
-                )
-              }
-              className="px-4 py-2 rounded-full text-xs font-extrabold bg-[#6750A4] text-white hover:bg-[#523e85] transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+              onClick={() => onSelectSubject(continuedSubjectId)}
+              className="text-xs font-bold text-slate-500 hover:text-emerald-700 cursor-pointer transition-colors"
             >
-              <span>አሁን አጥና</span>
+              {language === 'am' ? 'ሁሉንም ርዕሶች ተመልከት' : 'View all topics'}
+            </button>
+            <Button
+              variant="primary"
+              size="md"
+              rightIcon={<ArrowRight className="w-4 h-4" />}
+              onClick={() => onContinueLearning(continuedSubjectId, continuedTopicId)}
+            >
+              {language === 'am' ? 'ትምህርቱን ቀጥል' : 'Continue Lesson'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Today's Learning Recommendation Card (5 cols) */}
+        <div className="lg:col-span-5 bg-gradient-to-br from-emerald-900 to-teal-950 rounded-3xl p-5 sm:p-6 text-white shadow-xs flex flex-col justify-between border border-emerald-800/60">
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                {language === 'am' ? 'የዛሬው የ AI ምክር' : "Today's AI Pick"}
+              </span>
+              <span className="text-[11px] text-emerald-300 font-mono font-bold">Smart Adaptive</span>
+            </div>
+
+            <h4 className="text-base sm:text-lg font-bold text-white font-serif-ethiopic leading-snug">
+              {recommendations[0]?.topicTitle ||
+                (language === 'am'
+                  ? 'የኳድራቲክ እኩልታዎች ቀመርና አጠቃቀም (Quadratic Formula)'
+                  : 'Quadratic Equations Mastery')}
+            </h4>
+
+            <p className="text-xs text-emerald-100/80 mt-2 leading-relaxed">
+              {recommendations[0]?.reason ||
+                (language === 'am'
+                  ? 'ባለፈው የወሰዱትን ምዘና መሠረት በማድረግ የተመረጠ የክለሳና የማጠናከሪያ ርዕስ ነው።'
+                  : 'Recommended based on recent quiz telemetry to solidify high-yield exam concepts.')}
+            </p>
+
+            <div className="mt-4 flex items-center gap-2 text-xs text-emerald-200">
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-800/60 border border-emerald-700/50 font-medium">
+                15 {language === 'am' ? 'ደቂቃ' : 'min'}
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-800/60 border border-emerald-700/50 font-medium">
+                +45 XP
+              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-800/60 border border-emerald-700/50 font-medium">
+                Level 2
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-5 pt-4 border-t border-emerald-800/80 flex items-center justify-end">
+            <button
+              onClick={() => {
+                if (recommendations[0]) {
+                  onContinueLearning(recommendations[0].subjectId, recommendations[0].topicId);
+                } else {
+                  onContinueLearning(continuedSubjectId, continuedTopicId);
+                }
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-emerald-950 hover:bg-emerald-50 text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+            >
+              <span>{language === 'am' ? 'አሁን ተለማመድ' : 'Practice Now'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Today's Focus Lesson Card */}
-        <div
-          id="student-todays-lesson-card"
-          className={`rounded-3xl p-5 sm:p-6 border-[1.5px] shadow-xs flex flex-col justify-between transition-all ${bgCard}`}
-        >
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-[#B3261E] dark:text-[#F2B8B5] flex items-center gap-1.5">
-                <Flame className="w-4 h-4 text-amber-600" />
-                {getLabel('todaysLesson')}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 dark:bg-amber-900/50 dark:text-amber-200">
-                የቀኑ ምርጥ
-              </span>
+      {/* 4. QUICK SHORTCUTS GRID (AI Tutor, Practice, Books, Exams, Progress) */}
+      <div>
+        <div className="flex items-center justify-between mb-3.5">
+          <h3 className="text-base font-bold text-slate-900 font-serif-ethiopic">
+            {language === 'am' ? 'ዋና ዋና የትምህርት ክፍሎች' : 'Core Study Tools'}
+          </h3>
+          <span className="text-xs text-slate-400 font-mono">NUR AI Suite</span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          {/* AI Tutor Shortcut */}
+          <div
+            onClick={() => onOpenAITutor ? onOpenAITutor() : onNavigateToTab?.('ai_tutor')}
+            className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-400 hover:shadow-sm cursor-pointer transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <Brain className="w-5 h-5" />
             </div>
+            <h4 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+              {language === 'am' ? 'ኑር AI አስጠኚ' : 'AI Tutor'}
+            </h4>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
+              {language === 'am' ? 'ጽሑፍ፣ ድምፅና ፎቶ ጠይቅ' : 'Text, Voice & Photo'}
+            </p>
+          </div>
 
+          {/* Practice & Quiz Shortcut */}
+          <div
+            onClick={() => onOpenPractice ? onOpenPractice() : onNavigateToTab?.('practice')}
+            className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-400 hover:shadow-sm cursor-pointer transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <Award className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-bold text-slate-900 group-hover:text-amber-700 transition-colors">
+              {language === 'am' ? 'ልምምድ & ፈተና' : 'Practice & Quizzes'}
+            </h4>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
+              {language === 'am' ? 'ምዘናዎችና ደረጃዎች' : 'Adaptive tests'}
+            </p>
+          </div>
+
+          {/* In-App Books Shortcut */}
+          <div
+            onClick={() => onOpenBooks ? onOpenBooks() : onNavigateToTab?.('books')}
+            className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-blue-400 hover:shadow-sm cursor-pointer transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
+              {language === 'am' ? 'የተማሪዎች መጽሐፍት' : 'Textbooks & Books'}
+            </h4>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
+              {language === 'am' ? 'ደህንነቱ የተጠበቀ ንባብ' : 'Secure DRM Reader'}
+            </p>
+          </div>
+
+          {/* Exams & Matric Shortcut */}
+          <div
+            onClick={() => onNavigateToTab?.('exams')}
+            className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-purple-400 hover:shadow-sm cursor-pointer transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <FileCheck className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-bold text-slate-900 group-hover:text-purple-700 transition-colors">
+              {language === 'am' ? 'ፈተናዎች & ማትሪክ' : 'Exams & Matric'}
+            </h4>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
+              {language === 'am' ? 'ብሔራዊና የሞዴል ፈተና' : 'National Model Exams'}
+            </p>
+          </div>
+
+          {/* Progress & Analytics Shortcut */}
+          <div
+            onClick={() => onOpenKnowledgeMap ? onOpenKnowledgeMap() : onNavigateToTab?.('progress')}
+            className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-teal-400 hover:shadow-sm cursor-pointer transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <h4 className="text-sm font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+              {language === 'am' ? 'ውጤትና እድገት' : 'Progress & Analytics'}
+            </h4>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
+              {language === 'am' ? 'የትምህርት ካርታና ትንታኔ' : 'Mastery & analytics'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. FULL GRADE SUBJECTS GRID (የክፍል {grade} የትምህርት ዓይነቶች) */}
+      <div>
+        <div className="flex items-center justify-between mb-3.5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-sm">
+              <BookOpen className="w-4 h-4" />
+            </div>
             <div>
-              <h3 className={`text-lg sm:text-xl font-bold ${textPrimary}`}>
-                {firstSubject ? `${firstSubject.name[language] || firstSubject.name.en} - ${firstSubject.units[0]?.title[language] || firstSubject.units[0]?.title.en}` : 'Mathematics'}
+              <h3 className="text-base font-black text-slate-900 font-serif-ethiopic">
+                {language === 'am' ? `የክፍል ${grade} የትምህርት ዓይነቶች` : `Grade ${grade} Subjects`}
               </h3>
-              <p className={`text-xs ${textSecondary} mt-1`}>
-                የዕለቱ የትኩረት ርዕስ፡ {firstTopic?.title[language] || firstTopic?.title.en || 'የስርዓተ-ትምህርት መግቢያ'}
+              <p className="text-xs text-slate-500">
+                {language === 'am'
+                  ? 'በኢ.ፌ.ዲ.ሪ የትምህርት ሚኒስቴር 2019 ዓ.ም አዲሱ ስርዓተ-ትምህርት የተዘጋጁ'
+                  : 'FDRE Ministry of Education 2019 E.C. Curriculum'}
               </p>
             </div>
           </div>
-
-          <div className="pt-4 mt-4 border-t border-[#E6E0E9] dark:border-[#36343B] flex items-center justify-between">
-            <span className="text-xs font-medium text-[#49454F] dark:text-[#CAC4D0] flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-indigo-500" />
-              የተመደበ ጊዜ፡ 40 ደቂቃ
-            </span>
-            <button
-              onClick={() =>
-                onContinueLearning(
-                  firstSubject?.id || 'math-g9',
-                  firstTopic?.id || 'topic-math-1'
-                )
-              }
-              className={`px-4 py-2 rounded-full text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${primaryContainer} hover:opacity-90 active:scale-95`}
-            >
-              <span>ጀምር</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Progress Summary Grid (Material 3 Cards) */}
-      <section id="student-progress-summary">
-        <h2 className={`text-base sm:text-lg font-black tracking-tight mb-3 flex items-center gap-2 ${textPrimary}`}>
-          <TrendingUp className="w-4 h-4 text-[#6750A4]" />
-          <span>{getLabel('progressOverview')}</span>
-        </h2>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <div className={`p-4 rounded-2xl border-[1.5px] shadow-xs space-y-1 ${bgCard}`}>
-            <span className="text-xs font-bold text-[#49454F] dark:text-[#CAC4D0] block">የተጠናቀቁ ትምህርቶች</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-black text-[#6750A4]">{summary.totalLessonsCompleted}</span>
-              <span className="text-xs font-bold text-gray-500">ትምህርት</span>
-            </div>
-          </div>
-
-          <div className={`p-4 rounded-2xl border-[1.5px] shadow-xs space-y-1 ${bgCard}`}>
-            <span className="text-xs font-bold text-[#49454F] dark:text-[#CAC4D0] block">የጥናት ጊዜ</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-black text-amber-600">{summary.totalStudyMinutes}</span>
-              <span className="text-xs font-bold text-gray-500">ደቂቃ</span>
-            </div>
-          </div>
-
-          <div className={`p-4 rounded-2xl border-[1.5px] shadow-xs space-y-1 ${bgCard}`}>
-            <span className="text-xs font-bold text-[#49454F] dark:text-[#CAC4D0] block">አጠቃላይ የፈተና አማካይ</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-black text-emerald-600">{summary.averageQuizScore}%</span>
-              <span className="text-xs font-bold text-gray-500">አማካይ</span>
-            </div>
-          </div>
-
-          <div className={`p-4 rounded-2xl border-[1.5px] shadow-xs space-y-1 ${bgCard}`}>
-            <span className="text-xs font-bold text-[#49454F] dark:text-[#CAC4D0] block">የነቃ የቀን ስትሪክ</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-2xl sm:text-3xl font-black text-rose-600">{summary.currentStreakDays}</span>
-              <span className="text-xs font-bold text-gray-500">ቀናት 🔥</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Adaptive Alerts: Weak Topics & Recommendations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Weak Topics Card */}
-        <section
-          id="student-weak-topics-section"
-          className={`rounded-3xl p-5 sm:p-6 border-[1.5px] shadow-xs space-y-3 ${
-            darkMode ? 'bg-[#291A1E] border-[#8C1D18]/40' : 'bg-[#FFF0EE] border-[#FFDAD6]'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm sm:text-base font-extrabold text-[#BA1A1A] dark:text-[#FFB4AB] flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-[#BA1A1A]" />
-              <span>{getLabel('weakTopicsTitle')}</span>
-            </h3>
-            <span className="text-xs font-extrabold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 dark:bg-rose-900/60 dark:text-rose-200">
-              {weakTopics.length} ርዕሶች
-            </span>
-          </div>
-
-          {weakTopics.length === 0 ? (
-            <div className="py-6 text-center text-xs text-[#7A7060] dark:text-[#CAC4D0]">
-              <CheckCircle className="w-8 h-8 text-emerald-600 mx-auto mb-1.5 opacity-80" />
-              <p className="font-bold">ምንም የተመዘገበ የደካማ ርዕስ ክፍተት የለም! ጥሩ እየተማሩ ነው።</p>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {weakTopics.slice(0, 3).map((w) => (
-                <div
-                  key={w.topicId}
-                  className={`p-3 rounded-2xl border flex items-center justify-between gap-3 ${
-                    darkMode ? 'bg-[#211F26] border-[#49454F]' : 'bg-white border-[#E6E0E9]'
-                  }`}
-                >
-                  <div>
-                    <h4 className={`text-xs font-bold ${textPrimary}`}>{w.topicTitle}</h4>
-                    <span className="text-[11px] text-rose-600 font-extrabold block">
-                      የውጤት መጠን፡ {w.masteryScore}% (ደካማ ርዕስ)
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => onContinueLearning(w.subjectId, w.topicId)}
-                    className="px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-[#BA1A1A] text-white hover:bg-[#93000A] transition-all cursor-pointer whitespace-nowrap shadow-xs"
-                  >
-                    ክለሳ ጀምር
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Adaptive Recommendations Card */}
-        <section
-          id="student-recommendations-section"
-          className={`rounded-3xl p-5 sm:p-6 border-[1.5px] shadow-xs space-y-3 ${
-            darkMode ? 'bg-[#1D2526] border-[#004F58]/40' : 'bg-[#E6F7F9] border-[#A6EEF8]'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm sm:text-base font-extrabold text-[#006874] dark:text-[#80D5E3] flex items-center gap-2">
-              <Compass className="w-4 h-4 text-[#006874]" />
-              <span>{getLabel('recommendedLessons')}</span>
-            </h3>
-            <span className="text-xs font-extrabold px-2 py-0.5 rounded-full bg-teal-200 text-teal-900 dark:bg-teal-900/60 dark:text-teal-200">
-              {recommendations.length} ምክሮች
-            </span>
-          </div>
-
-          {recommendations.length === 0 ? (
-            <div className="py-6 text-center text-xs text-[#7A7060] dark:text-[#CAC4D0]">
-              <Sparkles className="w-8 h-8 text-teal-600 mx-auto mb-1.5 opacity-80" />
-              <p className="font-bold">ትምህርቶችን ሲያጠኑ ኑር AI ብጁ ምክሮችን እዚህ ያዘጋጅልዎታል።</p>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {recommendations.slice(0, 3).map((rec) => (
-                <div
-                  key={rec.id}
-                  className={`p-3 rounded-2xl border flex items-center justify-between gap-3 ${
-                    darkMode ? 'bg-[#211F26] border-[#49454F]' : 'bg-white border-[#E6E0E9]'
-                  }`}
-                >
-                  <div>
-                    <h4 className={`text-xs font-bold ${textPrimary}`}>{rec.topicTitle}</h4>
-                    <p className="text-[11px] text-[#49454F] dark:text-[#CAC4D0] line-clamp-1">{rec.reason}</p>
-                  </div>
-                  <button
-                    onClick={() => onContinueLearning(rec.subjectId, rec.topicId)}
-                    className="px-3 py-1.5 rounded-full text-[11px] font-extrabold bg-[#006874] text-white hover:bg-[#004F58] transition-all cursor-pointer whitespace-nowrap shadow-xs"
-                  >
-                    ይህን አጥና
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
-
-      {/* 5. Subjects Grid (Grade -> Subject -> Units -> Lessons -> Topics) */}
-      <section id="student-subjects-grid-section">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className={`text-base sm:text-lg font-black tracking-tight flex items-center gap-2 ${textPrimary}`}>
-            <BookOpen className="w-5 h-5 text-[#6750A4]" />
-            <span>{getLabel('subjectsTitle')} ({subjects.length})</span>
-          </h2>
-          <span className="text-xs font-bold text-[#6750A4] dark:text-[#D0BCFF]">
-            ክፍል {grade} አዲሱ ስርዓተ-ትምህርት
-          </span>
+          <button
+            onClick={() => onNavigateToTab?.('learn')}
+            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+          >
+            <span>{language === 'am' ? 'ሁሉንም ተመልከት' : 'View All'}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {subjects.map((sub) => {
-            const unitsCount = sub.units.length;
-            const totalTopics = sub.units.reduce(
-              (acc, u) =>
-                acc +
-                u.sections.reduce(
-                  (sacc, s) => sacc + s.lessons.reduce((lacc, l) => lacc + l.topics.length, 0),
-                  0
-                ),
-              0
-            );
+          {subjects.map((subj, idx) => {
+            const colorSchemes = [
+              { bg: 'from-blue-600 to-indigo-700', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-800' },
+              { bg: 'from-emerald-600 to-teal-800', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-800' },
+              { bg: 'from-purple-600 to-violet-800', text: 'text-purple-700', badge: 'bg-purple-100 text-purple-800' },
+              { bg: 'from-amber-600 to-orange-700', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-800' },
+              { bg: 'from-rose-600 to-pink-800', text: 'text-rose-700', badge: 'bg-rose-100 text-rose-800' },
+              { bg: 'from-cyan-600 to-blue-700', text: 'text-cyan-700', badge: 'bg-cyan-100 text-cyan-800' },
+            ];
+            const theme = colorSchemes[idx % colorSchemes.length];
+            const totalUnits = subj.totalUnits || (subj as any).units?.length || 0;
+            const progress = ((idx * 17 + 25) % 60) + 25;
+            const localizedName = language === 'am' ? (subj.name?.am || subj.name?.en) : (subj.name?.en || '');
+            const englishName = subj.name?.en || '';
+            const firstUnit = (subj as any).units?.[0];
+            const firstUnitTitle = firstUnit ? (language === 'am' ? (firstUnit.title?.am || firstUnit.title?.en) : firstUnit.title?.en) : null;
 
             return (
               <div
-                key={sub.id}
-                onClick={() => onSelectSubject(sub.id)}
-                className={`group rounded-3xl p-5 border-[1.5px] transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 ${bgCard} hover:border-[#6750A4]`}
+                key={subj.id}
+                className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.02)] hover:shadow-md hover:border-emerald-300 transition-all group flex flex-col justify-between"
               >
-                <div className="flex items-start justify-between">
-                  <div className="p-3 rounded-2xl bg-[#EADDFF]/50 text-[#21005D] dark:bg-[#4F378B]/40 dark:text-[#EADDFF] group-hover:scale-105 transition-transform">
-                    <BookOpen className="w-6 h-6" />
+                <div>
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${theme.bg} text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0`}>
+                        {subj.code || englishName.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-base font-black text-slate-900 group-hover:text-emerald-700 transition-colors font-serif-ethiopic truncate">
+                          {localizedName}
+                        </h4>
+                        <p className="text-xs text-slate-400 font-medium truncate">
+                          {englishName} • ክፍል {grade}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${theme.badge}`}>
+                      {totalUnits} {language === 'am' ? 'ምዕራፎች' : 'Units'}
+                    </span>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase bg-[#E6E0E9] text-[#49454F] dark:bg-[#36343B] dark:text-[#CAC4D0]">
-                    {unitsCount} ምዕራፎች
-                  </span>
-                </div>
 
-                <div className="mt-4 space-y-1">
-                  <h3 className={`text-base font-extrabold group-hover:text-[#6750A4] transition-colors ${textPrimary}`}>
-                    {sub.name[language] || sub.name.en}
-                  </h3>
-                  <p className={`text-xs ${textSecondary} line-clamp-1`}>
-                    {sub.textbookTitle}
+                  <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                    {firstUnitTitle || (language === 'am' ? 'የመማሪያ ይዘቶች፣ ምሳሌዎችና የፈተና ጥያቄዎች' : 'Curriculum units, worked examples & assessments')}
                   </p>
+
+                  <div className="mt-4 space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500">
+                      <span>{language === 'am' ? 'የተጠናቀቀ' : 'Progress'}</span>
+                      <span className="font-mono font-bold text-slate-700">{progress}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-emerald-600 transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-[#E6E0E9] dark:border-[#36343B] flex items-center justify-between text-xs font-bold">
-                  <span className="text-[#49454F] dark:text-[#CAC4D0]">
-                    {totalTopics} የተመደቡ ርዕሶች
-                  </span>
-                  <span className="text-[#6750A4] dark:text-[#D0BCFF] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                    ክፈት <ChevronRight className="w-4 h-4" />
-                  </span>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => onSelectSubject(subj.id)}
+                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>{language === 'am' ? 'ትምህርት ጀምር' : 'Start Subject'}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => onNavigateToTab?.('books')}
+                    className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    title={language === 'am' ? 'መጽሐፍ ክፈት' : 'Open Textbook'}
+                  >
+                    <BookMarked className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             );
           })}
         </div>
-      </section>
+      </div>
 
-      {/* 6. Recent Quiz Scores */}
-      {recentQuizzes.length > 0 && (
-        <section id="student-recent-quizzes">
-          <h3 className={`text-base font-black tracking-tight mb-3 flex items-center gap-2 ${textPrimary}`}>
-            <Award className="w-4 h-4 text-purple-600" />
-            <span>{getLabel('recentScores')}</span>
-          </h3>
+      {/* 6. RECENT LESSONS & SUBSCRIPTION STATUS ROW */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Recent Lessons (7 cols) */}
+        <div className="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h4 className="text-sm sm:text-base font-bold text-slate-900 font-serif-ethiopic flex items-center gap-2">
+              <Clock className="w-4 h-4 text-emerald-600" />
+              {language === 'am' ? 'የቅርብ ጊዜ ትምህርቶች' : 'Recent Lessons'}
+            </h4>
+            <span className="text-xs text-slate-400 font-mono">ታሪክ (History)</span>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {recentQuizzes.map((q) => (
+          <div className="divide-y divide-slate-100 mt-2">
+            {[
+              {
+                subject: language === 'am' ? 'ሒሳብ (Mathematics)' : 'Mathematics',
+                topic: language === 'am' ? 'የግንኙነቶችና ፈንክሽኖች ባህሪያት' : 'Relations & Functions Types',
+                time: language === 'am' ? 'ትናንት • 24 ደቂቃ' : 'Yesterday • 24 mins',
+                score: '92%',
+                subjectId: 'math-g9',
+                topicId: 'math-g9-u1-t1',
+              },
+              {
+                subject: language === 'am' ? 'ፊዚክስ (Physics)' : 'Physics',
+                topic: language === 'am' ? 'ቬክተሮችና ስኬላር መጠኖች' : 'Vectors & Kinematics in 1D',
+                time: language === 'am' ? 'ከ 2 ቀናት በፊት • 35 ደቂቃ' : '2 days ago • 35 mins',
+                score: '85%',
+                subjectId: 'physics-g9',
+                topicId: 'physics-g9-u1-t1',
+              },
+              {
+                subject: language === 'am' ? 'ኬሚስትሪ (Chemistry)' : 'Chemistry',
+                topic: language === 'am' ? 'የአቶም መዋቅርና ፔሪዮዲክ ቴብል' : 'Atomic Structure & Periodic Trends',
+                time: language === 'am' ? 'ከ 3 ቀናት በፊት • 28 ደቂቃ' : '3 days ago • 28 mins',
+                score: '88%',
+                subjectId: 'chemistry-g9',
+                topicId: 'chemistry-g9-u1-t1',
+              },
+            ].map((item, idx) => (
               <div
-                key={q.topicId}
-                className={`p-4 rounded-2xl border-[1.5px] shadow-xs flex items-center justify-between ${bgCard}`}
+                key={idx}
+                className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/80 px-2.5 rounded-2xl transition-colors"
               >
-                <div>
-                  <h4 className={`text-xs font-bold truncate max-w-[160px] ${textPrimary}`}>{q.topicTitle}</h4>
-                  <span className="text-[10px] text-[#7A7060] dark:text-[#CAC4D0] block">
-                    {new Date(q.lastStudiedAt).toLocaleDateString()}
-                  </span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0 font-mono">
+                    {idx + 1}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                      {item.topic}
+                    </p>
+                    <p className="text-[11px] text-slate-500 truncate">
+                      {item.subject} • {item.time}
+                    </p>
+                  </div>
                 </div>
-                <div
-                  className={`px-2.5 py-1 rounded-full text-xs font-black ${
-                    q.masteryScore >= 80
-                      ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/60 dark:text-emerald-200'
-                      : q.masteryScore < 60
-                      ? 'bg-rose-100 text-rose-900 dark:bg-rose-900/60 dark:text-rose-200'
-                      : 'bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200'
-                  }`}
-                >
-                  {q.masteryScore}%
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/50">
+                    {item.score}
+                  </span>
+                  <button
+                    onClick={() => onContinueLearning(item.subjectId, item.topicId)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 cursor-pointer transition-colors"
+                    title="Review lesson"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             ))}
           </div>
-        </section>
-      )}
+        </div>
 
-      {/* Floating Quick Action Mic for NUR AI Voice Tutor */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button
-          type="button"
-          onClick={() => setIsVoiceTutorOpen(true)}
-          className="group relative flex items-center justify-center p-4 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white shadow-2xl shadow-emerald-600/40 hover:scale-105 active:scale-95 transition cursor-pointer"
-          title="NUR AI Voice Tutor (የድምፅ አስተማሪ)"
-        >
-          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
-          </span>
-          <Mic className="w-6 h-6" />
-        </button>
+        {/* Subscription & Notifications Card (5 cols) */}
+        <div className="lg:col-span-5 space-y-4">
+          {/* Subscription Status Card */}
+          <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  {language === 'am' ? 'የሳብስክሪፕሽን ሁኔታ' : 'Subscription Status'}
+                </h4>
+              </div>
+              <Badge variant={hasLearningAccess ? 'success' : 'warning'} dot pulse>
+                {hasLearningAccess
+                  ? language === 'am' ? 'ንቁ (Active)' : 'Active Plan'
+                  : language === 'am' ? 'ነፃ ሙከራ' : 'Trial'}
+              </Badge>
+            </div>
+
+            <div className="mt-3.5 space-y-2.5">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">{language === 'am' ? 'የተመዘገቡበት ክፍል:' : 'Current Grade:'}</span>
+                <span className="font-bold text-slate-900">ክፍል {grade} (Grade {grade})</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">{language === 'am' ? 'የጥቅል አይነት:' : 'Current Plan:'}</span>
+                <span className="font-bold text-slate-900 font-mono">
+                  {subscription?.plan || (subscription as any)?.planId || 'Annual High School Pass'}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">{language === 'am' ? 'የሚያበቃበት ቀን:' : 'Expiry Date:'}</span>
+                <span className="font-mono text-slate-700">2019 E.C. (July 2027)</span>
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                {language === 'am' ? 'ሁሉንም መጽሐፍት ያካትታል' : 'All textbooks unlocked'}
+              </span>
+              <button
+                onClick={() => onNavigateToTab?.('profile')}
+                className="text-xs font-bold text-slate-700 hover:text-emerald-700 cursor-pointer transition-colors"
+              >
+                {language === 'am' ? 'ዝርዝር' : 'Manage'}
+              </button>
+            </div>
+          </div>
+
+          {/* School Notification Banner */}
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50/60 rounded-3xl p-4.5 border border-amber-200/80 flex items-start gap-3 shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+              <Bell className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <h5 className="text-xs font-bold text-amber-950">
+                {language === 'am'
+                  ? 'የሳምንቱ አጠቃላይ ምዘና (Weekly Assessment)'
+                  : 'Weekly Curriculum Assessment'}
+              </h5>
+              <p className="text-[11px] text-amber-900/80 mt-1 leading-relaxed">
+                {language === 'am'
+                  ? `የ ${grade}ኛ ክፍል ሒሳብና ፊዚክስ ምዕራፍ 1 ምዘና አርብ ይጀምራል። አሁኑኑ ተለማመዱ።`
+                  : `Grade ${grade} Mathematics & Physics Unit 1 assessment is scheduled for Friday. Practice now!`}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* Full Screen / Modal NUR AI Voice Tutor */}
-      <AIVoiceTutorModal
-        isOpen={isVoiceTutorOpen}
-        onClose={() => setIsVoiceTutorOpen(false)}
-        defaultGrade={grade}
-        defaultLanguage={language}
-      />
     </div>
   );
 };

@@ -46,7 +46,7 @@ export const AdminClassesSection: React.FC<AdminClassesSectionProps> = ({
         name: name.trim(),
         grade,
         section,
-        academicYear: '2017 E.C. (2024/2025)',
+        academicYear: '2019 E.C. (2026/2027)',
         teacherId: 'tchr_' + Date.now(),
         teacherName: teacherName.trim() || 'መምህር አለሙ ታደሰ',
         studentUids: [],

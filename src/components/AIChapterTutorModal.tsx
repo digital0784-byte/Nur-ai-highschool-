@@ -60,6 +60,11 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
+  // Multi-Source Research Engine State (Part 20)
+  const [researchResult, setResearchResult] = useState<DeepAnalysisResult | null>(null);
+  const [isResearchLoading, setIsResearchLoading] = useState<boolean>(false);
+  const [researchError, setResearchError] = useState<string | null>(null);
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isChatLoading, setIsChatLoading] = useState<boolean>(false);
@@ -114,6 +119,8 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
   useEffect(() => {
     if (isOpen && !analysis && activeMode === 'analysis') {
       fetchAnalysis();
+    } else if (isOpen && !researchResult && activeMode === 'research') {
+      fetchResearch();
     }
   }, [isOpen, activeMode, chapterTitle]);
 
@@ -121,6 +128,29 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const fetchResearch = async () => {
+    setIsResearchLoading(true);
+    setResearchError(null);
+    try {
+      const validGrade = (grade >= 9 && grade <= 12 ? grade : 9) as 9 | 10 | 11 | 12;
+      const result = await researchAnalysisService.executeMultiSourceAnalysis({
+        question: chapterTitle,
+        subject: subject.name,
+        grade: validGrade,
+        unitNumber: chapterNumber,
+        topicTitle: chapterTitle,
+        mode: 'deep_analysis',
+        language,
+      });
+      setResearchResult(result);
+    } catch (err: any) {
+      console.warn('Research multi-source analysis error:', err);
+      setResearchError(err?.message || 'ጥልቅ የምርምር ትንታኔ ማምጣት አልተቻለም።');
+    } finally {
+      setIsResearchLoading(false);
+    }
+  };
 
   const fetchAnalysis = async () => {
     setIsAnalyzing(true);
@@ -302,6 +332,20 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
               </span>
             )}
           </button>
+          <button
+            onClick={() => {
+              setActiveMode('research');
+              if (!researchResult) fetchResearch();
+            }}
+            className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold border-t-[1.5px] border-l-[1.5px] border-r-[1.5px] rounded-t-lg transition-all ${
+              activeMode === 'research'
+                ? 'bg-[#FAF6EC] text-[#1E1B18] border-[#38332D] shadow-xs -mb-[1px]'
+                : 'bg-transparent text-[#665C4D] border-transparent hover:bg-[#DCD2BB]'
+            }`}
+          >
+            <Library className="w-4 h-4 text-emerald-700" />
+            <span>የምርምርና ማስረጃ ትንታኔ (Multi-Source Research)</span>
+          </button>
         </div>
 
         {/* Modal Body */}
@@ -355,6 +399,194 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
                 </div>
               )}
             </div>
+          ) : activeMode === 'research' ? (
+            <div className="space-y-4">
+              {/* Header Bar */}
+              <div className="flex items-center justify-between bg-[#F4EDE0] p-3 rounded-lg border border-[#38332D]">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#5A5143]">
+                  <Library className="w-4 h-4 text-emerald-700" />
+                  <span>ባለ 6-ደረጃ የኢትዮጵያ ስርዓተ-ትምህርትና የአካዳሚክ ማስረጃ ትንታኔ (Multi-Source Synthesis)</span>
+                </div>
+                <button
+                  onClick={fetchResearch}
+                  disabled={isResearchLoading}
+                  className="flex items-center gap-1 text-xs font-bold text-[#1E1B18] hover:text-emerald-800 bg-[#FAF6EC] px-2.5 py-1 rounded border border-[#38332D] disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isResearchLoading ? 'animate-spin' : ''}`} />
+                  <span>እንደገና መርምር</span>
+                </button>
+              </div>
+
+              {isResearchLoading ? (
+                <div className="py-16 flex flex-col items-center justify-center gap-3 text-center">
+                  <div className="w-12 h-12 rounded-full border-4 border-[#38332D] border-t-emerald-600 animate-spin flex items-center justify-center">
+                    <Library className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <p className="text-sm font-bold text-[#1E1B18] font-serif-ethiopic">
+                    የኢትዮጵያ ስርዓተ-ትምህርት መጻሕፍትን እና ዓለም አቀፍ አካዳሚክ ምንጮችን በማመሳከር ላይ...
+                  </p>
+                  <p className="text-xs text-[#665C4D]">
+                    የምንጮች ደረጃ 1 እስከ 6 ማረጋገጫና የተጨባጭ ምሳሌዎች ትንተና
+                  </p>
+                </div>
+              ) : researchError ? (
+                <div className="p-4 rounded-lg bg-rose-50 border border-rose-300 text-rose-800 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600" />
+                  <div>
+                    <h4 className="text-sm font-bold">የምርምር ትንታኔ ስህተት አጋጥሟል</h4>
+                    <p className="text-xs mt-1">{researchError}</p>
+                    <button
+                      onClick={fetchResearch}
+                      className="mt-2 text-xs font-bold px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700"
+                    >
+                      እንደገና ሞክር
+                    </button>
+                  </div>
+                </div>
+              ) : researchResult ? (
+                <div className="space-y-4 font-serif-ethiopic">
+                  {/* Definition & Core Breakdown */}
+                  <div className="bg-[#FAF6EC] border border-[#38332D] rounded-xl p-4 sm:p-5 space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-800 uppercase tracking-wider">
+                      <Lightbulb className="w-4 h-4" />
+                      <span>1. የፅንሰ-ሀሳቡ ፍሬ ነገርና ትርጓሜ (Core Definition)</span>
+                    </div>
+                    <p className="text-sm sm:text-base text-[#1E1B18] leading-relaxed">
+                      {researchResult.definition}
+                    </p>
+                  </div>
+
+                  {/* Level 1: Ethiopian Curriculum Primary Explanation */}
+                  <div className="bg-emerald-50/70 border-2 border-emerald-600/60 rounded-xl p-4 sm:p-5 space-y-2">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <span className="flex items-center gap-2 text-xs font-bold text-emerald-950">
+                        <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                        <span>ደረጃ 1፡ በኢትዮጵያ ስርዓተ-ትምህርት መሠረት (Ethiopian MoE Curriculum)</span>
+                      </span>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-200 text-emerald-900 border border-emerald-400">
+                        ክፍል {grade} ይፋዊ መማሪያ መጽሐፍ
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-emerald-950 leading-relaxed">
+                      {researchResult.curriculumExplanation}
+                    </p>
+                  </div>
+
+                  {/* Level 2-4: Advanced Academic Explanation */}
+                  <div className="bg-blue-50/60 border border-blue-300 rounded-xl p-4 sm:p-5 space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-blue-950">
+                      <GraduationCap className="w-4 h-4 text-blue-700" />
+                      <span>ደረጃ 2–4፡ ጥልቅ አካዳሚክና ዩኒቨርሲቲ-ደረጃ ማብራሪያ (Advanced Academic Insight)</span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-blue-950 leading-relaxed">
+                      {researchResult.deeperExplanation}
+                    </p>
+                  </div>
+
+                  {/* Ethiopian Real-World Application */}
+                  {researchResult.realWorldApplication && (
+                    <div className="bg-amber-50/60 border border-amber-300 rounded-xl p-4 sm:p-5 space-y-2">
+                      <div className="flex items-center gap-2 text-xs font-bold text-amber-950">
+                        <Globe className="w-4 h-4 text-amber-700" />
+                        <span>በኢትዮጵያ ነባራዊ ሁኔታ ተግባራዊ መገለጫ (Ethiopian Context & Real-World Application)</span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-amber-950 leading-relaxed">
+                        {researchResult.realWorldApplication}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Concrete Examples */}
+                  {researchResult.examples && researchResult.examples.length > 0 && (
+                    <div className="bg-[#FAF6EC] border border-[#38332D] rounded-xl p-4 sm:p-5 space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-[#1E1B18]">
+                        <BookOpen className="w-4 h-4 text-emerald-700" />
+                        <span>ተግባራዊ ምሳሌዎችና የደረጃ በደረጃ ስሌት (Worked Examples)</span>
+                      </div>
+                      <div className="space-y-2.5">
+                        {researchResult.examples.map((ex, idx) => (
+                          <div key={`modal-ex-${idx}-${ex.title || ''}`} className="p-3 bg-[#F4EDE0] rounded-lg border border-[#D5C9AC] space-y-1 text-xs">
+                            <div className="font-bold text-[#1E1B18]">{ex.title}</div>
+                            <div className="text-[#5A5143] italic">{ex.scenarioOrProblem}</div>
+                            <div className="text-[#1E1B18] whitespace-pre-wrap pt-1 border-t border-[#D5C9AC]/60">
+                              {ex.detailedWalkthrough}
+                            </div>
+                            {ex.sourceCitation && (
+                              <div className="text-[10px] text-emerald-800 font-mono pt-1">
+                                📎 {ex.sourceCitation}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Verified Citations List with Priority Badges */}
+                  {researchResult.citations && researchResult.citations.length > 0 && (
+                    <div className="bg-[#FAF6EC] border border-[#38332D] rounded-xl p-4 sm:p-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-2 text-xs font-bold text-[#1E1B18]">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                          <span>የተረጋገጡ የጥናት ምንጮችና ማጣቀሻዎች ({researchResult.citations.length} Citations)</span>
+                        </span>
+                        <span className="text-[10px] text-[#786D5B] font-mono">
+                          Source Hierarchy Tier 1–6
+                        </span>
+                      </div>
+                      <div className="space-y-2">
+                        {researchResult.citations.map((cit, idx) => (
+                          <div key={cit.citationId ? `modal-cit-${cit.citationId}` : `modal-cit-${idx}-${cit.sourceTitle || ''}`} className="p-3 bg-[#F4EDE0] rounded-lg border border-[#D5C9AC] space-y-1.5 text-xs">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <span className="font-bold text-[#1E1B18]">{cit.sourceTitle}</span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                                SOURCE_PRIORITY_LABELS[cit.priorityLevel]?.badgeColor || 'bg-stone-100 text-stone-800'
+                              }`}>
+                                {SOURCE_PRIORITY_LABELS[cit.priorityLevel]?.am || `ደረጃ ${cit.priorityLevel}`}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-[#5A5143] flex flex-wrap gap-3">
+                              <span>ደራሲ/ተቋም፡ {cit.author}</span>
+                              {cit.year && <span>ዓመት፡ {cit.year}</span>}
+                              {cit.pageNumber && <span>ገጽ፡ {cit.pageNumber}</span>}
+                            </div>
+                            <p className="text-[11px] text-[#1E1B18] bg-[#FAF6EC] p-2 rounded border border-[#D5C9AC]/50 italic">
+                              "{cit.exactSnippetOrSummary}"
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recommended Reference Books */}
+                  {researchResult.recommendedBooks && researchResult.recommendedBooks.length > 0 && (
+                    <div className="bg-[#FAF6EC] border border-[#38332D] rounded-xl p-4 sm:p-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-2 text-xs font-bold text-[#1E1B18]">
+                          <Library className="w-4 h-4 text-emerald-700" />
+                          <span>የተመከሩ የአጋዥና የማመሳከሪያ መጻሕፍት (Recommended Reference Books)</span>
+                        </span>
+                        <span className="text-[10px] text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                          {researchResult.recommendedBooks.length} Books
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {researchResult.recommendedBooks.map((book, idx) => (
+                          <div key={book.sourceId ? `modal-book-${book.sourceId}` : `modal-book-${idx}-${book.title || ''}`} className="p-3 bg-[#F4EDE0] rounded-lg border border-[#D5C9AC] space-y-1 text-xs">
+                            <div className="font-bold text-[#1E1B18] line-clamp-1">{book.title}</div>
+                            <div className="text-[11px] text-[#5A5143]">ደራሲ/አሳታሚ፡ {book.author} ({book.year})</div>
+                            <div className="text-[10px] text-emerald-800 font-medium">
+                              {SOURCE_TYPE_LABELS[book.sourceType]?.am || book.sourceType} • ታማኝነት፡ {book.academicCredibility}%
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
           ) : (
             <div className="flex flex-col h-[52vh] sm:h-[55vh]">
               {/* Chat messages list */}
@@ -377,7 +609,7 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
                         'ይህንን ፅንሰ-ሀሳብ በቀላል ምሳሌ አስረዳኝ?',
                       ].map((prompt, idx) => (
                         <button
-                          key={idx}
+                          key={`modal-prompt-${idx}-${prompt.slice(0, 10)}`}
                           onClick={() => {
                             setInputMessage(prompt);
                           }}
@@ -392,7 +624,7 @@ export const AIChapterTutorModal: React.FC<AIChapterTutorModalProps> = ({
 
                 {messages.map((msg, index) => (
                   <div
-                    key={index}
+                    key={`modal-chat-${msg.role}-${index}-${msg.timestamp ? msg.timestamp.getTime() : ''}`}
                     className={`flex items-start gap-2.5 ${
                       msg.role === 'user' ? 'justify-end' : 'justify-start'
                     }`}
