@@ -218,7 +218,10 @@ export const Header: React.FC<HeaderProps> = ({
                 {/* Logout button */}
                 <button
                   id="header-logout-btn"
-                  onClick={logout}
+                  onClick={() => {
+                    sessionStorage.removeItem('nur_onboarding_completed');
+                    logout();
+                  }}
                   className="p-1.5 text-[#665C4D] hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                   title={language === 'en' ? 'Sign Out' : 'ውጣ (Sign Out)'}
                 >
@@ -250,6 +253,20 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{language === 'en' ? '👋 Welcome Screen' : '👋 መነሻ ስክሪን'}</span>
             </button>
           )}
+
+          {/* Button: Public Website Gateway */}
+          <button
+            id="header-public-web-btn"
+            onClick={() => {
+              sessionStorage.removeItem('nur_onboarding_completed');
+              window.location.hash = '#home';
+              window.location.reload();
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FAF6EC] hover:bg-[#EAE0C7] text-[#1E1B18] text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs border border-[#38332D]/40 active:scale-98 font-serif-ethiopic"
+            title={language === 'en' ? 'Go to Public Marketing Website' : 'ወደ ይፋዊ መነሻ ድረ-ገጽ ተመለስ'}
+          >
+            <span>🌐 {language === 'en' ? 'Public Website' : 'ይፋዊ ድረ-ገጽ'}</span>
+          </button>
 
           {/* Super Admin Inspection & Switcher Button */}
           {isOwnerSuperAdmin && onToggleAdminDashboard && (

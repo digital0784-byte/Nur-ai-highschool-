@@ -39,11 +39,21 @@ import { Grade, LanguageCode } from '../../types';
 import { PaymentMethodName } from '../../types/subscription';
 import { SUPER_ADMIN_EMAIL, DEVELOPER_INFO } from '../../services/subscriptionService';
 
-interface StudentOnboardingFlowProps {
+export interface StudentOnboardingFlowProps {
   onComplete: () => void;
+  initialStep?: 1 | 2 | 3 | 4 | 5;
+  initialAuthMode?: 'login' | 'register';
+  initialGrade?: Grade;
+  onBackToHome?: () => void;
 }
 
-export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ onComplete }) => {
+export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
+  onComplete,
+  initialStep,
+  initialAuthMode,
+  initialGrade,
+  onBackToHome,
+}) => {
   const { user, userProfile, login, register, resetPassword, updateProfileData } = useAuth();
   const { language, setLanguage, languages } = useLanguage();
   const {
@@ -68,6 +78,7 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ on
     if (user && latestPayment?.status === 'PENDING') return 5;
     if (user && latestPayment?.status === 'REJECTED') return 5;
     if (user) return 4;
+    if (initialStep) return initialStep;
     return 1;
   });
 
@@ -76,6 +87,9 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ on
 
   // Screen 2: Grade
   const [chosenGrade, setChosenGrade] = useState<Grade>(() => {
+    if (initialGrade && [9, 10, 11, 12].includes(initialGrade)) {
+      return initialGrade;
+    }
     const saved = localStorage.getItem('nur_selected_grade');
     if (saved && [9, 10, 11, 12].includes(Number(saved))) {
       return Number(saved) as Grade;
@@ -84,7 +98,7 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ on
   });
 
   // Screen 3: Auth Mode ('login' | 'register')
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'register'>(initialAuthMode || 'login');
   // Login form
   const [loginIdentifier, setLoginIdentifier] = useState<string>('');
   const [loginPassword, setLoginPassword] = useState<string>('');
@@ -231,6 +245,11 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ on
       return;
     }
 
+    if (!regEmail.trim() || !/\S+@\S+\.\S+/.test(regEmail.trim())) {
+      setRegError(chosenLang === 'am' ? 'እባክዎ ትክክለኛ የኢሜይል አድራሻ ያስገቡ።' : 'Please enter a valid email address.');
+      return;
+    }
+
     if (regPassword.length < 6) {
       setRegError(
         chosenLang === 'am'
@@ -249,11 +268,14 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ on
       return;
     }
 
+    if (![9, 10, 11, 12].includes(chosenGrade)) {
+      setRegError(chosenLang === 'am' ? 'እባክዎ የክፍል ደረጃ (9, 10, 11 ወይም 12) ይምረጡ።' : 'Please select a grade (9, 10, 11, or 12).');
+      return;
+    }
+
     setIsRegistering(true);
     try {
-      const emailToUse = regEmail.trim()
-        ? regEmail.trim()
-        : `${regPhone.trim().replace(/[^0-9]/g, '')}@student.nur.et`;
+      const emailToUse = regEmail.trim().toLowerCase();
 
       // Role is strictly 'student' — no public admin registration
       await register(
@@ -440,6 +462,19 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ on
               5. ማረጋገጫ
             </span>
           </div>
+
+          {/* Optional Back to Public Home Button */}
+          {onBackToHome && (
+            <button
+              type="button"
+              onClick={onBackToHome}
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white text-xs font-semibold border border-stone-700 transition-colors cursor-pointer"
+              title="ወደ ይፋዊ መነሻ ገጽ ተመለስ (Back to Public Home)"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              <span>መነሻ ገጽ (Home)</span>
+            </button>
+          )}
         </div>
 
         {/* Content Body based on Step */}
@@ -878,7 +913,7 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ on
 
                   <div>
                     <label className="block text-xs font-semibold text-stone-300 mb-1">
-                      ኢሜይል (Email) <span className="text-stone-500 font-normal">- አማራጭ (Optional)</span>
+                      ኢሜይል (Email Address) *
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-500">
@@ -889,9 +924,65 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ on
                         value={regEmail}
                         onChange={(e) => setRegEmail(e.target.value)}
                         placeholder="student@example.com"
+                        required
                         className="w-full pl-10 pr-4 py-2 bg-stone-900 border border-stone-700 rounded-xl text-sm text-white placeholder-stone-500 focus:outline-none focus:border-amber-500 transition-colors"
                       />
                     </div>
+                  </div>
+
+                  {/* Grade Selector Selection */}
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-300 mb-1.5">
+                      የክፍል ደረጃ ይምረጡ (Select Grade) *
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {([9, 10, 11, 12] as Grade[]).map((g) => {
+                        const prices: Record<Grade, number> = { 9: 160, 10: 180, 11: 200, 12: 200 };
+                        const isSel = chosenGrade === g;
+                        return (
+                          <button
+                            key={g}
+                            type="button"
+                            onClick={() => {
+                              setChosenGrade(g);
+                              localStorage.setItem('nur_selected_grade', String(g));
+                            }}
+                            className={`p-2 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                              isSel
+                                ? 'bg-amber-500 text-stone-950 border-amber-400 font-bold shadow-md'
+                                : 'bg-stone-900 text-stone-300 border-stone-700 hover:border-stone-500'
+                            }`}
+                          >
+                            <span className="text-xs">{g}ኛ ክፍል</span>
+                            <span className={`text-[10px] font-mono ${isSel ? 'text-stone-900 font-bold' : 'text-amber-400'}`}>
+                              {prices[g]} ETB
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Language Selector */}
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-300 mb-1">
+                      ቋንቋ ይምረጡ (Language) *
+                    </label>
+                    <select
+                      value={chosenLang}
+                      onChange={(e) => {
+                        const l = e.target.value as LanguageCode;
+                        setChosenLang(l);
+                        setLanguage(l);
+                      }}
+                      className="w-full px-3 py-2 bg-stone-900 border border-stone-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 transition-colors cursor-pointer"
+                    >
+                      {languages.map((l) => (
+                        <option key={l.code} value={l.code}>
+                          {l.flagOrLabel} {l.nativeName} ({l.name})
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -921,18 +1012,6 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({ on
                         required
                         className="w-full px-3.5 py-2 bg-stone-900 border border-stone-700 rounded-xl text-sm text-white placeholder-stone-500 focus:outline-none focus:border-amber-500 transition-colors"
                       />
-                    </div>
-                  </div>
-
-                  {/* Selected Language & Grade Badges */}
-                  <div className="p-2.5 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className="text-stone-400">የተመረጠ ክፍል፡</span>
-                      <span className="font-bold text-amber-400">ክፍል {chosenGrade}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-stone-400">ቋንቋ፡</span>
-                      <span className="font-bold text-emerald-400 uppercase">{chosenLang}</span>
                     </div>
                   </div>
 

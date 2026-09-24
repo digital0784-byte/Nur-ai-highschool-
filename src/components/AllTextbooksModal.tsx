@@ -3,6 +3,7 @@ import { X, BookOpen, Search, CheckCircle, Layers, GraduationCap, ShieldCheck, L
 import { Grade, Subject } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { getAllTextbooksForSubject } from '../data/textbooksData';
+import { OfficialPdfLink } from './OfficialPdfLink';
 
 interface AllTextbooksModalProps {
   isOpen: boolean;
@@ -168,7 +169,7 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
                     </p>
                   </div>
 
-                  {/* Actions: Strictly Protected In-App Reader */}
+                  {/* Actions: Strictly Protected In-App Reader & Official PDF */}
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#E3D8C7]">
                     <span
                       className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold font-serif-ethiopic bg-[#F2ECE0] text-[#2E6B4A] border border-[#2E6B4A]/30 select-none"
@@ -178,17 +179,20 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
                       <span>ጥበቃ የተደረገበት (DRM)</span>
                     </span>
 
-                    <button
-                      onClick={() => {
-                        onSelectSubjectAndGrade(item.subject.id, item.grade);
-                        onClose();
-                      }}
-                      className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-bold font-serif-ethiopic bg-[#2E6B4A] hover:bg-[#235338] text-white border border-[#1D4A32] shadow-2xs transition-all active:scale-95 cursor-pointer"
-                      title="መጽሐፉን በመተግበሪያው ውስጥ አንብብ (Open in In-App Reader)"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-                      <span>🔒 በመተግበሪያው አንብብ</span>
-                    </button>
+                    <div className="flex items-center gap-1.5 flex-1 min-w-[200px] justify-end">
+                      <OfficialPdfLink subjectId={item.subject.id} grade={item.grade} fallbackUrl={item.officialPdfUrl} compact />
+                      <button
+                        onClick={() => {
+                          onSelectSubjectAndGrade(item.subject.id, item.grade);
+                          onClose();
+                        }}
+                        className="flex-1 min-w-[120px] flex items-center justify-center gap-1.5 py-1.5 px-3 text-xs font-bold font-serif-ethiopic bg-[#2E6B4A] hover:bg-[#235338] text-white border border-[#1D4A32] shadow-2xs transition-all active:scale-95 cursor-pointer"
+                        title="መጽሐፉን በመተግበሪያው ውስጥ አንብብ (Open in In-App Reader)"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+                        <span>🔒 በመተግበሪያው አንብብ</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

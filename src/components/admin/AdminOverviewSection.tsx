@@ -22,6 +22,8 @@ import {
   RefreshCw,
   Phone,
   Mail,
+  History,
+  Bell,
 } from 'lucide-react';
 import { AdminDashboardStats, AdminActiveSubTab } from '../../types/adminDashboard';
 import { subscriptionService } from '../../services/subscriptionService';
@@ -189,7 +191,14 @@ export const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => onNavigateTab('ai_automation')}
+              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer border border-purple-400/40"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+              <span>AI Automation Center</span>
+            </button>
             <button
               onClick={() => onNavigateTab('payments_billing')}
               className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-stone-900 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer border border-amber-300/40"
@@ -469,6 +478,77 @@ export const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
               ))
             )}
           </div>
+        </div>
+      </div>
+
+      {/* SECTION 4: MISSION CONTROL QUICK SHORTCUTS */}
+      <div className="bg-stone-900 text-white p-5 rounded-2xl border border-stone-800 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <h4 className="text-sm font-bold font-serif-ethiopic">
+              የሱፐር አድሚን ፈጣን መቆጣጠሪያዎች (Mission Control Shortcuts)
+            </h4>
+          </div>
+          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+            SUPER_ADMIN ONLY
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
+          <button
+            onClick={() => onNavigateTab('system_health')}
+            className="p-3 bg-stone-800/90 hover:bg-stone-800 border border-stone-700/80 rounded-xl text-left transition cursor-pointer space-y-1.5"
+          >
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="font-bold text-xs text-white">System Health</div>
+            <div className="text-[10px] text-stone-400">10 Subsystems</div>
+          </button>
+
+          <button
+            onClick={() => onNavigateTab('audit_trail')}
+            className="p-3 bg-stone-800/90 hover:bg-stone-800 border border-stone-700/80 rounded-xl text-left transition cursor-pointer space-y-1.5"
+          >
+            <History className="w-4 h-4 text-amber-400" />
+            <div className="font-bold text-xs text-white">Audit Trail</div>
+            <div className="text-[10px] text-stone-400">Immutable Log</div>
+          </button>
+
+          <button
+            onClick={() => onNavigateTab('ai_rag')}
+            className="p-3 bg-stone-800/90 hover:bg-stone-800 border border-stone-700/80 rounded-xl text-left transition cursor-pointer space-y-1.5"
+          >
+            <Brain className="w-4 h-4 text-purple-400" />
+            <div className="font-bold text-xs text-white">AI & RAG</div>
+            <div className="text-[10px] text-stone-400">Gemini Telemetry</div>
+          </button>
+
+          <button
+            onClick={() => onNavigateTab('security_rbac')}
+            className="p-3 bg-stone-800/90 hover:bg-stone-800 border border-stone-700/80 rounded-xl text-left transition cursor-pointer space-y-1.5"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <div className="font-bold text-xs text-white">Security Fortress</div>
+            <div className="text-[10px] text-stone-400">Zero-Trust Rules</div>
+          </button>
+
+          <button
+            onClick={() => onNavigateTab('notifications')}
+            className="p-3 bg-stone-800/90 hover:bg-stone-800 border border-stone-700/80 rounded-xl text-left transition cursor-pointer space-y-1.5"
+          >
+            <Bell className="w-4 h-4 text-rose-400" />
+            <div className="font-bold text-xs text-white">Notifications</div>
+            <div className="text-[10px] text-stone-400">Broadcast Alert</div>
+          </button>
+
+          <button
+            onClick={() => onNavigateTab('settings')}
+            className="p-3 bg-stone-800/90 hover:bg-stone-800 border border-stone-700/80 rounded-xl text-left transition cursor-pointer space-y-1.5"
+          >
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <div className="font-bold text-xs text-white">Emergency Controls</div>
+            <div className="text-[10px] text-stone-400">Kill-Switches</div>
+          </button>
         </div>
       </div>
     </div>

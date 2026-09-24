@@ -27,6 +27,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { getTextbook, getAllTextbooksForSubject } from '../data/textbooksData';
 import { TableOfContentsModal } from './TableOfContentsModal';
 import { SecureBookReaderModal } from './SecureBookReaderModal';
+import { OfficialPdfLink } from './OfficialPdfLink';
 import { ShieldCheck, Lock, Shield } from 'lucide-react';
 
 interface TextbookViewProps {
@@ -399,6 +400,7 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
             <p className="text-[11px] text-[#5C5346] leading-relaxed">
               ይህ መጽሐፍ በአዲሱ የኢትዮጵያ የሁለተኛ ደረጃ ትምህርት ስርዓተ-ትምህርት መስፈርት መሰረት የተዘጋጀ ይዘት ነው።
             </p>
+            <OfficialPdfLink subjectId={subject.id} grade={selectedGrade} />
           </div>
         </div>
 

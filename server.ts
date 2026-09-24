@@ -9,6 +9,7 @@ import { ethiopianCurriculumEngine } from './src/engine/curriculumRegistry';
 import { ethiopianAITutorEngine } from './src/engine/aiTutorEngine';
 import { searchAndRecommendationEngine } from './src/engine/searchRecommendationEngine';
 import { researchAnalysisService } from './src/services/researchAnalysisService';
+import { createAdminAutomationRouter } from './src/server/adminAutomationRouter';
 
 dotenv.config();
 
@@ -6932,6 +6933,10 @@ Return ONLY valid JSON matching:
       message: 'Grade overridden successfully by Super Admin.',
     });
   });
+
+  // AI & Automation Admin Control Center Router
+  app.use('/api/admin/automation', createAdminAutomationRouter(getAI, generateContentWithResilience));
+
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('[Internal Security Error Handler]', err?.message || err);
     res.status(500).json({
