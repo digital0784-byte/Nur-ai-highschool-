@@ -49,6 +49,22 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
 }) => {
   const { user, userProfile, logout } = useAuth();
   const { subscription, hasLearningAccess } = useSubscription();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleConfirmLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      if (logout) {
+        await logout();
+      }
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsLoggingOut(false);
+      setShowLogoutModal(false);
+    }
+  };
 
   const studentName = userProfile?.displayName || (userProfile as any)?.name || 'Abebe Bikila';
   const studentEmail = userProfile?.email || 'student@nur-ai.edu.et';
@@ -89,8 +105,14 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
         </div>
 
         {logout && (
-          <Button variant="outline" size="sm" leftIcon={<LogOut className="w-3.5 h-3.5" />} onClick={logout}>
-            {language === 'am' ? 'ውጣ (Logout)' : 'Logout'}
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-300"
+            leftIcon={<LogOut className="w-3.5 h-3.5 text-rose-600" />}
+            onClick={() => setShowLogoutModal(true)}
+          >
+            {language === 'am' ? 'ከመለያ ውጣ (Logout)' : 'Log Out'}
           </Button>
         )}
       </div>
@@ -263,6 +285,126 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           </button>
         </div>
       </div>
+
+      {/* 4. ACCOUNT SECURITY & LOGOUT CARD */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/90 shadow-xs space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+              <LogOut className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-stone-900 font-serif-ethiopic">
+                {language === 'am' ? 'የመለያ ደህንነትና መውጫ (Account & Sign Out)' : 'Account Security & Sign Out'}
+              </h3>
+              <p className="text-xs text-stone-500">
+                {language === 'am' ? 'ከመተግበሪያው በደህንነት ለመውጣት' : 'Manage your active session and sign out'}
+              </p>
+            </div>
+          </div>
+          <Badge variant="neutral" size="sm">
+            {language === 'am' ? 'ደህንነቱ የተጠበቀ' : 'Secured'}
+          </Badge>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <span className="text-slate-500 font-medium">
+              {language === 'am' ? 'የተመዘገበ ኢሜይል / ስልክ ቁጥር:' : 'Account Identifier:'}
+            </span>
+            <span className="font-bold text-slate-800 font-mono">{studentEmail}</span>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <span className="text-slate-500 font-medium">
+              {language === 'am' ? 'የትምህርት ደረጃ (Grade):' : 'Enrolled Grade:'}
+            </span>
+            <span className="font-bold text-emerald-800 font-mono">ክፍል {grade} (2019 E.C.)</span>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <span className="text-slate-500 font-medium">
+              {language === 'am' ? 'የደመና ምትኬ ሁኔታ (Cloud Sync):' : 'Cloud Progress Sync:'}
+            </span>
+            <span className="font-bold text-emerald-700 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              {language === 'am' ? 'ሁሉም መረጃዎች በደመናው ላይ ተመሳስለዋል' : 'Up to date & safely synced'}
+            </span>
+          </div>
+        </div>
+
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-500 leading-relaxed max-w-md">
+            {language === 'am'
+              ? 'ሲወጡ የትምህርት ታሪክዎ፣ የፈተና ውጤቶችዎና የከፈሉት ሳብስክሪፕሽን ሙሉ በሙሉ ተቀምጦ ይቆያል።'
+              : 'Signing out keeps your learning history, quiz scores, and active subscription fully intact.'}
+          </p>
+          <Button
+            variant="danger"
+            size="md"
+            leftIcon={<LogOut className="w-4 h-4" />}
+            onClick={() => setShowLogoutModal(true)}
+            className="w-full sm:w-auto shrink-0 shadow-sm"
+          >
+            {language === 'am' ? 'ከመለያ ውጣ (Sign Out)' : 'Sign Out of Account'}
+          </Button>
+        </div>
+      </div>
+
+      {/* CONFIRMATION MODAL */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-stone-200 space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <LogOut className="w-6 h-6 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 font-serif-ethiopic">
+                  {language === 'am' ? 'ከመለያዎ መውጣት ይፈልጋሉ?' : 'Confirm Sign Out'}
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  {language === 'am'
+                    ? 'የተማሩት ትምህርት፣ የፈተና ውጤቶችና ማስታወሻዎችዎ በሙሉ በደመናው ላይ ተቀምጠው ይቆያሉ።'
+                    : 'Your progress and study streak are saved in the cloud. You can log back in at any time.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs">
+              <div className="min-w-0 pr-2">
+                <p className="font-bold text-slate-800 truncate font-serif-ethiopic">{studentName}</p>
+                <p className="text-slate-500 text-[11px] font-mono mt-0.5 truncate">{studentEmail}</p>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] shrink-0 font-mono">
+                {language === 'am' ? `ክፍል ${grade}` : `Grade ${grade}`}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                disabled={isLoggingOut}
+                className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold transition-all cursor-pointer"
+              >
+                {language === 'am' ? 'ይቅር፣ ተመለስ' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmLogout}
+                disabled={isLoggingOut}
+                className="flex-1 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-all shadow-md shadow-rose-600/20 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {isLoggingOut ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <LogOut className="w-4 h-4" />
+                )}
+                <span>{language === 'am' ? 'አዎ፣ ውጣ' : 'Log Out'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

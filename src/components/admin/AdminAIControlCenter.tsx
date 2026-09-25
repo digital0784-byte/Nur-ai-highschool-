@@ -237,7 +237,7 @@ export const AdminAIControlCenter: React.FC<AdminAIControlCenterProps> = ({
 
           {/* Fraud-Risk Alerts */}
           <div
-            onClick={() => onNavigateToTab('payments_billing')}
+            onClick={() => onNavigateToTab('fraud_risk_alerts')}
             className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-sm hover:border-red-500/50 cursor-pointer transition-all"
           >
             <div className="flex items-center justify-between text-slate-500 text-xs font-medium">

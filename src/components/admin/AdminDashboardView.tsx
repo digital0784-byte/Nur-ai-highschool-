@@ -30,6 +30,7 @@ import {
   Clock,
   Radio,
   Bot,
+  GraduationCap,
 } from 'lucide-react';
 import {
   AdminActiveSubTab,
@@ -67,6 +68,8 @@ import { AdminAIQuizGeneratorModal } from './AdminAIQuizGeneratorModal';
 import { AdminAIAssistantChat } from './AdminAIAssistantChat';
 import { AdminAutomatedReportsModal } from './AdminAutomatedReportsModal';
 import { AdminFraudRiskAlertsSection } from './AdminFraudRiskAlertsSection';
+import { AdminTeachersSection } from './AdminTeachersSection';
+import { AITeacherAssistantSection } from './AITeacherAssistantSection';
 
 export const AdminDashboardView: React.FC = () => {
   const { user, logout } = useAuth();
@@ -202,6 +205,13 @@ export const AdminDashboardView: React.FC = () => {
       badge: `${students.length || 34}`,
     },
     {
+      id: 'teachers',
+      label: 'Teacher Dashboard',
+      amharicLabel: 'የመምህራን አስተዳደርና AI ረዳት',
+      icon: <GraduationCap className="w-4 h-4 text-amber-400" />,
+      badge: 'Workbench',
+    },
+    {
       id: 'curriculum',
       label: 'Curriculum & Content',
       amharicLabel: 'ስርዓተ-ትምህርት',
@@ -268,6 +278,13 @@ export const AdminDashboardView: React.FC = () => {
       amharicLabel: 'የእንቅስቃሴዎች ኦዲት',
       icon: <History className="w-4 h-4 text-stone-300" />,
       badge: 'Immutable',
+    },
+    {
+      id: 'fraud_risk_alerts',
+      label: 'Fraud Risk Alerts',
+      amharicLabel: 'የማጭበርበር ስጋት ክትትል',
+      icon: <ShieldAlert className="w-4 h-4 text-rose-400" />,
+      badge: 'High Risk',
     },
     {
       id: 'settings',
@@ -483,6 +500,16 @@ export const AdminDashboardView: React.FC = () => {
             <AdminStudentsSection students={students} onRefresh={loadAllData} />
           )}
 
+          {/* TEACHER DASHBOARD & WORKBENCH */}
+          {activeTab === 'teachers' && (
+            <div className="space-y-8">
+              <AITeacherAssistantSection />
+              <div className="pt-6 border-t border-stone-200">
+                <AdminTeachersSection />
+              </div>
+            </div>
+          )}
+
           {/* 3. CURRICULUM MANAGEMENT & CONTENT PROCESSING */}
           {activeTab === 'curriculum' && (
             <AdminCurriculumSection metadataList={curriculum} />
@@ -516,6 +543,9 @@ export const AdminDashboardView: React.FC = () => {
 
           {/* 12. AUDIT TRAIL (IMMUTABLE LOGS) */}
           {activeTab === 'audit_trail' && <AdminAuditTrailSection />}
+
+          {/* FRAUD RISK ALERTS */}
+          {activeTab === 'fraud_risk_alerts' && <AdminFraudRiskAlertsSection />}
 
           {/* 13. SETTINGS & EMERGENCY CONTROLS */}
           {activeTab === 'settings' && <AdminSettingsSection />}

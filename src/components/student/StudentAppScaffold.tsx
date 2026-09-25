@@ -21,6 +21,7 @@ import {
   GraduationCap,
   Search,
   Flame,
+  LogOut,
 } from 'lucide-react';
 import {
   GradeLevel,
@@ -33,6 +34,7 @@ import { LanguageCode } from '../../types';
 import { StudentTab, OfflineCachedUnit } from '../../types/studentApp';
 import { ethiopianCurriculumEngine } from '../../engine/curriculumRegistry';
 import { studentAppFirestore } from '../../services/studentAppFirestore';
+import { useAuth } from '../../context/AuthContext';
 import { useSubscription } from '../../context/SubscriptionContext';
 import { StudentHomeScreen } from './StudentHomeScreen';
 import { StudentLearnView } from './StudentLearnView';
@@ -44,6 +46,8 @@ import { StudentProgressView } from './StudentProgressView';
 import { StudentProfileView } from './StudentProfileView';
 import { StudentLearningScreen } from './StudentLearningScreen';
 import { StudentKnowledgeMapScreen } from './StudentKnowledgeMapScreen';
+import { StudentPhotoSolverScreen } from './StudentPhotoSolverScreen';
+import { StudentVoiceTutorScreen } from './StudentVoiceTutorScreen';
 import { OfflineSyncIndicator } from '../notifications/OfflineSyncIndicator';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { DirectSystemPaymentModal } from '../subscription/DirectSystemPaymentModal';
@@ -67,6 +71,23 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const { isOwnerSuperAdmin, accessStatus, remainingDays } = useSubscription();
+  const { user, userProfile, logout } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      if (logout) {
+        await logout();
+      }
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsLoggingOut(false);
+      setShowLogoutConfirm(false);
+    }
+  };
 
   // Active Subject & Topic in view for deep learning screen
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('math-g9');
@@ -386,6 +407,16 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
             <ShieldCheck className="w-3.5 h-3.5" />
             <span className="hidden md:inline">{language === 'am' ? 'የስርዓት ሙከራ' : 'Audit'}</span>
           </button>
+
+          {/* Student Logout Action */}
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            title={language === 'am' ? 'ከመለያ ውጣ (Log Out)' : 'Log Out'}
+            className="px-2.5 sm:px-3 py-1.5 rounded-2xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-2xs shrink-0"
+          >
+            <LogOut className="w-3.5 h-3.5 text-rose-600" />
+            <span className="hidden sm:inline">{language === 'am' ? 'ውጣ' : 'Logout'}</span>
+          </button>
         </div>
       </header>
 
@@ -460,9 +491,9 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
             ))}
           </div>
 
-          {/* Bottom Card in Desktop Rail: Ministry of Education Verification */}
-          <div className="pt-3 border-t border-slate-100 mt-2">
-            <div className="p-3.5 rounded-2xl border border-emerald-200/80 bg-emerald-50/50 text-xs space-y-1.5">
+          {/* Bottom Card in Desktop Rail: Ministry of Education Verification & Logout */}
+          <div className="pt-3 border-t border-slate-100 mt-2 space-y-2">
+            <div className="p-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/50 text-xs space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -476,6 +507,34 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
                   : `Grade ${grade} New Curriculum Standards`}
               </p>
             </div>
+
+            {/* Student Session & Dedicated Logout Card */}
+            <div className="p-2.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate font-serif-ethiopic">
+                  {userProfile?.displayName || (userProfile as any)?.name || (language === 'am' ? 'ተማሪ' : 'Student')}
+                </p>
+                <p className="text-[10px] text-slate-500 truncate font-mono">
+                  {user?.email || `Grade ${grade}`}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowLogoutConfirm(true)}
+                title={language === 'am' ? 'ከመለያ ውጣ' : 'Log Out'}
+                className="p-1.5 rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Full Width Logout Trigger */}
+            <button
+              onClick={() => setShowLogoutConfirm(true)}
+              className="w-full py-2 px-3 rounded-xl border border-rose-200/80 text-rose-700 bg-rose-50/70 hover:bg-rose-100 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>{language === 'am' ? 'ከመለያ ውጣ (Logout)' : 'Sign Out'}</span>
+            </button>
           </div>
         </aside>
 
@@ -496,6 +555,19 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
               onContinueLearning={handleContinueLearning}
               onOpenKnowledgeMap={() => setCurrentTab('learn')}
               onOpenQuiz={() => setCurrentTab('practice')}
+              onOpenAITutor={() => setCurrentTab('ai_tutor')}
+              onOpenPractice={() => setCurrentTab('practice')}
+              onOpenBooks={() => setCurrentTab('books')}
+              onOpenExams={() => setCurrentTab('exams')}
+              onOpenPhotoSolver={() => setCurrentTab('photo_solver')}
+              onOpenVoiceTutor={() => setCurrentTab('voice_tutor')}
+              onOpenEntranceExam={() => setCurrentTab('exams')}
+              onOpenProgress={() => setCurrentTab('progress')}
+              onOpenProfile={() => setCurrentTab('profile')}
+              onOpenSettings={() => setCurrentTab('profile')}
+              onOpenBookmarks={() => setCurrentTab('books')}
+              onOpenOfflineManager={() => setCurrentTab('profile')}
+              onLogout={() => setShowLogoutConfirm(true)}
             />
           )}
 
@@ -574,6 +646,24 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
               grade={grade}
               language={language}
               onNavigateToTopic={(sId, tId) => handleContinueLearning(sId, tId)}
+            />
+          )}
+
+          {/* TAB: PHOTO SOLVER */}
+          {currentTab === 'photo_solver' && (
+            <StudentPhotoSolverScreen
+              grade={grade}
+              language={language}
+              darkMode={darkMode}
+            />
+          )}
+
+          {/* TAB: VOICE TUTOR */}
+          {currentTab === 'voice_tutor' && (
+            <StudentVoiceTutorScreen
+              grade={grade}
+              language={language}
+              darkMode={darkMode}
             />
           )}
 
@@ -690,6 +780,69 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
               >
                 <Play className="w-3.5 h-3.5" />
                 <span>{testRunning ? 'በመፈተሽ ላይ...' : 'ሁሉንም ፈትሽ (Run 14 Steps)'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 6. DEDICATED STUDENT LOGOUT CONFIRMATION MODAL */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200/90 space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <LogOut className="w-6 h-6 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 font-serif-ethiopic">
+                  {language === 'am' ? 'ከመለያዎ መውጣት ይፈልጋሉ?' : 'Confirm Sign Out'}
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  {language === 'am'
+                    ? 'የተማሩት ትምህርት፣ የፈተና ውጤቶችና ማስታወሻዎችዎ በሙሉ በደመናው ላይ ተቀምጠው ይቆያሉ። በማንኛውም ጊዜ ተመልሰው መግባት ይችላሉ።'
+                    : 'Your progress, quiz scores, and study streak remain safely saved. You can log back in at any time.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Account Info Card */}
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs">
+              <div className="min-w-0 pr-2">
+                <p className="font-bold text-slate-800 truncate font-serif-ethiopic">
+                  {userProfile?.displayName || (userProfile as any)?.name || (language === 'am' ? 'ተማሪ' : 'Student')}
+                </p>
+                <p className="text-slate-500 text-[11px] font-mono mt-0.5 truncate">
+                  {user?.email || `Student UID: ${user?.uid?.slice(0, 10)}...`}
+                </p>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] shrink-0 font-mono">
+                {language === 'am' ? `ክፍል ${grade}` : `Grade ${grade}`}
+              </span>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                disabled={isLoggingOut}
+                className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold transition-all cursor-pointer"
+              >
+                {language === 'am' ? 'ይቅር፣ ተመለስ' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex-1 py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition-all shadow-md shadow-rose-600/20 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {isLoggingOut ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <LogOut className="w-4 h-4" />
+                )}
+                <span>{language === 'am' ? 'አዎ፣ ውጣ' : 'Log Out'}</span>
               </button>
             </div>
           </div>

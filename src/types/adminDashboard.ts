@@ -253,6 +253,7 @@ export type AdminActiveSubTab =
   | 'system_health'
   | 'security_rbac'
   | 'audit_trail'
+  | 'fraud_risk_alerts'
   | 'settings'
   | 'voice_tutor_analytics'
   | 'research_sources'
