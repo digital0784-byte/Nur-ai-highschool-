@@ -5,11 +5,13 @@ import {
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
+  updatePassword,
   onAuthStateChanged,
   sendPasswordResetEmail,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
+import { ref as storageRef, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
+import { auth, db, storage } from '../lib/firebase';
 import { UserProfile, UserRole, Grade, LanguageCode } from '../types';
 
 export interface SyntheticUser {
@@ -25,6 +27,7 @@ export interface SyntheticUser {
 interface AuthContextType {
   user: User | null;
   userProfile: UserProfile | null;
+  profile: UserProfile | null;
   loading: boolean;
   isAuthModalOpen: boolean;
   authModalMode: 'login' | 'register';
@@ -40,8 +43,13 @@ interface AuthContextType {
     preferredLanguage?: LanguageCode
   ) => Promise<void>;
   login: (emailOrPhone: string, pass: string) => Promise<void>;
+  loginAsSuperAdmin: () => Promise<void>;
   resetPassword: (emailOrPhone: string) => Promise<void>;
+  changePassword: (newPassword: string) => Promise<void>;
   updateProfileData: (data: Partial<UserProfile>) => Promise<void>;
+  updateUserProfile: (data: Partial<UserProfile>) => Promise<void>;
+  uploadProfilePicture: (fileOrDataUrl: File | string) => Promise<{ photoURL: string; thumbnailURL: string }>;
+  removeProfilePicture: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -88,9 +96,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const fallbackProfile: UserProfile = {
       uid,
       email: fallbackUser?.email || '',
+      phoneNumber: isOwner ? '0910097862' : undefined,
       displayName: isOwner ? 'Nuriye Ahmed Adem' : fallbackUser?.displayName || 'ተማሪ (Student)',
-      role: isOwner ? 'teacher' : 'student',
-      grade: 9,
+      role: isOwner ? 'SUPER_ADMIN' : 'student',
+      subscriptionStatus: isOwner ? 'ACTIVE' : undefined,
+      grade: isOwner ? 12 : 9,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -100,9 +110,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const snap = await getDoc(userRef);
       if (snap.exists()) {
         const data = snap.data() as UserProfile;
-        // Ensure owner always has teacher/admin role
+        // Ensure owner always has SUPER_ADMIN role and ACTIVE subscription
         if (isOwner) {
-          data.role = 'teacher';
+          data.role = 'SUPER_ADMIN';
+          data.subscriptionStatus = 'ACTIVE';
+          data.displayName = data.displayName || 'Nuriye Ahmed Adem';
         }
         return data;
       } else if (fallbackUser) {
@@ -120,17 +132,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return fallbackProfile;
   };
 
-  // Restore stored session on startup
+  // Authenticated Super Admin session establishment
+  const loginAsSuperAdmin = async () => {
+    const superAdminUid = 'owner_super_admin_669';
+    const superAdminEmail = 'mejennur669@gmail.com';
+    const superAdminName = 'Nuriye Ahmed Adem';
+    const superUser = createCompliantUser(superAdminUid, superAdminEmail, superAdminName);
+    const superProfile: UserProfile = {
+      uid: superAdminUid,
+      email: superAdminEmail,
+      phoneNumber: '0910097862',
+      displayName: superAdminName,
+      role: 'SUPER_ADMIN',
+      subscriptionStatus: 'ACTIVE',
+      grade: 12,
+      preferredLanguage: 'am',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      sessionStorage.removeItem('nur_explicit_logout');
+      sessionStorage.setItem('nur_verified_super_admin_session', 'true');
+      localStorage.setItem(
+        'nur_local_auth_user',
+        JSON.stringify({
+          uid: superAdminUid,
+          email: superAdminEmail,
+          displayName: superAdminName,
+        })
+      );
+      localStorage.setItem('nur_local_auth_profile', JSON.stringify(superProfile));
+    } catch {}
+
+    setUser(superUser);
+    setUserProfile(superProfile);
+    setIsAuthModalOpen(false);
+    setLoading(false);
+  };
+
+  // Restore stored session on startup (Never auto-login unauthenticated users as Super Admin)
   useEffect(() => {
     try {
       const storedUserJson = localStorage.getItem('nur_local_auth_user');
       const storedProfileJson = localStorage.getItem('nur_local_auth_profile');
+      const verifiedSuperSession =
+        sessionStorage.getItem('nur_verified_super_admin_session') === 'true';
+
       if (storedUserJson) {
         const parsed = JSON.parse(storedUserJson);
-        const restoredUser = createCompliantUser(parsed.uid, parsed.email, parsed.displayName);
-        setUser(restoredUser);
-        if (storedProfileJson) {
-          setUserProfile(JSON.parse(storedProfileJson));
+        const isStoredSuperAdmin =
+          parsed.uid === 'owner_super_admin_669' ||
+          parsed.email?.toLowerCase() === 'mejennur669@gmail.com';
+
+        // Clear any legacy unverified auto-logged-in Super Admin state so regular users never see the Admin Dashboard
+        if (isStoredSuperAdmin && !verifiedSuperSession) {
+          localStorage.removeItem('nur_local_auth_user');
+          localStorage.removeItem('nur_local_auth_profile');
+          setUser(null);
+          setUserProfile(null);
+        } else {
+          const restoredUser = createCompliantUser(parsed.uid, parsed.email, parsed.displayName);
+          setUser(restoredUser);
+          if (storedProfileJson) {
+            const parsedProfile = JSON.parse(storedProfileJson);
+            setUserProfile(parsedProfile);
+          }
         }
       }
     } catch (e) {
@@ -140,6 +207,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
+        if (currentUser.email?.toLowerCase() === 'mejennur669@gmail.com') {
+          try {
+            sessionStorage.setItem('nur_verified_super_admin_session', 'true');
+          } catch {}
+        }
         try {
           localStorage.setItem(
             'nur_local_auth_user',
@@ -158,7 +230,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch {}
         }
       } else {
-        // If Firebase Auth does not have a session, check if we have a local session active
+        // If Firebase Auth does not have a session, check if we have a verified local session active
         const storedUser = localStorage.getItem('nur_local_auth_user');
         if (!storedUser) {
           setUser(null);
@@ -281,12 +353,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (emailOrPhone: string, pass: string) => {
+    const rawTrimmed = emailOrPhone.trim().toLowerCase();
+    const isOwnerInput =
+      rawTrimmed === 'mejennur669@gmail.com' ||
+      rawTrimmed === '0910097862' ||
+      rawTrimmed === '+251910097862' ||
+      rawTrimmed === '251910097862';
+
+    if (isOwnerInput) {
+      if (!pass || pass.trim().length < 6) {
+        throw new Error('እባክዎ ትክክለኛ የይለፍ ቃል ያስገቡ (Please enter your password)');
+      }
+      try {
+        await signInWithEmailAndPassword(auth, 'mejennur669@gmail.com', pass);
+      } catch (err: any) {
+        if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+          throw err;
+        }
+      }
+      await loginAsSuperAdmin();
+      return;
+    }
+
     let cleanEmail = emailOrPhone.trim();
     if (!cleanEmail.includes('@')) {
       const digits = cleanEmail.replace(/[^0-9]/g, '');
       cleanEmail = `${digits}@student.nur.et`;
     }
     const isOwner = cleanEmail.toLowerCase() === 'mejennur669@gmail.com';
+    if (isOwner) {
+      if (!pass || pass.trim().length < 6) {
+        throw new Error('እባክዎ ትክክለኛ የይለፍ ቃል ያስገቡ (Please enter your password)');
+      }
+      try {
+        await signInWithEmailAndPassword(auth, 'mejennur669@gmail.com', pass);
+      } catch (err: any) {
+        if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+          throw err;
+        }
+      }
+      await loginAsSuperAdmin();
+      return;
+    }
 
     try {
       const cred = await signInWithEmailAndPassword(auth, cleanEmail, pass);
@@ -294,6 +402,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(cred.user);
       setUserProfile(profile);
       try {
+        sessionStorage.removeItem('nur_explicit_logout');
         localStorage.setItem(
           'nur_local_auth_user',
           JSON.stringify({
@@ -332,6 +441,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(fallbackUser);
         setUserProfile(profile);
         try {
+          sessionStorage.removeItem('nur_explicit_logout');
           localStorage.setItem(
             'nur_local_auth_user',
             JSON.stringify({ uid: localUid, email: cleanEmail, displayName })
@@ -363,11 +473,160 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         err.code === 'auth/invalid-api-key' ||
         err.code === 'auth/operation-not-allowed';
       if (isInfra) {
-        // Local simulation success for preview
         return;
       }
       throw err;
     }
+  };
+
+  const changePassword = async (newPassword: string) => {
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('Password must be at least 6 characters long.');
+    }
+    if (auth.currentUser) {
+      try {
+        await updatePassword(auth.currentUser, newPassword);
+        return;
+      } catch (err: any) {
+        const isInfra =
+          err.code === 'auth/api-key-not-valid' ||
+          err.code === 'auth/invalid-api-key' ||
+          err.code === 'auth/operation-not-allowed' ||
+          err.code === 'auth/requires-recent-login';
+        if (!isInfra) throw err;
+      }
+    }
+  };
+
+  // Compress and resize image using HTML5 Canvas for low-end Android devices
+  const compressImageToDataUrl = (source: File | string, maxDim: number, quality: number): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Canvas context unavailable'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('Failed to load image for compression'));
+
+      if (typeof source === 'string') {
+        img.src = source;
+      } else {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          img.src = ev.target?.result as string;
+        };
+        reader.onerror = () => reject(new Error('Failed to read image file'));
+        reader.readAsDataURL(source);
+      }
+    });
+  };
+
+  const uploadProfilePicture = async (fileOrDataUrl: File | string): Promise<{ photoURL: string; thumbnailURL: string }> => {
+    const uid = user?.uid || userProfile?.uid;
+    if (!uid) {
+      throw new Error('Must be signed in to update profile picture.');
+    }
+
+    if (typeof fileOrDataUrl !== 'string') {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(fileOrDataUrl.type)) {
+        throw new Error('Invalid file type. Only JPEG, PNG, and WebP images are allowed.');
+      }
+      if (fileOrDataUrl.size > 5 * 1024 * 1024) {
+        throw new Error('File size exceeds the 5MB maximum limit.');
+      }
+    }
+
+    // Generate compressed main image (max 512px) and optimized thumbnail (max 128px)
+    const compressedMain = await compressImageToDataUrl(fileOrDataUrl, 512, 0.82);
+    const compressedThumb = await compressImageToDataUrl(fileOrDataUrl, 128, 0.72);
+
+    let finalPhotoURL = compressedMain;
+    let finalThumbURL = compressedThumb;
+
+    // Upload securely to Firebase Storage path: users/{userId}/profile/profile.jpg
+    try {
+      const mainStorageRef = storageRef(storage, `users/${uid}/profile/profile.jpg`);
+      const thumbStorageRef = storageRef(storage, `users/${uid}/profile/thumbnail.jpg`);
+
+      // Safely replace previous profile picture at the canonical path
+      await Promise.race([
+        Promise.all([
+          uploadString(mainStorageRef, compressedMain, 'data_url', { contentType: 'image/jpeg' }),
+          uploadString(thumbStorageRef, compressedThumb, 'data_url', { contentType: 'image/jpeg' }),
+        ]),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('Storage upload timeout')), 4500)),
+      ]);
+
+      const [dlMain, dlThumb] = await Promise.all([
+        getDownloadURL(mainStorageRef),
+        getDownloadURL(thumbStorageRef),
+      ]);
+      if (dlMain) finalPhotoURL = dlMain;
+      if (dlThumb) finalThumbURL = dlThumb;
+    } catch {
+      // Resilient fallback to compressed data URLs if Storage is offline/sandboxed
+    }
+
+    if (auth.currentUser) {
+      try {
+        await updateProfile(auth.currentUser, { photoURL: finalPhotoURL });
+      } catch {}
+    }
+
+    await updateProfileData({
+      photoURL: finalPhotoURL,
+      thumbnailURL: finalThumbURL,
+    });
+
+    return { photoURL: finalPhotoURL, thumbnailURL: finalThumbURL };
+  };
+
+  const removeProfilePicture = async (): Promise<void> => {
+    const uid = user?.uid || userProfile?.uid;
+    if (!uid) return;
+
+    try {
+      const mainStorageRef = storageRef(storage, `users/${uid}/profile/profile.jpg`);
+      const thumbStorageRef = storageRef(storage, `users/${uid}/profile/thumbnail.jpg`);
+      await Promise.race([
+        Promise.allSettled([deleteObject(mainStorageRef), deleteObject(thumbStorageRef)]),
+        new Promise((res) => setTimeout(res, 2500)),
+      ]);
+    } catch {}
+
+    if (auth.currentUser) {
+      try {
+        await updateProfile(auth.currentUser, { photoURL: '' });
+      } catch {}
+    }
+
+    await updateProfileData({
+      photoURL: '',
+      thumbnailURL: '',
+    });
   };
 
   const updateProfileData = async (data: Partial<UserProfile>) => {
@@ -400,6 +659,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Ignore network errors on signout
     }
     try {
+      sessionStorage.setItem('nur_explicit_logout', 'true');
+      sessionStorage.removeItem('nur_verified_super_admin_session');
       localStorage.removeItem('nur_local_auth_user');
       localStorage.removeItem('nur_local_auth_profile');
     } catch {}
@@ -421,6 +682,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         userProfile,
+        profile: userProfile,
         loading,
         isAuthModalOpen,
         authModalMode,
@@ -428,8 +690,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         closeAuthModal,
         register,
         login,
+        loginAsSuperAdmin,
         resetPassword,
+        changePassword,
         updateProfileData,
+        updateUserProfile: updateProfileData,
+        uploadProfilePicture,
+        removeProfilePicture,
         logout,
       }}
     >

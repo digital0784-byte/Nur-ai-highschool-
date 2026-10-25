@@ -74,6 +74,7 @@ export interface StudentHomeScreenProps {
   onOpenSettings?: () => void;
   onOpenBookmarks?: () => void;
   onOpenOfflineManager?: () => void;
+  onOpenOfflineLearning?: () => void;
   onLogout?: () => void;
 }
 
@@ -99,6 +100,7 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
   onOpenSettings,
   onOpenBookmarks,
   onOpenOfflineManager,
+  onOpenOfflineLearning,
   onLogout,
 }) => {
   const { userProfile, logout } = useAuth();
@@ -212,34 +214,57 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
         <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div>
-            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-              {/* Requirement 12 item 2: Grade */}
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 font-mono">
-                <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
-                {language === 'am' ? `ክፍል ${grade}` : `Grade ${grade}`}
-              </span>
-              <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-800/80 text-slate-300 border border-slate-700/80">
-                {language === 'am' ? '2019 ዓ.ም አዲሱ ስርዓተ-ትምህርት' : '2019 E.C. Ethiopian Curriculum'}
-              </span>
-              {/* Requirement 12 item 17: Gamification Streak */}
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold font-mono">
-                <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
-                <span>{summary.currentStreakDays} {language === 'am' ? 'ቀን በተከታታይ' : 'Day Streak'}</span>
+          <div className="flex items-start gap-4">
+            {/* Student Profile Picture in Dashboard Welcome */}
+            <button
+              onClick={() => (onOpenProfile ? onOpenProfile() : onNavigateToTab?.('profile'))}
+              title="Open Student Profile"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 p-0.5 shadow-lg shadow-emerald-500/20 shrink-0 overflow-hidden group cursor-pointer"
+            >
+              <div className="w-full h-full rounded-[14px] bg-slate-900 flex items-center justify-center overflow-hidden">
+                {userProfile?.photoURL || userProfile?.thumbnailURL ? (
+                  <img
+                    src={userProfile.photoURL || userProfile.thumbnailURL}
+                    alt={studentDisplayName}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                ) : (
+                  <span className="text-xl sm:text-2xl font-black text-emerald-400">
+                    {studentDisplayName.charAt(0).toUpperCase()}
+                  </span>
+                )}
               </div>
-            </div>
+            </button>
 
-            {/* Requirement 12 item 1: Welcome Message */}
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white font-serif-ethiopic">
-              {language === 'am'
-                ? `እንኳን ደህና መጣህ፣ ${studentDisplayName}!`
-                : `Welcome back, ${studentDisplayName}!`}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-300 mt-1.5 font-serif-ethiopic max-w-xl">
-              {language === 'am'
-                ? `የዛሬው የክፍል ${grade} የትምህርት ክፍለ-ጊዜ ተዘጋጅቷል። በ AI አስጠኚ እገዛ አዳዲስ ፅንሰ-ሀሳቦችን ይማሩ።`
-                : `Your personalized Grade ${grade} learning track is ready. Start your session with Socratic AI guidance.`}
-            </p>
+            <div>
+              <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+                {/* Requirement 12 item 2: Grade */}
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 font-mono">
+                  <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
+                  {language === 'am' ? `ክፍል ${grade}` : `Grade ${grade}`}
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-800/80 text-slate-300 border border-slate-700/80">
+                  {language === 'am' ? '2019 ዓ.ም አዲሱ ስርዓተ-ትምህርት' : '2019 E.C. Ethiopian Curriculum'}
+                </span>
+                {/* Requirement 12 item 17: Gamification Streak */}
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold font-mono">
+                  <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
+                  <span>{summary.currentStreakDays} {language === 'am' ? 'ቀን በተከታታይ' : 'Day Streak'}</span>
+                </div>
+              </div>
+
+              {/* Requirement 12 item 1: Welcome Message */}
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white font-serif-ethiopic">
+                {language === 'am'
+                  ? `እንኳን ደህና መጣህ፣ ${studentDisplayName}!`
+                  : `Welcome back, ${studentDisplayName}!`}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1.5 font-serif-ethiopic max-w-xl">
+                {language === 'am'
+                  ? `የዛሬው የክፍል ${grade} የትምህርት ክፍለ-ጊዜ ተዘጋጅቷል። በ AI አስጠኚ እገዛ አዳዲስ ፅንሰ-ሀሳቦችን ይማሩ።`
+                  : `Your personalized Grade ${grade} learning track is ready. Start your session with Socratic AI guidance.`}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5">
@@ -446,7 +471,7 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
           <span className="text-xs text-slate-400 font-mono">Part 21 Academic Suite</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 sm:gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-3.5">
           {/* 6. AI Tutor */}
           <div
             onClick={() => (onOpenAITutor ? onOpenAITutor() : onNavigateToTab?.('ai_tutor'))}
@@ -545,7 +570,7 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
 
           {/* 12. Voice Tutor */}
           <div
-            onClick={() => (onOpenVoiceTutor ? onOpenVoiceTutor() : onNavigateToTab?.('voice_tutor'))}
+            onClick={() => (onOpenVoiceTutor ? onOpenVoiceTutor() : onNavigateToTab?.('voice_tutor' as any))}
             className="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-xs hover:border-teal-400 hover:shadow-sm cursor-pointer transition-all group"
           >
             <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
@@ -556,6 +581,22 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
             </h4>
             <p className="text-[11px] text-slate-400 mt-0.5 truncate">
               {language === 'am' ? 'በንግግር ጠይቅ' : 'Listen & Learn'}
+            </p>
+          </div>
+
+          {/* 18. Reference Books */}
+          <div
+            onClick={() => (onOpenBooks ? onOpenBooks() : onNavigateToTab?.('books'))}
+            className="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-xs hover:border-emerald-500 hover:shadow-sm cursor-pointer transition-all group"
+          >
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+              <BookMarked className="w-4 h-4" />
+            </div>
+            <h4 className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
+              {language === 'am' ? 'ዋቢ መጻሕፍት' : 'Reference Books'}
+            </h4>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+              {language === 'am' ? 'በመተግበሪያው አንብብ' : 'In-App Reader'}
             </p>
           </div>
         </div>
@@ -869,6 +910,15 @@ export const StudentHomeScreen: React.FC<StudentHomeScreenProps> = ({
           </div>
 
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+            {(onOpenOfflineManager || onOpenOfflineLearning) && (
+              <button
+                onClick={() => (onOpenOfflineManager ? onOpenOfflineManager() : onOpenOfflineLearning?.())}
+                className="py-2 px-3 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <HardDrive className="w-3.5 h-3.5" />
+                <span>Offline</span>
+              </button>
+            )}
             <button
               onClick={() => onNavigateToTab?.('profile')}
               className="flex-1 py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"

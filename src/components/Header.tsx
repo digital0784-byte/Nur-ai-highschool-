@@ -29,6 +29,7 @@ import { useProgress } from '../context/ProgressContext';
 import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '../context/SubscriptionContext';
 import { NotificationBell } from './notifications/NotificationBell';
+import { LanguageSelectorDropdown } from './LanguageSelectorDropdown';
 
 interface HeaderProps {
   selectedGrade: Grade;
@@ -184,7 +185,7 @@ export const Header: React.FC<HeaderProps> = ({
                         : accessStatus === 'PENDING'
                         ? (language === 'en' ? 'Pending Approval' : 'በማረጋገጥ ላይ')
                         : accessStatus === 'SUPER_ADMIN'
-                        ? (language === 'en' ? 'Super Admin' : 'ባለቤት (Super Admin)')
+                        ? (language === 'en' ? '👑 Super Admin (Free Lifetime)' : '👑 ባለቤት (Super Admin • ነፃ)')
                         : accessStatus === 'EXPIRED'
                         ? (language === 'en' ? 'Expired' : 'ጊዜው ያለፈ')
                         : (language === 'en' ? 'Subscription / Pay' : 'ክፍያ / Sub')}
@@ -229,6 +230,11 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               </div>
             )}
+
+            {/* Unified Single Header Language Selector */}
+            <div className="pl-1 sm:pl-2 border-l border-[#38332D]/30">
+              <LanguageSelectorDropdown theme="parchment" />
+            </div>
 
             {/* Notification Bell with Badge & Drawer */}
             <div className="pl-1 sm:pl-2 border-l border-[#38332D]/30">
@@ -323,98 +329,68 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onOpenDirectPayment}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-xs border border-emerald-900 font-serif-ethiopic"
-              title={language === 'en' ? 'Direct payment via Telebirr 0910097862 or CBE 1000382883776' : 'ቀጥታ ክፍያ በቴሌብር 0910097862 ወይም CBE 1000382883776'}
+              title={language === 'en' ? 'Secure student subscription payment portal' : 'የተመዘገቡ ተማሪዎች ደህንነቱ የተጠበቀ የክፍያ ገጽ'}
             >
               <CreditCard className="w-3.5 h-3.5 text-emerald-200" />
-              <span>{language === 'en' ? '💳 Direct Payment (Telebirr / CBE)' : '💳 ቀጥታ ክፍያ (0910097862 / 1000382883776)'}</span>
+              <span>{language === 'en' ? '💳 Direct Payment' : '💳 የክፍያ ገጽ (Direct Payment)'}</span>
             </button>
           )}
         </div>
 
-        {/* Grade Selector & Language Selector */}
+        {/* Grade Badge / Locked Grade & Super Admin Switcher (Single place rule) */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          {/* Grade Selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-[#5A5143] whitespace-nowrap flex items-center gap-1">
-              <BookOpen className="w-3.5 h-3.5 text-[#665C4D]" />
-              <span className="hidden sm:inline">{t.selectGradeLabel}</span>
-            </span>
-            <div
-              id="grade-selector-group"
-              className="inline-flex border-[1.5px] border-[#38332D] bg-[#EFE8D6] p-0.5 rounded"
-            >
-              {grades.map((grade) => {
-                const isSelected = selectedGrade === grade;
-                return (
-                  <button
-                    key={grade}
-                    id={`grade-btn-${grade}`}
-                    onClick={() => onSelectGrade(grade)}
-                    className={`px-2 sm:px-2.5 py-0.5 sm:py-1 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#38332D] text-[#FAF6EC] shadow-xs'
-                        : 'text-[#4A4237] hover:bg-[#E5DCB9]'
-                    }`}
-                    aria-pressed={isSelected}
-                  >
-                    {t.gradePrefix} {grade}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Language Selector: Full 6 Ethiopian & Regional Languages Switcher */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-[#38332D] whitespace-nowrap flex items-center gap-1 font-serif-ethiopic">
-              <Globe className="w-3.5 h-3.5 text-emerald-800" />
-              <span className="hidden md:inline">{language === 'en' ? 'Language:' : language === 'ar' ? 'اللغة:' : language === 'ti' ? 'ቋንቋ:' : language === 'om' ? 'Afaan:' : language === 'so' ? 'Luqadda:' : 'ቋንቋ:'}</span>
-            </span>
-
-            {/* Responsive Desktop 6-Language Pill Switcher */}
-            <div
-              id="language-selector-group"
-              className="hidden sm:inline-flex border-2 border-[#1E1B18] bg-white p-0.5 rounded-lg shadow-2xs divide-x divide-stone-200"
-            >
-              {languages.map((l) => {
-                const isSelected = language === l.code;
-                return (
-                  <button
-                    key={l.code}
-                    id={`lang-btn-${l.code}`}
-                    onClick={() => setLanguage(l.code)}
-                    className={`px-2 py-1 text-xs font-bold transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap ${
-                      isSelected
-                        ? 'bg-[#1E1B18] text-amber-300 shadow-xs font-black'
-                        : 'text-[#38332D] hover:bg-stone-100 font-semibold'
-                    }`}
-                    title={`${l.name} (${l.nativeName})`}
-                    aria-pressed={isSelected}
-                  >
-                    <span>{l.flagOrLabel}</span>
-                    <span>{l.nativeName}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Mobile Dropdown for small screens */}
-            <div className="sm:hidden flex items-center">
-              <select
-                id="language-mobile-select"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as any)}
-                aria-label="Select Language"
-                className="bg-white border-2 border-[#1E1B18] rounded-md text-xs font-bold py-1 px-2 text-[#1E1B18] shadow-2xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-emerald-700"
+          {/* If Super Admin, show grade switch control for inspection */}
+          {isOwnerSuperAdmin ? (
+            <div className="flex items-center gap-1.5 bg-amber-50/80 border border-amber-300 p-1 rounded-xl">
+              <span className="text-[11px] font-bold text-amber-900 whitespace-nowrap flex items-center gap-1 font-serif-ethiopic">
+                <BookOpen className="w-3.5 h-3.5 text-amber-800" />
+                <span>👑 ክፍል (Admin):</span>
+              </span>
+              <div
+                id="grade-selector-group"
+                className="inline-flex border border-amber-400 bg-amber-100/50 p-0.5 rounded-lg"
               >
-                {languages.map((l) => (
-                  <option key={l.code} value={l.code}>
-                    {l.flagOrLabel} {l.nativeName}
-                  </option>
-                ))}
-              </select>
+                {grades.map((grade) => {
+                  const isSelected = selectedGrade === grade;
+                  return (
+                    <button
+                      key={grade}
+                      id={`grade-btn-${grade}`}
+                      onClick={() => onSelectGrade(grade)}
+                      className={`px-2 sm:px-2.5 py-0.5 text-xs font-bold transition-all cursor-pointer rounded ${
+                        isSelected
+                          ? 'bg-amber-800 text-amber-100 shadow-xs'
+                          : 'text-amber-900 hover:bg-amber-200'
+                      }`}
+                      aria-pressed={isSelected}
+                      title={`ሱፐር አድሚን ወደ ክፍል ${grade} ቀይር`}
+                    >
+                      {t.gradePrefix} {grade}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* For regular students: Grade is strictly locked to their chosen grade level */
+            <div
+              id="locked-grade-badge"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white border-[1.5px] border-[#38332D] rounded-xl shadow-2xs font-serif-ethiopic"
+              title={language === 'am' ? `የተመረጠው የትምህርት ደረጃ ክፍል ${selectedGrade} ብቻ ነው (የተቆለፈ)` : `Enrolled Grade: Grade ${selectedGrade} (Locked)`}
+            >
+              <div className="w-6 h-6 rounded-lg bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center font-black text-xs">
+                {selectedGrade}
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-black text-[#1E1B18] leading-tight">
+                  {t.gradePrefix} {selectedGrade}
+                </span>
+                <span className="text-[9.5px] font-bold text-emerald-700 leading-tight">
+                  🔒 {language === 'am' ? 'የተቆለፈ ክፍል' : 'Locked Grade'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

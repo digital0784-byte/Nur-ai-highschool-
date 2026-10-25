@@ -460,12 +460,12 @@ export const SystemModulesDropdownDrawer: React.FC<SystemModulesDropdownDrawerPr
             so: 'Lacag-bixinta Tooska ah (telebirr & CBE)',
           },
           subtitles: {
-            am: 'Telebirr 0910097862 | CBE 1000382883776',
-            en: 'Instant In-App Verification & Activation',
-            ti: 'Telebirr 0910097862 | CBE 1000382883776',
-            om: 'Telebirr 0910097862 | CBE 1000382883776',
-            ar: 'تأكيد ودفع فوري عبر تيلي بير والبنك التجاري',
-            so: 'Xaqiijinta tooska ah ee Telebirr & CBE',
+            am: 'የተመዘገቡ ተማሪዎች ደህንነቱ የተጠበቀ የክፍያ ገጽ',
+            en: 'Secure Payment Portal for Registered Students',
+            ti: 'ውሑስ ናይ ክፍሊት ገጽ ንዝተመዝገቡ ተመሃሮ',
+            om: 'Fuula Kaffaltii Nageenya Qabu Barattoota Galmaa\'aniif',
+            ar: 'بوابة الدفع الآمنة للطلاب المسجلين',
+            so: 'Barta Lacag-bixinta Aaminka ah ee Ardayda Diiwaangashan',
           },
           icon: <CreditCard className="w-4 h-4" />,
           tabKey: 'subscription_payment',
@@ -515,7 +515,8 @@ export const SystemModulesDropdownDrawer: React.FC<SystemModulesDropdownDrawerPr
             so: 'Ansixinta risiidhada lacag-bixinta ardayda',
           },
           icon: <Receipt className="w-4 h-4" />,
-          tabKey: isSuperAdmin ? 'admin_dashboard' : 'subscription_payment',
+          tabKey: 'admin_dashboard',
+          superAdminOnly: true,
         },
         {
           id: 'students_classes',
@@ -537,7 +538,8 @@ export const SystemModulesDropdownDrawer: React.FC<SystemModulesDropdownDrawerPr
             so: 'Liiska ardayda, buundooyinka iyo horumarka',
           },
           icon: <Users className="w-4 h-4" />,
-          tabKey: isSuperAdmin ? 'admin_dashboard' : 'student_app',
+          tabKey: 'admin_dashboard',
+          superAdminOnly: true,
         },
         {
           id: 'security_fortress',
@@ -695,7 +697,7 @@ export const SystemModulesDropdownDrawer: React.FC<SystemModulesDropdownDrawerPr
                 {t.userAccountId || 'የተጠቃሚ መለያ'}
               </span>
               <span className="font-semibold text-slate-200 text-[11px] truncate block font-mono">
-                {userEmail || 'mejennur669@gmail.com'} {isSuperAdmin && '(Super Admin)'}
+                {userEmail || (language === 'en' ? 'Registered Student' : 'ተማሪ (Student)')} {isSuperAdmin && '(Super Admin)'}
               </span>
             </div>
           </div>
@@ -727,7 +729,7 @@ export const SystemModulesDropdownDrawer: React.FC<SystemModulesDropdownDrawerPr
                 </span>
               </div>
               <div className="text-[10px] text-emerald-300 font-mono truncate">
-                Telebirr: 0910097862 | CBE: 1000382883776
+                Telebirr • Dashen • CBE • Abyssinia
               </div>
             </div>
           </div>

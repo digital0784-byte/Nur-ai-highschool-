@@ -37,15 +37,21 @@ export const DEVELOPER_INFO = {
 
 /**
  * Strict Super Admin Verification:
- * ONLY the owner/creator email (mejennur669@gmail.com) holds permanent Super Admin privileges.
+ * The owner/creator (mejennur669@gmail.com / Nuriye Ahmed Adem) and verified admin roles hold permanent, unrestricted Super Admin privileges.
  */
 export function isSuperAdmin(email?: string | null, role?: string): boolean {
-  if (!email && !role) return false;
-  if (email && email.trim().toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) return true;
-  // If role says SUPER_ADMIN, strictly verify it also matches the sole super admin email
-  if ((role === 'SUPER_ADMIN' || role === 'super_admin') && email && email.trim().toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
-    return true;
-  }
+  const cleanEmail = email?.trim().toLowerCase();
+  const cleanRole = role?.trim().toUpperCase();
+
+  // Root Super Admin email
+  if (cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase()) return true;
+
+  // Root Super Admin developer phone / identity
+  if (cleanEmail === '0910097862' || cleanEmail === '+251910097862' || cleanEmail === '251910097862') return true;
+
+  // Explicit admin roles
+  if (cleanRole === 'SUPER_ADMIN' || cleanRole === 'ADMIN') return true;
+
   return false;
 }
 
@@ -63,11 +69,11 @@ export const DEFAULT_PRICING_CONFIG: SubscriptionPricingConfig = {
       displayName: 'ቴሌብር (Telebirr)',
       accountName: 'Nuriye Ahmed Adem',
       accountNumber: '0910097862',
-      shortCodeOrTill: '0910097862',
+      shortCodeOrTill: '',
       iconName: 'Smartphone',
       badgeColor: 'bg-amber-50 text-amber-900 border-amber-300',
-      instructionsAm: 'በቴሌብር (Telebirr) መተግበሪያ ወይም በ *127# በቀጥታ ወደ 0910097862 (Nuriye Ahmed Adem) ይክፈሉ። መደበኛ (Normal)፡ 9ኛ ክፍል 160 ETB፣ 10ኛ ክፍል 180 ETB፣ 11-12ኛ ክፍል 200 ETB። ፕሪሚየም (Premium)፡ ለሁሉም ክፍሎች 54 ETB። የክፍያውን ማረጋገጫ (Transaction ID) ከታች ያስገቡ።',
-      instructionsEn: 'Pay directly via Telebirr App or *127# to 0910097862 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the Transaction Reference below.',
+      instructionsAm: 'በቴሌብር (Telebirr) መተግበሪያ ወይም በ *127# ወደ ስልክ ቁጥር 0910097862 (Nuriye Ahmed Adem) ይክፈሉ። መደበኛ (Normal)፡ 9ኛ ክፍል 160 ETB፣ 10ኛ ክፍል 180 ETB፣ 11-12ኛ ክፍል 200 ETB። የክፍያውን ማረጋገጫ (Transaction ID) ከታች ያስገቡ።',
+      instructionsEn: 'Pay via Telebirr App or *127# to Phone Number 0910097862 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Enter the Transaction Reference below.',
       isEnabled: true,
     },
     'CBE Birr': {
@@ -77,8 +83,8 @@ export const DEFAULT_PRICING_CONFIG: SubscriptionPricingConfig = {
       accountNumber: '0910097862',
       iconName: 'Smartphone',
       badgeColor: 'bg-purple-50 text-purple-900 border-purple-300',
-      instructionsAm: 'በ CBE Birr ወደ 0910097862 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
-      instructionsEn: 'Transfer via CBE Birr to 0910097862 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the FT reference code below.',
+      instructionsAm: 'በ CBE Birr ወደ ስልክ ቁጥር 0910097862 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
+      instructionsEn: 'Transfer via CBE Birr to 0910097862 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Enter the FT reference code below.',
       isEnabled: true,
     },
     'CBE Bank Transfer': {
@@ -88,45 +94,95 @@ export const DEFAULT_PRICING_CONFIG: SubscriptionPricingConfig = {
       accountNumber: '1000382883776',
       iconName: 'Building2',
       badgeColor: 'bg-purple-50 text-purple-900 border-purple-300',
-      instructionsAm: 'በኢትዮጵያ ንግድ ባንክ (CBE) በሞባይል ባንኪንግ ወይም በቅርንጫፍ ወደ ሂሳብ ቁጥር 1000382883776 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
-      instructionsEn: 'Transfer via CBE Mobile Banking to Account 1000382883776 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the FT reference code below.',
+      instructionsAm: 'በኢትዮጵያ ንግድ ባንክ (CBE) በሞባይል ባንኪንግ ወይም በቅርንጫፍ ወደ ሂሳብ ቁጥር 1000382883776 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
+      instructionsEn: 'Transfer via CBE Mobile Banking or branch to Account 1000382883776 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Enter the FT reference code below.',
       isEnabled: true,
     },
     'Commercial Bank of Ethiopia (CBE)': {
       id: 'Commercial Bank of Ethiopia (CBE)',
-      displayName: 'የኢትዮጵያ ንግድ ባንክ (CBE Bank Transfer)',
+      displayName: 'የኢትዮጵያ ንግድ ባንክ (Commercial Bank of Ethiopia - CBE)',
       accountName: 'Nuriye Ahmed Adem',
       accountNumber: '1000382883776',
       iconName: 'Building2',
       badgeColor: 'bg-purple-50 text-purple-900 border-purple-300',
-      instructionsAm: 'በኢትዮጵያ ንግድ ባንክ (CBE) በሞባይል ባንኪንግ ወይም በቅርንጫፍ ወደ ሂሳብ ቁጥር 1000382883776 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
-      instructionsEn: 'Transfer via CBE Mobile Banking to Account 1000382883776 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the FT reference code below.',
+      instructionsAm: 'በኢትዮጵያ ንግድ ባንክ (CBE) በሞባይል ባንኪንግ ወይም በቅርንጫፍ ወደ ሂሳብ ቁጥር 1000382883776 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
+      instructionsEn: 'Transfer via CBE Mobile Banking or branch to Account 1000382883776 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Enter the FT reference code below.',
+      isEnabled: true,
+    },
+    'CBE': {
+      id: 'CBE',
+      displayName: 'የኢትዮጵያ ንግድ ባንክ (Commercial Bank of Ethiopia - CBE)',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: '1000382883776',
+      iconName: 'Building2',
+      badgeColor: 'bg-purple-50 text-purple-900 border-purple-300',
+      instructionsAm: 'በኢትዮጵያ ንግድ ባንክ (CBE) በሞባይል ባንኪንግ ወይም በቅርንጫፍ ወደ ሂሳብ ቁጥር 1000382883776 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።',
+      instructionsEn: 'Transfer via CBE Mobile Banking or branch to Account 1000382883776 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Enter the FT reference code below.',
       isEnabled: true,
     },
     'Dashen Bank': {
       id: 'Dashen Bank',
-      displayName: 'ዳሸን ባንክ (Dashen Bank - Amole)',
-      accountName: 'NUR AI High School Education',
-      accountNumber: '5219 0382 9102 1',
+      displayName: 'ዳሸን ባንክ (Dashen Bank)',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: '2976196269611',
       iconName: 'Landmark',
       badgeColor: 'bg-blue-50 text-blue-900 border-blue-300',
-      instructionsAm: 'በዳሸን ባንክ ወይም በአሞሌ (Amole) ወደ ሂሳብ ቁጥር 5219038291021 ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የማረጋገጫውን ቁጥር ያስገቡ።',
-      instructionsEn: 'Transfer via Dashen Mobile / Amole to Account 5219038291021. Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter the transaction reference.',
+      instructionsAm: 'በዳሸን ባንክ ወይም በአሞሌ (Amole) ወደ ሂሳብ ቁጥር 2976196269611 (Nuriye Ahmed Adem) ይክፈሉ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። የማረጋገጫውን ቁጥር ያስገቡ።',
+      instructionsEn: 'Transfer via Dashen Mobile / Amole to Account 2976196269611 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Enter the transaction reference.',
       isEnabled: true,
     },
     'Bank of Abyssinia': {
       id: 'Bank of Abyssinia',
       displayName: 'አቢሲኒያ ባንክ (Bank of Abyssinia)',
-      accountName: 'NUR AI Educational Systems',
-      accountNumber: '8910 2341 0291',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: '251120889',
       iconName: 'CreditCard',
       badgeColor: 'bg-amber-50 text-amber-950 border-amber-400',
-      instructionsAm: 'በቦአ (BoA) ሞባይል ባንኪንግ ወደ ሂሳብ ቁጥር 891023410291 ይላኩ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። Premium፡ 54 ETB። የማረጋገጫ ደረሰኝ ኮድ ያስገቡ።',
-      instructionsEn: 'Transfer via BoA Mobile Banking to Account 891023410291. Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Premium: 54 ETB. Enter transaction reference number.',
+      instructionsAm: 'በአቢሲኒያ ባንክ (Bank of Abyssinia) ሞባይል ባንኪንግ ወይም ቅርንጫፍ ወደ ሂሳብ ቁጥር 251120889 (Nuriye Ahmed Adem) ይላኩ። Normal፡ 9ኛ 160 ETB፣ 10ኛ 180 ETB፣ 11-12ኛ 200 ETB። የማረጋገጫ ደረሰኝ ኮድ ያስገቡ።',
+      instructionsEn: 'Transfer via Bank of Abyssinia Mobile Banking or branch to Account 251120889 (Nuriye Ahmed Adem). Normal: G9 (160 ETB), G10 (180 ETB), G11-12 (200 ETB). Enter transaction reference number.',
       isEnabled: true,
     },
   },
 };
+
+function normalizeMethodsConfig(rawMethods?: Record<string, any>): Record<PaymentMethodName, PaymentMethodConfig> {
+  const merged: Record<string, any> = {
+    ...DEFAULT_PRICING_CONFIG.methods,
+    ...(rawMethods || {}),
+  };
+
+  for (const key of Object.keys(DEFAULT_PRICING_CONFIG.methods) as PaymentMethodName[]) {
+    const def = DEFAULT_PRICING_CONFIG.methods[key];
+    const current = merged[key];
+    if (!current) {
+      merged[key] = { ...def };
+      continue;
+    }
+    const accNum = String(current.accountNumber || '').replace(/\s+/g, '');
+    const isLegacyPlaceholder =
+      !accNum ||
+      accNum === '5219038291021' ||
+      accNum === '891023410291';
+    if (isLegacyPlaceholder) {
+      merged[key] = {
+        ...def,
+        ...current,
+        accountName: current.accountName || def.accountName,
+        accountNumber: def.accountNumber,
+        instructionsAm:
+          current.instructionsAm && !current.instructionsAm.includes('በስርዓቱ የተገለጸውን')
+            ? current.instructionsAm
+            : def.instructionsAm,
+        instructionsEn:
+          current.instructionsEn && !current.instructionsEn.includes('configured')
+            ? current.instructionsEn
+            : def.instructionsEn,
+      };
+    }
+  }
+
+  return merged as Record<PaymentMethodName, PaymentMethodConfig>;
+}
 
 const PAYMENTS_COLLECTION = 'payments';
 const SUBSCRIPTIONS_COLLECTION = 'subscriptions';
@@ -161,10 +217,7 @@ class SubscriptionService {
           grade11Price: Number.isFinite(g11) && g11 > 0 ? g11 : DEFAULT_PRICING_CONFIG.grade11Price,
           grade12Price: Number.isFinite(g12) && g12 > 0 ? g12 : DEFAULT_PRICING_CONFIG.grade12Price,
           premiumPrice: Number.isFinite(prem) && prem > 0 ? prem : DEFAULT_PRICING_CONFIG.premiumPrice,
-          methods: {
-            ...DEFAULT_PRICING_CONFIG.methods,
-            ...(d.methods || {}),
-          },
+          methods: normalizeMethodsConfig(d.methods),
         } as SubscriptionPricingConfig;
       }
     } catch (err) {
@@ -234,29 +287,40 @@ class SubscriptionService {
    * Subscribe to system payment methods in real time
    */
   subscribeToPaymentMethods(callback: (methods: PaymentMethodConfig[]) => void): Unsubscribe {
+    const primaryOrder: PaymentMethodName[] = [
+      'Telebirr',
+      'Dashen Bank',
+      'Commercial Bank of Ethiopia (CBE)',
+      'Bank of Abyssinia',
+    ];
     const docRef = doc(db, SETTINGS_COLLECTION, 'subscription_pricing');
     return onSnapshot(
       docRef,
       (snap) => {
-        const methodsObj = snap.exists() && snap.data()?.methods
-          ? snap.data().methods
-          : DEFAULT_PRICING_CONFIG.methods;
+        const methodsObj = normalizeMethodsConfig(
+          snap.exists() ? snap.data()?.methods : undefined
+        );
 
-        const list: PaymentMethodConfig[] = Object.values(methodsObj).map((m: any) => ({
-          ...m,
-          name: m.displayName || m.name || m.id,
-          enabled: m.isEnabled ?? m.enabled ?? true,
-        }));
+        const list: PaymentMethodConfig[] = primaryOrder
+          .map((key) => methodsObj[key])
+          .filter(Boolean)
+          .map((m: any) => ({
+            ...m,
+            name: m.displayName || m.name || m.id,
+            enabled: m.isEnabled ?? m.enabled ?? true,
+          }));
         callback(list);
       },
-      (err) => {
-        console.warn('Payment methods subscription error:', err);
+      () => {
         callback(
-          Object.values(DEFAULT_PRICING_CONFIG.methods).map((m) => ({
-            ...m,
-            name: m.displayName,
-            enabled: m.isEnabled,
-          }))
+          primaryOrder.map((key) => {
+            const m = DEFAULT_PRICING_CONFIG.methods[key];
+            return {
+              ...m,
+              name: m.displayName,
+              enabled: m.isEnabled,
+            };
+          })
         );
       }
     );
@@ -272,16 +336,16 @@ class SubscriptionService {
     const docRef = doc(db, SETTINGS_COLLECTION, 'subscription_pricing');
     const snap = await getDoc(docRef);
     const existing = snap.exists() ? snap.data() : { ...DEFAULT_PRICING_CONFIG };
-    const currentMethods = existing.methods || { ...DEFAULT_PRICING_CONFIG.methods };
+    const currentMethods = normalizeMethodsConfig(existing.methods);
 
     const matchedKey =
       Object.keys(currentMethods).find(
         (k) =>
           k.toLowerCase() === methodId.toLowerCase() ||
-          currentMethods[k]?.id?.toLowerCase() === methodId.toLowerCase()
+          currentMethods[k as PaymentMethodName]?.id?.toLowerCase() === methodId.toLowerCase()
       ) || methodId;
 
-    const existingMethod = currentMethods[matchedKey] || {};
+    const existingMethod = (currentMethods as any)[matchedKey] || {};
     const updatedMethod = {
       ...existingMethod,
       ...updates,
@@ -292,7 +356,27 @@ class SubscriptionService {
       enabled: updates.enabled ?? updates.isEnabled ?? existingMethod.enabled ?? true,
     };
 
-    currentMethods[matchedKey] = updatedMethod;
+    (currentMethods as any)[matchedKey] = updatedMethod;
+
+    // Keep CBE aliases synchronized when Super Admin updates CBE
+    if (
+      matchedKey === 'Commercial Bank of Ethiopia (CBE)' ||
+      matchedKey === 'CBE' ||
+      matchedKey === 'CBE Bank Transfer'
+    ) {
+      for (const cbeKey of ['Commercial Bank of Ethiopia (CBE)', 'CBE', 'CBE Bank Transfer']) {
+        const baseCbe = (currentMethods as any)[cbeKey] || {};
+        (currentMethods as any)[cbeKey] = {
+          ...baseCbe,
+          accountName: updatedMethod.accountName,
+          accountNumber: updatedMethod.accountNumber,
+          instructionsAm: updatedMethod.instructionsAm,
+          instructionsEn: updatedMethod.instructionsEn,
+          isEnabled: updatedMethod.isEnabled,
+          enabled: updatedMethod.enabled,
+        };
+      }
+    }
 
     await setDoc(
       docRef,
@@ -420,7 +504,14 @@ class SubscriptionService {
       reason: reason || 'Super Admin pricing configuration update',
       details: `Super Admin updated prices from [${oldPricesStr}] to [${newPricesStr}]. Duration: ${durationDays} days`,
       metadata: {
-        oldPrices: oldConfig || null,
+        oldPrices: oldConfig
+          ? {
+              grade9Price: oldConfig.grade9Price,
+              grade10Price: oldConfig.grade10Price,
+              grade11Price: oldConfig.grade11Price,
+              grade12Price: oldConfig.grade12Price,
+            }
+          : null,
         newPrices: {
           grade9Price: grade9,
           grade10Price: grade10,
@@ -1134,3 +1225,79 @@ class SubscriptionService {
 }
 
 export const subscriptionService = new SubscriptionService();
+
+export const GRADE_PRICING: Record<Grade, number> = {
+  9: DEFAULT_PRICING_CONFIG.grade9Price,
+  10: DEFAULT_PRICING_CONFIG.grade10Price,
+  11: DEFAULT_PRICING_CONFIG.grade11Price,
+  12: DEFAULT_PRICING_CONFIG.grade12Price,
+};
+
+export const PAYMENT_ACCOUNTS: Record<string, { name: string; accountName: string; accountNumber: string }> = {
+  telebirr: {
+    name: DEFAULT_PRICING_CONFIG.methods.Telebirr.displayName,
+    accountName: DEFAULT_PRICING_CONFIG.methods.Telebirr.accountName,
+    accountNumber: DEFAULT_PRICING_CONFIG.methods.Telebirr.accountNumber,
+  },
+  Telebirr: {
+    name: DEFAULT_PRICING_CONFIG.methods.Telebirr.displayName,
+    accountName: DEFAULT_PRICING_CONFIG.methods.Telebirr.accountName,
+    accountNumber: DEFAULT_PRICING_CONFIG.methods.Telebirr.accountNumber,
+  },
+  dashen_bank: {
+    name: DEFAULT_PRICING_CONFIG.methods['Dashen Bank'].displayName,
+    accountName: DEFAULT_PRICING_CONFIG.methods['Dashen Bank'].accountName,
+    accountNumber: DEFAULT_PRICING_CONFIG.methods['Dashen Bank'].accountNumber,
+  },
+  'Dashen Bank': {
+    name: DEFAULT_PRICING_CONFIG.methods['Dashen Bank'].displayName,
+    accountName: DEFAULT_PRICING_CONFIG.methods['Dashen Bank'].accountName,
+    accountNumber: DEFAULT_PRICING_CONFIG.methods['Dashen Bank'].accountNumber,
+  },
+  cbe: {
+    name: DEFAULT_PRICING_CONFIG.methods['Commercial Bank of Ethiopia (CBE)'].displayName,
+    accountName: DEFAULT_PRICING_CONFIG.methods['Commercial Bank of Ethiopia (CBE)'].accountName,
+    accountNumber: DEFAULT_PRICING_CONFIG.methods['Commercial Bank of Ethiopia (CBE)'].accountNumber,
+  },
+  CBE: {
+    name: DEFAULT_PRICING_CONFIG.methods['Commercial Bank of Ethiopia (CBE)'].displayName,
+    accountName: DEFAULT_PRICING_CONFIG.methods['Commercial Bank of Ethiopia (CBE)'].accountName,
+    accountNumber: DEFAULT_PRICING_CONFIG.methods['Commercial Bank of Ethiopia (CBE)'].accountNumber,
+  },
+  'Commercial Bank of Ethiopia (CBE)': {
+    name: DEFAULT_PRICING_CONFIG.methods['Commercial Bank of Ethiopia (CBE)'].displayName,
+    accountName: DEFAULT_PRICING_CONFIG.methods['Commercial Bank of Ethiopia (CBE)'].accountName,
+    accountNumber: DEFAULT_PRICING_CONFIG.methods['Commercial Bank of Ethiopia (CBE)'].accountNumber,
+  },
+  abyssinia_bank: {
+    name: DEFAULT_PRICING_CONFIG.methods['Bank of Abyssinia'].displayName,
+    accountName: DEFAULT_PRICING_CONFIG.methods['Bank of Abyssinia'].accountName,
+    accountNumber: DEFAULT_PRICING_CONFIG.methods['Bank of Abyssinia'].accountNumber,
+  },
+  'Bank of Abyssinia': {
+    name: DEFAULT_PRICING_CONFIG.methods['Bank of Abyssinia'].displayName,
+    accountName: DEFAULT_PRICING_CONFIG.methods['Bank of Abyssinia'].accountName,
+    accountNumber: DEFAULT_PRICING_CONFIG.methods['Bank of Abyssinia'].accountNumber,
+  },
+};
+
+export async function getStudentSubscription(userId: string) {
+  const sub = await subscriptionService.getStudentSubscription(userId);
+  if (!sub) return null;
+  return {
+    ...sub,
+    amountEtb: (sub as any).amountETB ?? (sub as any).amountEtb ?? GRADE_PRICING[sub.grade || 12],
+    endDate: sub.expiryDate || (sub as any).endDate,
+  } as any;
+}
+
+export async function getStudentPaymentHistory(userId: string) {
+  const records = await subscriptionService.getStudentPayments(userId);
+  return records.map((r) => ({
+    ...r,
+    id: r.paymentId || (r as any).id,
+    amountEtb: r.amountETB ?? (r as any).amountEtb,
+    createdAt: r.submittedAt || (r as any).createdAt,
+  })) as any[];
+}
+

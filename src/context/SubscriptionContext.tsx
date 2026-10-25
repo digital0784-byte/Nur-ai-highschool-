@@ -14,6 +14,7 @@ import {
   subscriptionService,
   DEFAULT_PRICING_CONFIG,
   isSuperAdmin,
+  SUPER_ADMIN_EMAIL,
 } from '../services/subscriptionService';
 
 interface SubscriptionContextType {
@@ -76,7 +77,10 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [pricingConfig, setPricingConfig] = useState<SubscriptionPricingConfig>(DEFAULT_PRICING_CONFIG);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const isOwnerSuperAdmin = isSuperAdmin(user?.email, userProfile?.role);
+  const isOwnerSuperAdmin = isSuperAdmin(
+    user?.email || userProfile?.email || (userProfile?.phoneNumber === '0910097862' ? SUPER_ADMIN_EMAIL : undefined),
+    userProfile?.role
+  );
 
   // Load Pricing Config
   useEffect(() => {
@@ -115,7 +119,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         startDate: '2025-01-01T00:00:00.000Z',
         expiryDate: '2099-12-31T23:59:59.999Z',
         autoRenew: true,
-        features: ['ALL_GRADES_UNLOCKED', 'AI_VOICE_UNLIMITED', 'ALL_MODULES_SUPER_ADMIN'],
+        features: ['ALL_GRADES_UNLOCKED', 'AI_VOICE_UNLIMITED', 'ALL_MODULES_SUPER_ADMIN', 'FREE_LIFETIME_ADMIN_ACCESS'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       } as any);
@@ -129,9 +133,25 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     // 1. Listen to user's subscription doc
     const unsubSub = subscriptionService.subscribeToUserSubscription(user.uid, (sub) => {
-      if (sub) {
+      if (isOwnerSuperAdmin) {
+        setSubscription({
+          id: `sub_${user.uid}`,
+          userId: user.uid,
+          studentName: userProfile?.displayName || 'Nuriye Ahmed Adem',
+          studentEmail: user.email || 'mejennur669@gmail.com',
+          tier: 'SUPER_ADMIN',
+          grade: 12,
+          status: 'ACTIVE',
+          startDate: '2025-01-01T00:00:00.000Z',
+          expiryDate: '2099-12-31T23:59:59.999Z',
+          autoRenew: true,
+          features: ['ALL_GRADES_UNLOCKED', 'AI_VOICE_UNLIMITED', 'ALL_MODULES_SUPER_ADMIN', 'FREE_LIFETIME_ADMIN_ACCESS'],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any);
+      } else if (sub) {
         setSubscription(sub);
-      } else if (!isOwnerSuperAdmin) {
+      } else {
         setSubscription(null);
       }
       setLoading(false);
@@ -170,14 +190,15 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Calculate Remaining Days
   const remainingDays = React.useMemo(() => {
+    if (isOwnerSuperAdmin) return 9999;
     if (!subscription || subscription.status !== 'ACTIVE') return 0;
     const expiry = new Date(subscription.expiryDate).getTime();
     const now = Date.now();
     const diffDays = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
     return diffDays > 0 ? diffDays : 0;
-  }, [subscription]);
+  }, [isOwnerSuperAdmin, subscription]);
 
-  const isExpiringSoon = remainingDays > 0 && remainingDays <= pricingConfig.renewalReminderDays;
+  const isExpiringSoon = !isOwnerSuperAdmin && remainingDays > 0 && remainingDays <= pricingConfig.renewalReminderDays;
 
   // Determine Access Status
   const accessStatus = React.useMemo(():
@@ -218,7 +239,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [isOwnerSuperAdmin, userProfile?.role, subscription, latestPayment]);
 
   // Determine if student has learning access
-  const hasLearningAccess = accessStatus === 'SUPER_ADMIN' || accessStatus === 'ACTIVE';
+  const hasLearningAccess = isOwnerSuperAdmin || accessStatus === 'SUPER_ADMIN' || accessStatus === 'ACTIVE';
 
   // Student Submits Payment
   const submitPayment = async (params: {

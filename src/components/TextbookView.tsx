@@ -208,62 +208,20 @@ export const TextbookView: React.FC<TextbookViewProps> = ({
         </div>
       </div>
 
-      {/* Grade & Language Selector Strip & All-Subjects PDF Library Button */}
+      {/* Locked Grade Badge & All-Subjects PDF Library Button (Strict single-entry rule) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b-[1.5px] border-[#D8CEBC] pb-3">
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Grade Selector */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Locked Grade Badge */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold font-serif-ethiopic text-[#6B6150] uppercase tracking-wider">
-              {t.selectGradeTextbookPrompt}:
+              {language === 'am' ? 'የተመዘገቡበት ክፍል:' : 'Enrolled Grade:'}
             </span>
-            <div className="flex items-center gap-1.5">
-              {([9, 10, 11, 12] as Grade[]).map((g) => {
-                const isSelected = g === selectedGrade;
-                return (
-                  <button
-                    key={g}
-                    onClick={() => {
-                      onSelectGrade(g);
-                      setActiveUnitNumber(1);
-                    }}
-                    className={`px-3 py-1 text-xs font-bold font-serif-ethiopic border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#38332D] text-[#FAF6EC] border-[#38332D] shadow-xs'
-                        : 'bg-[#FAF6EC] text-[#5A5040] border-[#BFB29E] hover:bg-[#EBE3D3]'
-                    }`}
-                  >
-                    {t.gradeTierPrefix} {g}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Language Selector for Textbook */}
-          <div className="flex items-center gap-2 border-l border-[#D8CEBC] pl-3">
-            <span className="text-xs font-bold font-serif-ethiopic text-[#6B6150] flex items-center gap-1">
-              <Globe className="w-3.5 h-3.5 text-[#8A7E6C]" />
-              ቋንቋ / Language:
-            </span>
-            <div className="flex items-center gap-1 flex-wrap">
-              {languagesList.map((langItem) => {
-                const isCurrent = language === langItem.code;
-                return (
-                  <button
-                    key={langItem.code}
-                    onClick={() => setLanguage(langItem.code)}
-                    className={`px-2 py-0.5 text-xs font-medium font-serif-ethiopic rounded transition-colors cursor-pointer flex items-center gap-1 ${
-                      isCurrent
-                        ? 'bg-[#2E6B4A] text-white font-bold border border-[#1D4A32] shadow-xs'
-                        : 'bg-[#FAF6EC] text-[#5C5346] border border-[#BFB29E] hover:bg-[#EBE3D3]'
-                    }`}
-                    title={`ቋንቋ ወደ ${langItem.label} ቀይር`}
-                  >
-                    <span>{langItem.flag}</span>
-                    <span>{langItem.label}</span>
-                  </button>
-                );
-              })}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#38332D] text-[#FAF6EC] rounded text-xs font-bold font-serif-ethiopic shadow-2xs">
+              <BookOpen className="w-3.5 h-3.5 text-amber-300" />
+              <span>{t.gradeTierPrefix} {selectedGrade}</span>
+              <span className="text-[10px] text-amber-200 bg-amber-900/40 px-1.5 py-0.2 rounded border border-amber-600/30">
+                🔒 {language === 'am' ? 'የተቆለፈ' : 'Locked'}
+              </span>
             </div>
           </div>
         </div>

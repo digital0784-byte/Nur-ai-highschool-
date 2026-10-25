@@ -283,6 +283,28 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
         </div>
       )}
 
+      {/* Super Admin Universal Free Access Notice */}
+      {(isOwnerSuperAdmin || accessStatus === 'SUPER_ADMIN') && (
+        <div className="p-5 bg-gradient-to-r from-amber-900/10 via-amber-800/5 to-emerald-900/10 border-2 border-amber-600/40 rounded-2xl text-stone-900 flex items-start gap-4 shadow-sm mb-6">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-700 flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-7 h-7 text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-black text-base font-serif-ethiopic text-[#1E1B18]">
+                👑 ሰላም ዋና አስተዳዳሪ (Super Admin)!
+              </h3>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-300">
+                100% በነፃ • ክፍያ የለም
+              </span>
+            </div>
+            <p className="text-xs text-stone-700 mt-1 font-serif-ethiopic leading-relaxed">
+              እርስዎ የኑር AI የሁለተኛ ደረጃ ትምህርት ቤት ስርዓት ባለቤትና Root Super Admin እንደመሆንዎ መጠን <strong>ምንም አይነት ክፍያ አይጠየቁም</strong>። ሁሉንም የሲስተሙን ክፍሎች (ክፍል 9-12፣ የተማሪ መጽሐፍት፣ የፈተናና ምዘና ሞተር፣ ኑር AI የግል አስጠኚ፣ ቪዲዮና 3D አኒሜሽን፣ እንዲሁም የአስተዳደር ዳሽቦርድ) ያለ ምንም ገደብና በነፃ ማግኘት ይችላሉ።
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Main 2-Column Grid: Pricing & Instructions on Left, Submission Form on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Grade Pricing & Instructions (5 Cols) */}
@@ -466,7 +488,7 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
                 htmlFor="payment-method-select-dropdown"
                 className="text-xs font-bold text-stone-700 block font-serif-ethiopic"
               >
-                የክፍያ ዘዴ በ Dropdown ይምረጡ (Telebirr ወይም CBE):
+                የክፍያ ዘዴ በ Dropdown ይምረጡ (Telebirr, Dashen, CBE ወይም Abyssinia):
               </label>
               <div className="relative">
                 <select
@@ -476,16 +498,16 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
                   className="w-full py-2.5 pl-3 pr-9 bg-white border-2 border-[#38332D] rounded-xl text-xs sm:text-sm font-bold text-stone-900 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2E6B4A] shadow-xs"
                 >
                   <option value="Telebirr">
-                    📱 ቴሌብር (Telebirr) — 0910097862 (Nuriye Ahmed Adem)
-                  </option>
-                  <option value="Commercial Bank of Ethiopia (CBE)">
-                    🏛️ የኢትዮጵያ ንግድ ባንክ (CBE) — 1000382883776 (Nuriye Ahmed Adem)
+                    📱 ቴሌብር (Telebirr){user && pricingConfig.methods['Telebirr']?.accountNumber ? ` — ${pricingConfig.methods['Telebirr'].accountNumber} (${pricingConfig.methods['Telebirr'].accountName})` : ''}
                   </option>
                   <option value="Dashen Bank">
-                    🏦 ዳሸን ባንክ (Dashen Bank)
+                    🏦 ዳሸን ባንክ (Dashen Bank){user && pricingConfig.methods['Dashen Bank']?.accountNumber ? ` — ${pricingConfig.methods['Dashen Bank'].accountNumber} (${pricingConfig.methods['Dashen Bank'].accountName})` : ''}
+                  </option>
+                  <option value="Commercial Bank of Ethiopia (CBE)">
+                    🏛️ የኢትዮጵያ ንግድ ባንክ (CBE){user && pricingConfig.methods['Commercial Bank of Ethiopia (CBE)']?.accountNumber ? ` — ${pricingConfig.methods['Commercial Bank of Ethiopia (CBE)'].accountNumber} (${pricingConfig.methods['Commercial Bank of Ethiopia (CBE)'].accountName})` : ''}
                   </option>
                   <option value="Bank of Abyssinia">
-                    🏦 አቢሲኒያ ባንክ (Bank of Abyssinia)
+                    🏦 አቢሲኒያ ባንክ (Bank of Abyssinia){user && pricingConfig.methods['Bank of Abyssinia']?.accountNumber ? ` — ${pricingConfig.methods['Bank of Abyssinia'].accountNumber} (${pricingConfig.methods['Bank of Abyssinia'].accountName})` : ''}
                   </option>
                 </select>
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-stone-700">
@@ -499,8 +521,8 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
               {(
                 [
                   'Telebirr',
-                  'Commercial Bank of Ethiopia (CBE)',
                   'Dashen Bank',
+                  'Commercial Bank of Ethiopia (CBE)',
                   'Bank of Abyssinia',
                 ] as PaymentMethodName[]
               ).map((mName) => {
@@ -525,42 +547,60 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
               })}
             </div>
 
-            {/* Account & Instruction Display Box */}
-            <div className="bg-white border border-[#D8CEBC] rounded-lg p-3.5 space-y-3">
-              <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-                <span className="text-xs text-stone-600 font-semibold">የሂሳብ ስም (Account Name):</span>
-                <span className="text-xs font-bold text-stone-900">{activeMethodConfig.accountName}</span>
-              </div>
-
-              <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-                <div>
-                  <span className="text-xs text-stone-600 font-semibold block">
-                    የሂሳብ / ስልክ ቁጥር (Account/Phone):
-                  </span>
-                  <span className="text-sm font-mono font-extrabold text-[#2E6B4A]">
-                    {activeMethodConfig.accountNumber}
-                  </span>
+            {/* Account & Instruction Display Box (Restricted to Registered Students) */}
+            {!user ? (
+              <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 text-center space-y-2">
+                <Lock className="w-5 h-5 text-amber-700 mx-auto" />
+                <div className="text-xs font-bold text-amber-950 font-serif-ethiopic">
+                  የክፍያ ሂሳብ መረጃዎች ለተመዘገቡ ተማሪዎች ብቻ ይታያሉ
                 </div>
+                <p className="text-[11px] text-amber-800">
+                  የቴሌብር እና የባንክ የክፍያ ሂሳብ ቁጥሮችን ለማየት እባክዎ መጀመሪያ ይመዝገቡ ወይም ወደ መለያዎ ይግቡ።
+                </p>
                 <button
                   type="button"
-                  onClick={() =>
-                    copyToClipboard(activeMethodConfig.accountNumber, 'acc_num')
-                  }
-                  className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded border border-stone-300 flex items-center gap-1 cursor-pointer transition-colors"
+                  onClick={() => openAuthModal('login')}
+                  className="px-3.5 py-1.5 bg-[#2E6B4A] text-white text-xs font-bold rounded-lg cursor-pointer"
                 >
-                  {copiedKey === 'acc_num' ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>ተገልብጧል</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>ቅዳ</span>
-                    </>
-                  )}
+                  ይግቡ / ይመዝገቡ (Login / Register)
                 </button>
               </div>
+            ) : (
+              <div className="bg-white border border-[#D8CEBC] rounded-lg p-3.5 space-y-3">
+                <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+                  <span className="text-xs text-stone-600 font-semibold">የሂሳብ ስም (Account Name):</span>
+                  <span className="text-xs font-bold text-stone-900">{activeMethodConfig.accountName}</span>
+                </div>
+
+                <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+                  <div>
+                    <span className="text-xs text-stone-600 font-semibold block">
+                      የሂሳብ / ስልክ ቁጥር (Account/Phone):
+                    </span>
+                    <span className="text-sm font-mono font-extrabold text-[#2E6B4A]">
+                      {activeMethodConfig.accountNumber}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      copyToClipboard(activeMethodConfig.accountNumber, 'acc_num')
+                    }
+                    className="px-2.5 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded border border-stone-300 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    {copiedKey === 'acc_num' ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>ተገልብጧል</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>ቅዳ</span>
+                      </>
+                    )}
+                  </button>
+                </div>
 
               {activeMethodConfig.shortCodeOrTill && (
                 <div className="flex items-center justify-between border-b border-stone-200 pb-2">
@@ -594,15 +634,16 @@ export const SubscriptionPaymentView: React.FC<SubscriptionPaymentViewProps> = (
                 </div>
               )}
 
-              {/* Instructions text */}
-              <div className="p-2.5 bg-amber-50/70 border border-amber-200 rounded text-xs text-amber-950 font-serif-ethiopic space-y-1">
-                <div className="font-bold flex items-center gap-1.5">
-                  <Info className="w-3.5 h-3.5 text-amber-700" />
-                  <span>የክፍያ መመሪያ፡</span>
+                {/* Instructions text */}
+                <div className="p-2.5 bg-amber-50/70 border border-amber-200 rounded text-xs text-amber-950 font-serif-ethiopic space-y-1">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 text-amber-700" />
+                    <span>የክፍያ መመሪያ፡</span>
+                  </div>
+                  <p className="leading-relaxed text-[11.5px]">{activeMethodConfig.instructionsAm}</p>
                 </div>
-                <p className="leading-relaxed text-[11.5px]">{activeMethodConfig.instructionsAm}</p>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

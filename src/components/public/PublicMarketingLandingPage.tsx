@@ -179,33 +179,42 @@ export const PublicMarketingLandingPage: React.FC<PublicMarketingLandingPageProp
     },
   ];
 
-  // Verified Payment Methods
+  // Verified Payment Methods (Account numbers are restricted to registered students on the secure payment screen)
   const paymentMethods = [
     {
       id: 'telebirr',
       nameAm: 'ቴሌብር (Telebirr)',
       nameEn: 'Telebirr',
-      accountName: DEVELOPER_INFO.name,
-      accountNumber: '0910097862',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: 'ለተመዘገቡ ተማሪዎች በክፍያ ገጽ ላይ ይታያል',
       code: '*127# ወይም Telebirr App',
       tag: 'ቀጥታና ፈጣን',
     },
     {
-      id: 'cbebirr',
-      nameAm: 'ሲቢኢ ብር (CBE Birr)',
-      nameEn: 'CBE Birr',
-      accountName: DEVELOPER_INFO.name,
-      accountNumber: '0910097862',
-      code: '*847# ወይም CBE Birr App',
-      tag: 'ምቹ የሞባይል ክፍያ',
+      id: 'dashen',
+      nameAm: 'ዳሸን ባንክ (Dashen Bank)',
+      nameEn: 'Dashen Bank',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: 'ለተመዘገቡ ተማሪዎች በክፍያ ገጽ ላይ ይታያል',
+      code: 'Dashen SuperApp / Amole',
+      tag: 'ምቹ የባንክ ክፍያ',
     },
     {
       id: 'cbe',
-      nameAm: 'የኢትዮጵያ ንግድ ባንክ (CBE Transfer)',
+      nameAm: 'የኢትዮጵያ ንግድ ባንክ (CBE)',
       nameEn: 'Commercial Bank of Ethiopia',
-      accountName: DEVELOPER_INFO.name,
-      accountNumber: '1000382883776',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: 'ለተመዘገቡ ተማሪዎች በክፍያ ገጽ ላይ ይታያል',
       code: 'CBE Mobile Banking / ቅርንጫፍ',
+      tag: 'ቀጥታ የባንክ ዝውውር',
+    },
+    {
+      id: 'boa',
+      nameAm: 'አቢሲኒያ ባንክ (Bank of Abyssinia)',
+      nameEn: 'Bank of Abyssinia',
+      accountName: 'Nuriye Ahmed Adem',
+      accountNumber: 'ለተመዘገቡ ተማሪዎች በክፍያ ገጽ ላይ ይታያል',
+      code: 'BoA Mobile / ቅርንጫፍ',
       tag: 'ቀጥታ የባንክ ዝውውር',
     },
   ];
@@ -260,7 +269,7 @@ export const PublicMarketingLandingPage: React.FC<PublicMarketingLandingPageProp
   const faqs = [
     {
       qAm: 'ክፍያ እንዴት እፈጽማለሁ? ምዝገባው እንዴት ነው የሚሰራው?',
-      aAm: 'በቴሌብር (0910097862) ወይም በኢትዮጵያ ንግድ ባንክ (1000382883776) የክፍልዎን ክፍያ ይላኩ። ከዚያ በመተግበሪያው ላይ ተመዝግበው የትራንዛክሽን ቁጥርዎን (FT Number) ያስገቡ። ዋናው አስተዳዳሪ (Super Admin: መጀን ኑር) ክፍያዎን በጥቂት ደቂቃዎች ውስጥ ሲያረጋግጥ ሙሉ ትምህርቶች ወዲያውኑ ይከፈቱልዎታል።',
+      aAm: 'በመተግበሪያው ላይ እንደ ተማሪ ሲመዘገቡ ደህንነቱ በተጠበቀው የክፍያ ገጽ ላይ የቴሌብር (Telebirr)፣ ዳሸን ባንክ (Dashen Bank)፣ የኢትዮጵያ ንግድ ባንክ (CBE) እና አቢሲኒያ ባንክ (Bank of Abyssinia) የክፍያ መመሪያዎች ይታዩልዎታል። ክፍያዎን ፈጽመው የትራንዛክሽን ቁጥርዎን (Transaction Reference) ሲያስገቡ ዋናው አስተዳዳሪ (SUPER_ADMIN) አረጋግጦ ሙሉ ትምህርቶችን ወዲያውኑ ይከፍትልዎታል።',
     },
     {
       qAm: 'ክፍያዬ እስኪጸድቅ ድረስ ምን ያህል ጊዜ ይወስዳል?',

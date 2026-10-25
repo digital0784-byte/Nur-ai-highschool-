@@ -42,6 +42,7 @@ function createFirestoreInstance(): Firestore {
     return initializeFirestore(
       app,
       {
+        ignoreUndefinedProperties: true,
         experimentalAutoDetectLongPolling: true,
         localCache: persistentLocalCache({
           tabManager: persistentMultipleTabManager(),
@@ -54,6 +55,7 @@ function createFirestoreInstance(): Firestore {
       return initializeFirestore(
         app,
         {
+          ignoreUndefinedProperties: true,
           experimentalAutoDetectLongPolling: true,
           localCache: memoryLocalCache(),
         },

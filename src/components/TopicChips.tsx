@@ -20,6 +20,15 @@ export const TopicChips: React.FC<TopicChipsProps> = ({
   const { t } = useLanguage();
   const { isTopicComplete, getTopicProgress } = useProgress();
 
+  // Filter topics strictly to the user's selected grade level so students cannot access other grades
+  const visibleTopics = React.useMemo(() => {
+    const tier = selectedGrade <= 10 ? '9-10' : '11-12';
+    const matched = subject.topics.filter(
+      (topic) => topic.applicableGrades.includes(selectedGrade) || topic.gradeTier === tier
+    );
+    return matched.length > 0 ? matched : subject.topics;
+  }, [subject.topics, selectedGrade]);
+
   return (
     <div
       id="topic-chips-bar"
@@ -30,13 +39,16 @@ export const TopicChips: React.FC<TopicChipsProps> = ({
           <Layers className="w-3.5 h-3.5" style={{ color: subject.accentColor }} />
           {t.topicsLabel} ({subject.name}):
         </span>
+        <span className="text-[10.5px] font-bold text-emerald-900 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded font-serif-ethiopic">
+          {t.gradePrefix} {selectedGrade} ({selectedGrade <= 10 ? 'ክፍል 9-10' : 'ክፍል 11-12'})
+        </span>
       </div>
 
       <div
         id="topic-chips-container"
         className="flex flex-wrap items-center gap-2"
       >
-        {subject.topics.map((topic) => {
+        {visibleTopics.map((topic) => {
           const isSelected = topic.id === selectedTopic.id;
           const isGradeMatched = topic.applicableGrades.includes(selectedGrade);
           const isComplete = isTopicComplete(topic.id);

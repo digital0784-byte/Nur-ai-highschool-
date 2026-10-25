@@ -36,7 +36,7 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && (
         (request.auth.token.email == 'mejennur669@gmail.com') ||
-        (hasUserDoc() && getUserData().role == 'admin')
+        (hasUserDoc() && (getUserData().role == 'admin' || getUserData().role == 'SUPER_ADMIN'))
       );
     }
 
@@ -741,10 +741,59 @@ service cloud.firestore {
     }
 
     match /system_settings/{settingId} {
-      // Public / authenticated users can read system pricing and config
-      allow read: if true;
-      // Only Super Admin can adjust pricing and system settings
+      // Payment methods & system settings strictly require authentication (no unrestricted database access)
+      allow read: if isAuthenticated();
+      // Only Super Admin can adjust pricing, payment methods, and system settings
       allow write: if isAdmin();
+    }
+
+    // =========================================================================
+    // 11B. REFERENCE BOOKS READING SECTION & PROGRESS / BOOKMARKS
+    // =========================================================================
+    match /reference_books/{bookId} {
+      // Only published non-admin books are readable by students; Super Admin can read all
+      allow read: if isAuthenticated() && (
+        isAdmin() ||
+        (resource.data.status == 'PUBLISHED' && resource.data.accessLevel != 'ADMIN_ONLY')
+      );
+      allow write: if isAdmin();
+    }
+
+    match /reference_book_chapters/{chapterId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /reference_book_sections/{sectionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /reference_book_progress/{progressId} {
+      // Students must only read/update their own progress
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create, update: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    match /reference_book_bookmarks/{bookmarkId} {
+      // Students must only read/update/delete their own bookmarks
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create, update: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
     }
 
     // =========================================================================
@@ -776,6 +825,143 @@ service cloud.firestore {
       allow create: if isAuthenticated();
       // Security logs are strictly immutable: no updates or deletions allowed
       allow update, delete: if false;
+    }
+
+    // =========================================================================
+    // 13. ENTRANCE EXAM ENGINE, AUDIT TRAILS & SYSTEM TELEMETRY
+    // =========================================================================
+    match /admin_audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && isValidId(logId);
+      allow update, delete: if false;
+    }
+
+    match /entrance_exam_configs/{configId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /entrance_question_banks/{qId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /entrance_mock_exams/{examId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /entrance_past_papers/{paperId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /entrance_progress/{docId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    match /entrance_mock_attempts/{attemptId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        (resource.data.userId == request.auth.uid && resource.data.status != 'completed') ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /diagnostic_attempts/{attemptId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        (resource.data.userId == request.auth.uid && resource.data.status != 'completed') ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /study_plans/{planId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    match /mistake_book/{mistakeId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    match /learning_events/{eventId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.studentId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /learning_alerts/{alertId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.studentId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /performance_snapshots/{snapshotId} {
+      allow read: if isAuthenticated() && (
+        resource == null ||
+        resource.data.studentId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /system_metadata/{metaId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /parents/{parentId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
     }
   }
 }

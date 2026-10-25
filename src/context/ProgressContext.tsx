@@ -51,20 +51,49 @@ const defaultTopicProgress: TopicProgressItem = {
   quizCompleted: false,
 };
 
+function sanitizeProgressMap(map: CourseProgressMap): CourseProgressMap {
+  const clean: CourseProgressMap = {};
+  if (!map || typeof map !== 'object') return clean;
+  for (const [topicId, item] of Object.entries(map)) {
+    if (!item || typeof item !== 'object') continue;
+    const cleanItem: TopicProgressItem = {
+      lessonCompleted: Boolean(item.lessonCompleted),
+      flashcardsCompleted: Boolean(item.flashcardsCompleted),
+      quizCompleted: Boolean(item.quizCompleted),
+    };
+    if (typeof item.quizScore === 'number' && !Number.isNaN(item.quizScore)) {
+      cleanItem.quizScore = item.quizScore;
+    }
+    if (typeof item.quizTotal === 'number' && !Number.isNaN(item.quizTotal)) {
+      cleanItem.quizTotal = item.quizTotal;
+    }
+    clean[topicId] = cleanItem;
+  }
+  return clean;
+}
+
 function mergeProgressMaps(local: CourseProgressMap, remote: CourseProgressMap): CourseProgressMap {
-  const merged: CourseProgressMap = { ...local };
-  for (const [topicId, remoteItem] of Object.entries(remote)) {
+  const merged: CourseProgressMap = { ...sanitizeProgressMap(local) };
+  for (const [topicId, remoteItem] of Object.entries(sanitizeProgressMap(remote))) {
     const localItem = merged[topicId];
     if (!localItem) {
       merged[topicId] = remoteItem;
     } else {
-      merged[topicId] = {
-        lessonCompleted: localItem.lessonCompleted || remoteItem.lessonCompleted,
-        flashcardsCompleted: localItem.flashcardsCompleted || remoteItem.flashcardsCompleted,
-        quizCompleted: localItem.quizCompleted || remoteItem.quizCompleted,
-        quizScore: Math.max(localItem.quizScore || 0, remoteItem.quizScore || 0),
-        quizTotal: localItem.quizTotal || remoteItem.quizTotal,
+      const mergedItem: TopicProgressItem = {
+        lessonCompleted: Boolean(localItem.lessonCompleted || remoteItem.lessonCompleted),
+        flashcardsCompleted: Boolean(localItem.flashcardsCompleted || remoteItem.flashcardsCompleted),
+        quizCompleted: Boolean(localItem.quizCompleted || remoteItem.quizCompleted),
       };
+      const hasQuizScore =
+        typeof localItem.quizScore === 'number' || typeof remoteItem.quizScore === 'number';
+      if (hasQuizScore) {
+        mergedItem.quizScore = Math.max(localItem.quizScore ?? 0, remoteItem.quizScore ?? 0);
+      }
+      const resolvedTotal = localItem.quizTotal ?? remoteItem.quizTotal;
+      if (typeof resolvedTotal === 'number' && !Number.isNaN(resolvedTotal)) {
+        mergedItem.quizTotal = resolvedTotal;
+      }
+      merged[topicId] = mergedItem;
     }
   }
   return merged;
@@ -92,7 +121,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        return sanitizeProgressMap(JSON.parse(saved));
       }
     } catch {
       // ignore JSON parse error
@@ -220,28 +249,37 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           setProgressMap((localMap) => {
             const merged = mergeProgressMaps(localMap, cloudMap);
             // Save merged back to cloud in both locations
-            const syncPayload = {
-              uid: user.uid,
-              progressMap: merged,
-              lastUpdated: new Date().toISOString(),
-            };
-            setDoc(progressDocRef, syncPayload, { merge: true }).catch(() => {});
-            setDoc(topProgressRef, syncPayload, { merge: true }).catch(() => {});
+            try {
+              const syncPayload = {
+                uid: user.uid,
+                progressMap: sanitizeProgressMap(merged),
+                lastUpdated: new Date().toISOString(),
+              };
+              setDoc(progressDocRef, syncPayload, { merge: true }).catch(() => {});
+              setDoc(topProgressRef, syncPayload, { merge: true }).catch(() => {});
+            } catch {
+              // ignore sync validation errors
+            }
             return merged;
           });
         } else {
           // Upload local progress to cloud
           setProgressMap((localMap) => {
-            if (Object.keys(localMap).length > 0) {
-              const syncPayload = {
-                uid: user.uid,
-                progressMap: localMap,
-                lastUpdated: new Date().toISOString(),
-              };
-              setDoc(progressDocRef, syncPayload, { merge: true }).catch(() => {});
-              setDoc(topProgressRef, syncPayload, { merge: true }).catch(() => {});
+            const cleanedLocal = sanitizeProgressMap(localMap);
+            if (Object.keys(cleanedLocal).length > 0) {
+              try {
+                const syncPayload = {
+                  uid: user.uid,
+                  progressMap: cleanedLocal,
+                  lastUpdated: new Date().toISOString(),
+                };
+                setDoc(progressDocRef, syncPayload, { merge: true }).catch(() => {});
+                setDoc(topProgressRef, syncPayload, { merge: true }).catch(() => {});
+              } catch {
+                // ignore sync validation errors
+              }
             }
-            return localMap;
+            return cleanedLocal;
           });
         }
 
@@ -269,7 +307,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const topProgressRef = doc(db, 'progress', user.uid);
       const payload = {
         uid: user.uid,
-        progressMap: newMap,
+        progressMap: sanitizeProgressMap(newMap),
         lastUpdated: new Date().toISOString(),
       };
       setDoc(progressDocRef, payload, { merge: true }).catch(() => {});
@@ -460,7 +498,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         progressDocRef,
         {
           uid: user.uid,
-          progressMap,
+          progressMap: sanitizeProgressMap(progressMap),
           lastUpdated: new Date().toISOString(),
         },
         { merge: true }

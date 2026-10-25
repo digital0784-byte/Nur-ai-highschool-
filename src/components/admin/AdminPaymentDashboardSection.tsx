@@ -141,7 +141,7 @@ export const AdminPaymentDashboardSection: React.FC = () => {
       const subs = await subscriptionService.getAllSubscriptions();
       setSubscriptions(subs);
     } catch (err: any) {
-      alert(`Approval error: ${err.message}`);
+      setActionSuccessMsg(`Approval error: ${err.message}`);
     } finally {
       setProcessingId(null);
     }
@@ -151,7 +151,7 @@ export const AdminPaymentDashboardSection: React.FC = () => {
   const handleRejectConfirm = async () => {
     if (!rejectingPayment) return;
     if (!rejectionReasonInput.trim()) {
-      alert('እባክዎ የውድቅ ማድረጊያ ምክንያት ያስገቡ (Please enter reason)');
+      setActionSuccessMsg('እባክዎ የውድቅ ማድረጊያ ምክንያት ያስገቡ (Please enter reason)');
       return;
     }
 
@@ -169,7 +169,7 @@ export const AdminPaymentDashboardSection: React.FC = () => {
       const subs = await subscriptionService.getAllSubscriptions();
       setSubscriptions(subs);
     } catch (err: any) {
-      alert(`Rejection error: ${err.message}`);
+      setActionSuccessMsg(`Rejection error: ${err.message}`);
     } finally {
       setProcessingId(null);
     }
@@ -183,7 +183,7 @@ export const AdminPaymentDashboardSection: React.FC = () => {
       await superAdminUpdatePricing(pricingForm);
       setActionSuccessMsg('የዋጋና የክፍያ ቅንብሮች በተሳካ ሁኔታ ተሻሽለዋል!');
     } catch (err: any) {
-      alert(`Pricing update error: ${err.message}`);
+      setActionSuccessMsg(`Pricing update error: ${err.message}`);
     } finally {
       setIsSavingPricing(false);
     }

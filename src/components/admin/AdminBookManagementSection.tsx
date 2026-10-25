@@ -1,404 +1,725 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BookOpen,
   ShieldCheck,
   Lock,
   Search,
-  Filter,
-  Eye,
   Edit,
   Plus,
   CheckCircle2,
-  AlertTriangle,
-  FileText,
-  Download,
   EyeOff,
-  Sparkles,
-  ChevronRight,
-  MoreVertical,
   X,
   Save,
+  Layers,
+  Trash2,
+  FileText,
 } from 'lucide-react';
-import { GradeLevel } from '../../types/curriculumEngine';
+import {
+  Grade,
+  ReferenceBook,
+  ReferenceBookAccessLevel,
+  ReferenceBookStatus,
+  ReferenceBookChapter,
+  ReferenceBookSection,
+} from '../../types';
+import { secureBookService } from '../../services/secureBookService';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
-
-interface BookItem {
-  id: string;
-  title: string;
-  titleAmharic: string;
-  subject: string;
-  grade: GradeLevel;
-  totalPages: number;
-  encryptionStatus: 'AES-256 Active' | 'Pending Refresh';
-  downloadProtection: 'Enforced (No Download)';
-  watermarkActive: boolean;
-  lastUpdated: string;
-  unitCount: number;
-}
 
 export const AdminBookManagementSection: React.FC = () => {
+  const [books, setBooks] = useState<ReferenceBook[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGrade, setSelectedGrade] = useState<GradeLevel | 'all'>('all');
-  const [selectedBookForEdit, setSelectedBookForEdit] = useState<BookItem | null>(null);
+  const [selectedGrade, setSelectedGrade] = useState<Grade | 'all'>('all');
+  const [activeSubView, setActiveSubView] = useState<'books' | 'chapters'>('books');
 
-  const [books, setBooks] = useState<BookItem[]>([
-    {
-      id: 'book-math-9',
-      title: 'Grade 9 Mathematics Student Textbook',
-      titleAmharic: 'የ9ኛ ክፍል ሒሳብ የተማሪ መጽሐፍ',
-      subject: 'Mathematics',
-      grade: 9,
-      totalPages: 184,
-      encryptionStatus: 'AES-256 Active',
-      downloadProtection: 'Enforced (No Download)',
-      watermarkActive: true,
-      lastUpdated: '2026-09-15',
-      unitCount: 6,
-    },
-    {
-      id: 'book-physics-9',
-      title: 'Grade 9 Physics Student Textbook',
-      titleAmharic: 'የ9ኛ ክፍል ፊዚክስ የተማሪ መጽሐፍ',
-      subject: 'Physics',
-      grade: 9,
-      totalPages: 210,
-      encryptionStatus: 'AES-256 Active',
-      downloadProtection: 'Enforced (No Download)',
-      watermarkActive: true,
-      lastUpdated: '2026-09-14',
-      unitCount: 5,
-    },
-    {
-      id: 'book-chem-9',
-      title: 'Grade 9 Chemistry Student Textbook',
-      titleAmharic: 'የ9ኛ ክፍል ኬሚስትሪ የተማሪ መጽሐፍ',
-      subject: 'Chemistry',
-      grade: 9,
-      totalPages: 168,
-      encryptionStatus: 'AES-256 Active',
-      downloadProtection: 'Enforced (No Download)',
-      watermarkActive: true,
-      lastUpdated: '2026-09-10',
-      unitCount: 5,
-    },
-    {
-      id: 'book-bio-9',
-      title: 'Grade 9 Biology Student Textbook',
-      titleAmharic: 'የ9ኛ ክፍል ባዮሎጂ የተማሪ መጽሐፍ',
-      subject: 'Biology',
-      grade: 9,
-      totalPages: 195,
-      encryptionStatus: 'AES-256 Active',
-      downloadProtection: 'Enforced (No Download)',
-      watermarkActive: true,
-      lastUpdated: '2026-09-08',
-      unitCount: 6,
-    },
-    {
-      id: 'book-math-10',
-      title: 'Grade 10 Mathematics Student Textbook',
-      titleAmharic: 'የ10ኛ ክፍል ሒሳብ የተማሪ መጽሐፍ',
-      subject: 'Mathematics',
-      grade: 10,
-      totalPages: 196,
-      encryptionStatus: 'AES-256 Active',
-      downloadProtection: 'Enforced (No Download)',
-      watermarkActive: true,
-      lastUpdated: '2026-09-12',
-      unitCount: 7,
-    },
-    {
-      id: 'book-physics-10',
-      title: 'Grade 10 Physics Student Textbook',
-      titleAmharic: 'የ10ኛ ክፍል ፊዚክስ የተማሪ መጽሐፍ',
-      subject: 'Physics',
-      grade: 10,
-      totalPages: 220,
-      encryptionStatus: 'AES-256 Active',
-      downloadProtection: 'Enforced (No Download)',
-      watermarkActive: true,
-      lastUpdated: '2026-09-11',
-      unitCount: 6,
-    },
-    {
-      id: 'book-math-11',
-      title: 'Grade 11 Mathematics (Natural Science)',
-      titleAmharic: 'የ11ኛ ክፍል ሒሳብ (የተፈጥሮ ሳይንስ)',
-      subject: 'Mathematics',
-      grade: 11,
-      totalPages: 240,
-      encryptionStatus: 'AES-256 Active',
-      downloadProtection: 'Enforced (No Download)',
-      watermarkActive: true,
-      lastUpdated: '2026-09-05',
-      unitCount: 8,
-    },
-    {
-      id: 'book-math-12',
-      title: 'Grade 12 Mathematics (Matriculation Preparation)',
-      titleAmharic: 'የ12ኛ ክፍል ሒሳብ (የዩኒቨርሲቲ መግቢያ ዝግጅት)',
-      subject: 'Mathematics',
-      grade: 12,
-      totalPages: 260,
-      encryptionStatus: 'AES-256 Active',
-      downloadProtection: 'Enforced (No Download)',
-      watermarkActive: true,
-      lastUpdated: '2026-09-02',
-      unitCount: 8,
-    },
-  ]);
+  // Book Editor Modal State
+  const [editingBook, setEditingBook] = useState<ReferenceBook | null>(null);
+  const [isCreatingBook, setIsCreatingBook] = useState(false);
+
+  // Chapters & Sections Manager State
+  const [selectedBookForChapters, setSelectedBookForChapters] = useState<ReferenceBook | null>(null);
+  const [chapters, setChapters] = useState<ReferenceBookChapter[]>([]);
+  const [sections, setSections] = useState<ReferenceBookSection[]>([]);
+  const [newChapterTitle, setNewChapterTitle] = useState('');
+  const [newChapterSummary, setNewChapterSummary] = useState('');
+  const [newSectionTitle, setNewSectionTitle] = useState('');
+  const [newSectionNumber, setNewSectionNumber] = useState('1.1');
+  const [newSectionContent, setNewSectionContent] = useState('');
+  const [newSectionFormulas, setNewSectionFormulas] = useState('');
+  const [targetChapterId, setTargetChapterId] = useState<string>('');
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadBooks();
+  }, []);
+
+  const loadBooks = async () => {
+    const list = await secureBookService.getReferenceBooks({ includeDrafts: true, isAdmin: true });
+    setBooks(list);
+    if (!selectedBookForChapters && list.length > 0) {
+      handleSelectBookForChapters(list[0]);
+    }
+  };
+
+  const handleSelectBookForChapters = async (book: ReferenceBook) => {
+    setSelectedBookForChapters(book);
+    const [ch, sec] = await Promise.all([
+      secureBookService.getBookChapters(book.id),
+      secureBookService.getBookSections(book.id),
+    ]);
+    setChapters(ch);
+    setSections(sec);
+    if (ch.length > 0) {
+      setTargetChapterId(ch[0].id);
+    }
+  };
+
+  const handleOpenCreateBook = () => {
+    const newBook: ReferenceBook = {
+      id: `ref-book-${Date.now()}`,
+      title: '',
+      titleAmharic: '',
+      author: 'FDRE MoE / Academic Reference Panel',
+      subjectId: 'math',
+      subjectName: 'Mathematics',
+      gradeId: 9,
+      category: 'Curriculum Reference',
+      description: '',
+      coverGradient: 'from-emerald-700 via-emerald-800 to-teal-950',
+      accessLevel: 'FREE',
+      status: 'PUBLISHED',
+      source: 'Official Approved Reference',
+      licenseInfo: 'Educational Reference License — In-App Reading Only',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setEditingBook(newBook);
+    setIsCreatingBook(true);
+  };
+
+  const handleSaveBook = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBook || !editingBook.title.trim()) return;
+    await secureBookService.saveReferenceBookAdmin(editingBook);
+    await loadBooks();
+    setEditingBook(null);
+    setIsCreatingBook(false);
+    setStatusMessage('Reference book configuration saved and synced.');
+    setTimeout(() => setStatusMessage(null), 3500);
+  };
+
+  const handleDeleteBook = async (bookId: string) => {
+    await secureBookService.deleteReferenceBookAdmin(bookId);
+    await loadBooks();
+    setStatusMessage('Reference book removed.');
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
+
+  const handleAddChapter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBookForChapters || !newChapterTitle.trim()) return;
+    const ch: ReferenceBookChapter = {
+      id: `ch-${selectedBookForChapters.id}-${Date.now()}`,
+      bookId: selectedBookForChapters.id,
+      chapterNumber: chapters.length + 1,
+      title: newChapterTitle.trim(),
+      summary: newChapterSummary.trim() || 'Approved reference chapter.',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await secureBookService.saveChapterAdmin(ch);
+    setNewChapterTitle('');
+    setNewChapterSummary('');
+    await handleSelectBookForChapters(selectedBookForChapters);
+    setStatusMessage('Chapter added to reference book.');
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
+
+  const handleAddSection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBookForChapters || !targetChapterId || !newSectionTitle.trim() || !newSectionContent.trim()) {
+      return;
+    }
+    const sec: ReferenceBookSection = {
+      id: `sec-${selectedBookForChapters.id}-${Date.now()}`,
+      bookId: selectedBookForChapters.id,
+      chapterId: targetChapterId,
+      sectionNumber: newSectionNumber.trim() || '1.1',
+      title: newSectionTitle.trim(),
+      content: newSectionContent
+        .split('\n')
+        .map((p) => p.trim())
+        .filter(Boolean),
+      keyFormulas: newSectionFormulas
+        .split('\n')
+        .map((f) => f.trim())
+        .filter(Boolean),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await secureBookService.saveSectionAdmin(sec);
+    setNewSectionTitle('');
+    setNewSectionContent('');
+    setNewSectionFormulas('');
+    await handleSelectBookForChapters(selectedBookForChapters);
+    setStatusMessage('Section content added and protected.');
+    setTimeout(() => setStatusMessage(null), 3000);
+  };
 
   const filteredBooks = books.filter((b) => {
     const matchSearch =
       b.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      b.titleAmharic.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      b.subject.toLowerCase().includes(searchTerm.toLowerCase());
+      (b.titleAmharic || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.subjectName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.author.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (!matchSearch) return false;
-    if (selectedGrade !== 'all' && b.grade !== selectedGrade) return false;
+    if (selectedGrade !== 'all' && b.gradeId !== selectedGrade) return false;
     return true;
   });
 
   return (
     <div className="space-y-6">
-      {/* 1. Header & Quick Metrics */}
+      {/* 1. Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-stone-900 font-serif-ethiopic">
-            የመጽሐፍትና የይዘት ጥበቃ አስተዳደር (Secure Book Management)
+            የማጣቀሻ መጽሐፍት፣ ምዕራፎችና የመዳረሻ ቁጥጥር (Reference Books & Access Management)
           </h2>
           <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            የኢ.ፌ.ዲ.ሪ ትምህርት ሚኒስቴር ይፋዊ መጽሐፍት ካታሎግ፣ የይዘት ምስጠራ (DRM) እና የማውረድ መከላከያ ቁጥጥር።
+            Configure Reference Books, Chapters, Sections, Access Levels (FREE, PREMIUM, ADMIN_ONLY), Publication Status, and Source/License attribution.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <Badge variant="success" size="md" dot>
-            DRM Download Protection: Active
-          </Badge>
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={<Plus className="w-4 h-4" />}
+            onClick={handleOpenCreateBook}
+          >
+            Add Reference Book
+          </Button>
         </div>
       </div>
 
-      {/* KPI Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xs">
-          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">
-            Total In-App Books
-          </span>
-          <span className="text-2xl font-black text-stone-900 font-mono mt-1 block">
-            {books.length}
-          </span>
-          <span className="text-xs text-emerald-700 font-medium mt-1 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> 100% Curriculum Aligned
-          </span>
+      {statusMessage && (
+        <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <span>{statusMessage}</span>
         </div>
+      )}
 
-        <div className="p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xs">
-          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">
-            Total Protected Pages
-          </span>
-          <span className="text-2xl font-black text-stone-900 font-mono mt-1 block">
-            1,681
-          </span>
-          <span className="text-xs text-stone-500 mt-1 block">Grades 9 - 12 Coverage</span>
-        </div>
-
-        <div className="p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xs">
-          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">
-            Watermark Enforcement
-          </span>
-          <span className="text-2xl font-black text-emerald-700 font-mono mt-1 block">
-            Enabled
-          </span>
-          <span className="text-xs text-emerald-700 font-medium mt-1 flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3" /> User Session Stamped
-          </span>
-        </div>
-
-        <div className="p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xs">
-          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">
-            External Download Leaks
-          </span>
-          <span className="text-2xl font-black text-emerald-800 font-mono mt-1 block">
-            0 Leaks
-          </span>
-          <span className="text-xs text-stone-500 mt-1 block">Protected via Private Storage</span>
-        </div>
+      {/* Sub-navigation Tabs: Books & Access vs Chapters & Sections */}
+      <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-stone-200 w-fit">
+        <button
+          onClick={() => setActiveSubView('books')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+            activeSubView === 'books'
+              ? 'bg-emerald-700 text-white shadow-xs'
+              : 'text-stone-600 hover:bg-stone-100'
+          }`}
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Reference Books & Access ({books.length})</span>
+        </button>
+        <button
+          onClick={() => setActiveSubView('chapters')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+            activeSubView === 'chapters'
+              ? 'bg-emerald-700 text-white shadow-xs'
+              : 'text-stone-600 hover:bg-stone-100'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Reference Book Chapters & Sections</span>
+        </button>
       </div>
 
-      {/* 2. Filter Bar & Search */}
-      <div className="bg-white rounded-3xl p-4 border border-stone-200/90 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
-          <input
-            type="text"
-            placeholder="Search textbook by title or subject..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
-          />
-        </div>
+      {activeSubView === 'books' ? (
+        <>
+          {/* Filter Bar */}
+          <div className="bg-white rounded-3xl p-4 border border-stone-200/90 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="relative w-full sm:w-80">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                type="text"
+                placeholder="Search reference book by title, author, subject..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:border-emerald-600"
+              />
+            </div>
 
-        {/* Grade Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full sm:w-auto">
-          {(['all', 9, 10, 11, 12] as (GradeLevel | 'all')[]).map((g) => (
-            <button
-              key={g}
-              onClick={() => setSelectedGrade(g)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                selectedGrade === g
-                  ? 'bg-emerald-700 text-white shadow-xs'
-                  : 'bg-stone-50 text-stone-600 hover:bg-stone-100 border border-stone-200'
-              }`}
-            >
-              {g === 'all' ? 'All Grades' : `Grade ${g}`}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 3. ERP Clean Data Table */}
-      <div className="bg-white rounded-3xl border border-stone-200/90 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-stone-600 border-collapse">
-            <thead className="bg-stone-50 border-b border-stone-200/80 uppercase font-mono text-[11px] text-stone-400">
-              <tr>
-                <th className="px-5 py-4 font-bold">Textbook Title</th>
-                <th className="px-4 py-4 font-bold">Subject & Grade</th>
-                <th className="px-4 py-4 font-bold">Pages & Units</th>
-                <th className="px-4 py-4 font-bold">DRM Status</th>
-                <th className="px-4 py-4 font-bold">Download Policy</th>
-                <th className="px-4 py-4 font-bold text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-100">
-              {filteredBooks.map((book) => (
-                <tr key={book.id} className="hover:bg-stone-50/70 transition-colors">
-                  <td className="px-5 py-4">
-                    <div className="font-bold text-stone-900 font-serif-ethiopic text-sm">
-                      {book.titleAmharic}
-                    </div>
-                    <div className="text-[11px] text-stone-400 mt-0.5">{book.title}</div>
-                  </td>
-
-                  <td className="px-4 py-4">
-                    <span className="font-bold text-stone-800">{book.subject}</span>
-                    <div className="text-[11px] text-emerald-800 font-mono mt-0.5">
-                      Grade {book.grade}
-                    </div>
-                  </td>
-
-                  <td className="px-4 py-4">
-                    <div className="font-mono text-stone-800">{book.totalPages} Pages</div>
-                    <div className="text-[11px] text-stone-400 mt-0.5">{book.unitCount} Units</div>
-                  </td>
-
-                  <td className="px-4 py-4">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <ShieldCheck className="w-3 h-3" />
-                      {book.encryptionStatus}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-4">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                      <EyeOff className="w-3 h-3" />
-                      {book.downloadProtection}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        leftIcon={<Edit className="w-3 h-3" />}
-                        onClick={() => setSelectedBookForEdit(book)}
-                      >
-                        Edit DRM
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full sm:w-auto">
+              {(['all', 9, 10, 11, 12] as (Grade | 'all')[]).map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setSelectedGrade(g)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    selectedGrade === g
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-stone-50 text-stone-600 hover:bg-stone-100 border border-stone-200'
+                  }`}
+                >
+                  {g === 'all' ? 'All Grades' : `Grade ${g}`}
+                </button>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </div>
+          </div>
 
-      {/* 4. Slide-Over / Modal Editor for Book Metadata & DRM */}
-      {selectedBookForEdit && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-3xl p-6 bg-white border border-stone-200 shadow-2xl space-y-4">
+          {/* Reference Books Table */}
+          <div className="bg-white rounded-3xl border border-stone-200/90 shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-stone-600 border-collapse">
+                <thead className="bg-stone-50 border-b border-stone-200/80 uppercase font-mono text-[11px] text-stone-400">
+                  <tr>
+                    <th className="px-5 py-4 font-bold">Book Title & Author</th>
+                    <th className="px-4 py-4 font-bold">Subject & Grade</th>
+                    <th className="px-4 py-4 font-bold">Category & Source</th>
+                    <th className="px-4 py-4 font-bold">Access Level</th>
+                    <th className="px-4 py-4 font-bold">Status</th>
+                    <th className="px-4 py-4 font-bold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-100">
+                  {filteredBooks.map((book) => (
+                    <tr key={book.id} className="hover:bg-stone-50/70 transition-colors">
+                      <td className="px-5 py-4">
+                        <div className="font-bold text-stone-900 font-serif-ethiopic text-sm">
+                          {book.titleAmharic || book.title}
+                        </div>
+                        <div className="text-[11px] text-stone-500 mt-0.5">
+                          {book.title} • <span className="font-semibold">{book.author}</span>
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <span className="font-bold text-stone-800">{book.subjectName}</span>
+                        <div className="text-[11px] text-emerald-800 font-mono mt-0.5">
+                          Grade {book.gradeId}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <div className="font-semibold text-stone-800">{book.category}</div>
+                        <div className="text-[10px] text-stone-400 truncate max-w-[180px]" title={book.source}>
+                          {book.source}
+                        </div>
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono border ${
+                            book.accessLevel === 'FREE'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : book.accessLevel === 'PREMIUM'
+                              ? 'bg-amber-50 text-amber-800 border-amber-300'
+                              : 'bg-rose-50 text-rose-700 border-rose-200'
+                          }`}
+                        >
+                          {book.accessLevel}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                            book.status === 'PUBLISHED'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-stone-200 text-stone-700'
+                          }`}
+                        >
+                          {book.status}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            leftIcon={<Layers className="w-3 h-3" />}
+                            onClick={() => {
+                              handleSelectBookForChapters(book);
+                              setActiveSubView('chapters');
+                            }}
+                          >
+                            Chapters
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            leftIcon={<Edit className="w-3 h-3" />}
+                            onClick={() => {
+                              setEditingBook({ ...book });
+                              setIsCreatingBook(false);
+                            }}
+                          >
+                            Configure
+                          </Button>
+                          <button
+                            onClick={() => handleDeleteBook(book.id)}
+                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 cursor-pointer"
+                            title="Delete Book"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* CHAPTERS & SECTIONS MANAGEMENT VIEW */
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Select Book & Add Chapter */}
+          <div className="space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-stone-200 space-y-3">
+              <label className="block text-xs font-bold text-stone-700 uppercase">
+                Select Reference Book
+              </label>
+              <select
+                value={selectedBookForChapters?.id || ''}
+                onChange={(e) => {
+                  const found = books.find((b) => b.id === e.target.value);
+                  if (found) handleSelectBookForChapters(found);
+                }}
+                className="w-full p-2.5 rounded-xl bg-stone-50 border border-stone-300 text-xs font-bold text-stone-900"
+              >
+                {books.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    [G{b.gradeId}] {b.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <form onSubmit={handleAddChapter} className="bg-white rounded-3xl p-5 border border-stone-200 space-y-3">
+              <h3 className="text-sm font-bold text-stone-900 flex items-center gap-1.5">
+                <Plus className="w-4 h-4 text-emerald-600" />
+                <span>Add New Chapter</span>
+              </h3>
+              <div>
+                <label className="block text-xs font-semibold text-stone-600 mb-1">Chapter Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={newChapterTitle}
+                  onChange={(e) => setNewChapterTitle(e.target.value)}
+                  placeholder="e.g. Chapter 3: Coordinate Geometry"
+                  className="w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-stone-600 mb-1">Chapter Summary</label>
+                <textarea
+                  rows={2}
+                  value={newChapterSummary}
+                  onChange={(e) => setNewChapterSummary(e.target.value)}
+                  placeholder="Brief overview of chapter learning objectives..."
+                  className="w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs"
+                />
+              </div>
+              <Button type="submit" variant="primary" size="sm" className="w-full">
+                Save Chapter
+              </Button>
+            </form>
+          </div>
+
+          {/* Right: Chapters List & Add Section Form */}
+          <div className="lg:col-span-2 space-y-5">
+            <form onSubmit={handleAddSection} className="bg-white rounded-3xl p-5 border border-stone-200 space-y-3">
+              <h3 className="text-sm font-bold text-stone-900 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-emerald-600" />
+                <span>Add Approved Section Content to Chapter</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-stone-600 mb-1">Target Chapter *</label>
+                  <select
+                    value={targetChapterId}
+                    onChange={(e) => setTargetChapterId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs font-bold"
+                  >
+                    {chapters.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        Ch {c.chapterNumber}: {c.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-stone-600 mb-1">Section Number *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newSectionNumber}
+                    onChange={(e) => setNewSectionNumber(e.target.value)}
+                    placeholder="1.2"
+                    className="w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-600 mb-1">Section Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={newSectionTitle}
+                  onChange={(e) => setNewSectionTitle(e.target.value)}
+                  placeholder="e.g. Distance Formula & Midpoint Theorem"
+                  className="w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-600 mb-1">
+                  Approved Reference Content (One paragraph per line) *
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={newSectionContent}
+                  onChange={(e) => setNewSectionContent(e.target.value)}
+                  placeholder="Enter educational reference paragraphs..."
+                  className="w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-600 mb-1">
+                  Key Formulas (Optional, one formula per line)
+                </label>
+                <textarea
+                  rows={2}
+                  value={newSectionFormulas}
+                  onChange={(e) => setNewSectionFormulas(e.target.value)}
+                  placeholder="d = √[(x₂ - x₁)² + (y₂ - y₁)²]"
+                  className="w-full px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs font-mono"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Button type="submit" variant="primary" size="sm" leftIcon={<Save className="w-3.5 h-3.5" />}>
+                  Add Protected Section
+                </Button>
+              </div>
+            </form>
+
+            {/* Existing Chapters & Sections Preview */}
+            <div className="bg-white rounded-3xl p-5 border border-stone-200 space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                Configured Chapters & Sections ({chapters.length} Chapters, {sections.length} Sections)
+              </h4>
+              {chapters.map((ch) => {
+                const chSecs = sections.filter((s) => s.chapterId === ch.id);
+                return (
+                  <div key={ch.id} className="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-stone-900">
+                        Chapter {ch.chapterNumber}: {ch.title}
+                      </span>
+                      <Badge variant="neutral" size="xs">
+                        {chSecs.length} sections
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-stone-500">{ch.summary}</p>
+                    <div className="pl-3 border-l-2 border-emerald-300 space-y-1 pt-1">
+                      {chSecs.map((s) => (
+                        <div key={s.id} className="text-xs text-stone-700 flex items-center justify-between">
+                          <span>
+                            <strong className="font-mono">{s.sectionNumber}</strong> — {s.title}
+                          </span>
+                          <span className="text-[10px] font-mono text-emerald-700">In-App Protected</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CREATE / EDIT REFERENCE BOOK METADATA & ACCESS */}
+      {editingBook && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <form
+            onSubmit={handleSaveBook}
+            className="w-full max-w-xl rounded-3xl p-6 bg-white border border-stone-200 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
+          >
             <div className="flex items-center justify-between pb-3 border-b border-stone-100">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-emerald-700" />
                 <h3 className="text-base font-bold text-stone-900">
-                  Edit Textbook Security Policies
+                  {isCreatingBook ? 'Create Reference Book' : 'Configure Reference Book & Access Rights'}
                 </h3>
               </div>
               <button
-                onClick={() => setSelectedBookForEdit(null)}
+                type="button"
+                onClick={() => setEditingBook(null)}
                 className="p-1 rounded-full hover:bg-stone-100 text-stone-400 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Title</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="sm:col-span-2">
+                <label className="font-bold text-stone-700 block mb-1">Book Title (English) *</label>
                 <input
                   type="text"
-                  value={selectedBookForEdit.title}
-                  readOnly
-                  className="w-full bg-stone-100 border border-stone-200 rounded-xl px-3 py-2 text-stone-600 font-mono"
+                  required
+                  value={editingBook.title}
+                  onChange={(e) => setEditingBook({ ...editingBook, title: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="font-bold text-stone-700 block mb-1">Book Title (Amharic)</label>
+                <input
+                  type="text"
+                  value={editingBook.titleAmharic || ''}
+                  onChange={(e) => setEditingBook({ ...editingBook, titleAmharic: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900 font-serif-ethiopic"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Amharic Title</label>
+                <label className="font-bold text-stone-700 block mb-1">Author / Publisher *</label>
                 <input
                   type="text"
-                  value={selectedBookForEdit.titleAmharic}
-                  readOnly
-                  className="w-full bg-stone-100 border border-stone-200 rounded-xl px-3 py-2 text-stone-600 font-serif-ethiopic"
+                  required
+                  value={editingBook.author}
+                  onChange={(e) => setEditingBook({ ...editingBook, author: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900"
                 />
               </div>
 
-              <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
-                <span className="font-bold text-emerald-950 block">DRM Security Policy Status</span>
-                <div className="flex items-center gap-2 text-emerald-800">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>AES-256 In-Memory Decryption: Enabled</span>
-                </div>
-                <div className="flex items-center gap-2 text-emerald-800">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Direct Firebase Storage Download URLs: Blocked</span>
-                </div>
-                <div className="flex items-center gap-2 text-emerald-800">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Dynamic Session Watermarking: Enforced</span>
-                </div>
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Category *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingBook.category}
+                  onChange={(e) => setEditingBook({ ...editingBook, category: e.target.value })}
+                  placeholder="Curriculum Reference / National Exam Prep"
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Subject *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingBook.subjectName}
+                  onChange={(e) =>
+                    setEditingBook({
+                      ...editingBook,
+                      subjectName: e.target.value,
+                      subjectId: e.target.value.toLowerCase().replace(/\s+/g, '_'),
+                    })
+                  }
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Grade Level *</label>
+                <select
+                  value={editingBook.gradeId}
+                  onChange={(e) => setEditingBook({ ...editingBook, gradeId: Number(e.target.value) as Grade })}
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900 font-bold"
+                >
+                  <option value={9}>Grade 9</option>
+                  <option value={10}>Grade 10</option>
+                  <option value={11}>Grade 11</option>
+                  <option value={12}>Grade 12</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Access Level *</label>
+                <select
+                  value={editingBook.accessLevel}
+                  onChange={(e) =>
+                    setEditingBook({ ...editingBook, accessLevel: e.target.value as ReferenceBookAccessLevel })
+                  }
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900 font-bold"
+                >
+                  <option value="FREE">FREE (All Active Students)</option>
+                  <option value="PREMIUM">PREMIUM (Subscribed Students)</option>
+                  <option value="ADMIN_ONLY">ADMIN_ONLY (Hidden from Students)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Publication Status *</label>
+                <select
+                  value={editingBook.status}
+                  onChange={(e) =>
+                    setEditingBook({ ...editingBook, status: e.target.value as ReferenceBookStatus })
+                  }
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900 font-bold"
+                >
+                  <option value="PUBLISHED">PUBLISHED (Visible to Students)</option>
+                  <option value="DRAFT">DRAFT (Hidden)</option>
+                  <option value="ARCHIVED">ARCHIVED</option>
+                </select>
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="font-bold text-stone-700 block mb-1">Description *</label>
+                <textarea
+                  rows={2}
+                  required
+                  value={editingBook.description}
+                  onChange={(e) => setEditingBook({ ...editingBook, description: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">Source Attribution *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingBook.source}
+                  onChange={(e) => setEditingBook({ ...editingBook, source: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1">License & Rights Info *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingBook.licenseInfo}
+                  onChange={(e) => setEditingBook({ ...editingBook, licenseInfo: e.target.value })}
+                  className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3 py-2 text-stone-900"
+                />
               </div>
             </div>
 
             <div className="pt-3 flex items-center justify-end gap-2 border-t border-stone-100">
-              <Button variant="outline" size="sm" onClick={() => setSelectedBookForEdit(null)}>
-                Close
+              <Button type="button" variant="outline" size="sm" onClick={() => setEditingBook(null)}>
+                Cancel
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<Save className="w-3.5 h-3.5" />}
-                onClick={() => setSelectedBookForEdit(null)}
-              >
-                Save Policies
+              <Button type="submit" variant="primary" size="sm" leftIcon={<Save className="w-3.5 h-3.5" />}>
+                Save Book Configuration
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>

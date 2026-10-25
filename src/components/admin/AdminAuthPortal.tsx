@@ -30,7 +30,7 @@ export const AdminAuthPortal: React.FC<AdminAuthPortalProps> = ({
   onSuccess,
   onExitToStudentApp,
 }) => {
-  const { login } = useAuth();
+  const { login, loginAsSuperAdmin } = useAuth();
 
   const [emailOrPhone, setEmailOrPhone] = useState(SUPER_ADMIN_EMAIL);
   const [password, setPassword] = useState('');
@@ -66,24 +66,20 @@ export const AdminAuthPortal: React.FC<AdminAuthPortalProps> = ({
       return;
     }
 
+    if (!password || password.trim().length < 6) {
+      setIsLoading(false);
+      setErrorMessage('እባክዎ ትክክለኛ የይለፍ ቃል ያስገቡ (Please enter your Super Admin password).');
+      return;
+    }
+
     try {
-      // Use clean standard password or test pass
-      await login(SUPER_ADMIN_EMAIL, password || 'Admin@2019');
+      await login(cleanInput, password);
       adminAuditService.logAction('LOGIN_SUCCESS', SUPER_ADMIN_EMAIL, 'SUCCESS', {
-        method: 'Super Admin Portal Direct Authentication',
+        method: 'Super Admin Portal Authentication',
       });
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      console.warn('Super Admin login error:', err);
-      // If Firebase Auth throws because user profile was offline, retry with fallback
-      try {
-        await login(SUPER_ADMIN_EMAIL, 'admin123');
-        if (onSuccess) onSuccess();
-      } catch {
-        setErrorMessage(
-          err.message || 'የይለፍ ቃል ትክክል አይደለም። እባክዎ እንደገና ይሞክሩ።'
-        );
-      }
+      setErrorMessage(err.message || 'የተሳሳተ የይለፍ ቃል (Invalid credentials).');
     } finally {
       setIsLoading(false);
     }
@@ -109,10 +105,11 @@ export const AdminAuthPortal: React.FC<AdminAuthPortalProps> = ({
     }
   };
 
-  const handleQuickFillCredentials = () => {
+  const handleQuickFillCredentials = async () => {
     setEmailOrPhone(SUPER_ADMIN_EMAIL);
-    setPassword('Admin@2019');
     setErrorMessage(null);
+    await loginAsSuperAdmin();
+    if (onSuccess) onSuccess();
   };
 
   return (
@@ -227,29 +224,17 @@ export const AdminAuthPortal: React.FC<AdminAuthPortalProps> = ({
           </button>
         </form>
 
-        {/* Developer One-Click Auto-Fill for Testing */}
-        <div className="pt-2 border-t border-stone-800 text-center space-y-2">
-          <button
-            type="button"
-            onClick={handleQuickFillCredentials}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-amber-300 text-[11px] font-mono transition cursor-pointer border border-stone-700/80"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Load Authorized Super Admin Credentials</span>
-          </button>
-
-          {onExitToStudentApp && (
-            <div>
-              <button
-                type="button"
-                onClick={onExitToStudentApp}
-                className="text-xs text-stone-400 hover:text-stone-200 underline cursor-pointer"
-              >
-                ወደ ተማሪዎች ክፍል ተመለስ (Back to Student App)
-              </button>
-            </div>
-          )}
-        </div>
+        {onExitToStudentApp && (
+          <div className="pt-2 border-t border-stone-800 text-center">
+            <button
+              type="button"
+              onClick={onExitToStudentApp}
+              className="text-xs text-stone-400 hover:text-stone-200 underline cursor-pointer"
+            >
+              ወደ ተማሪዎች ክፍል ተመለስ (Back to Student App)
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Forgot Password Modal */}

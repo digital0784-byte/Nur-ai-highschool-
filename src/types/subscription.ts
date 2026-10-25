@@ -9,8 +9,12 @@ export type PaymentMethodName =
   | 'CBE Birr'
   | 'CBE Bank Transfer'
   | 'Commercial Bank of Ethiopia (CBE)'
+  | 'CBE'
   | 'Dashen Bank'
   | 'Bank of Abyssinia';
+
+export type SubscriptionRecord = Subscription;
+export type PaymentSubmission = PaymentRecord;
 
 export interface Subscription {
   id: string;
@@ -20,8 +24,10 @@ export interface Subscription {
   planName: string;
   plan?: 'NORMAL' | 'PREMIUM';
   priceETB: number;
+  amountEtb?: number;
   startDate: string; // ISO string
   expiryDate: string; // ISO string
+  endDate?: string;
   status: SubscriptionStatus;
   paymentId: string;
   createdAt: string;
@@ -30,17 +36,20 @@ export interface Subscription {
 
 export interface PaymentRecord {
   paymentId: string;
+  id?: string;
   userId: string;
   studentName: string;
   studentEmail?: string;
   grade: Grade;
   plan?: 'NORMAL' | 'PREMIUM';
   amountETB: number;
+  amountEtb?: number;
   paymentMethod: PaymentMethodName;
   transactionReference: string;
   proofImageUrl?: string;
   status: PaymentStatus;
   submittedAt: string;
+  createdAt?: string;
   verifiedAt?: string;
   verifiedBy?: string;
   rejectionReason?: string;

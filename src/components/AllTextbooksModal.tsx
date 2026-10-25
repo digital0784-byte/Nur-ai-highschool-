@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { X, BookOpen, Search, CheckCircle, Layers, GraduationCap, ShieldCheck, Lock } from 'lucide-react';
 import { Grade, Subject } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import { useSubscription } from '../context/SubscriptionContext';
 import { getAllTextbooksForSubject } from '../data/textbooksData';
 import { OfficialPdfLink } from './OfficialPdfLink';
 
@@ -19,7 +21,16 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
   onSelectSubjectAndGrade,
 }) => {
   const { t, language } = useLanguage();
-  const [selectedGradeFilter, setSelectedGradeFilter] = useState<Grade | 'all'>('all');
+  const { userProfile } = useAuth();
+  const { isOwnerSuperAdmin } = useSubscription();
+
+  const studentGrade: Grade = (userProfile?.grade && [9, 10, 11, 12].includes(userProfile.grade)
+    ? userProfile.grade
+    : Number(localStorage.getItem('nur_selected_grade')) || 9) as Grade;
+
+  const [selectedGradeFilter, setSelectedGradeFilter] = useState<Grade | 'all'>(() => {
+    return isOwnerSuperAdmin ? 'all' : studentGrade;
+  });
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Flatten all textbooks
@@ -103,27 +114,39 @@ export const AllTextbooksModal: React.FC<AllTextbooksModalProps> = ({
 
         {/* Filter Controls Bar */}
         <div className="bg-[#F2ECE0] border-b-[1.5px] border-[#38332D] p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          {/* Grade filter tabs */}
+          {/* Grade filter tabs: Super Admin can filter; students are locked to their grade */}
           <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-            <span className="text-xs font-bold font-serif-ethiopic text-[#645A4B] mr-1 shrink-0">
-              {t.gradeTierPrefix}:
-            </span>
-            {(['all', 9, 10, 11, 12] as (Grade | 'all')[]).map((g) => {
-              const isSelected = selectedGradeFilter === g;
-              return (
-                <button
-                  key={g}
-                  onClick={() => setSelectedGradeFilter(g)}
-                  className={`px-3 py-1 text-xs font-bold font-serif-ethiopic border transition-colors cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#38332D] text-[#FAF6EC] border-[#38332D]'
-                      : 'bg-[#FAF6EC] text-[#4F4639] border-[#BFB29E] hover:bg-[#EAE1D1]'
-                  }`}
-                >
-                  {g === 'all' ? 'ሁሉም (All Grades)' : `${t.gradeTierPrefix} ${g}`}
-                </button>
-              );
-            })}
+            {isOwnerSuperAdmin ? (
+              <>
+                <span className="text-xs font-bold font-serif-ethiopic text-[#645A4B] mr-1 shrink-0">
+                  👑 {t.gradeTierPrefix} (Admin):
+                </span>
+                {(['all', 9, 10, 11, 12] as (Grade | 'all')[]).map((g) => {
+                  const isSelected = selectedGradeFilter === g;
+                  return (
+                    <button
+                      key={g}
+                      onClick={() => setSelectedGradeFilter(g)}
+                      className={`px-3 py-1 text-xs font-bold font-serif-ethiopic border transition-colors cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#38332D] text-[#FAF6EC] border-[#38332D]'
+                          : 'bg-[#FAF6EC] text-[#4F4639] border-[#BFB29E] hover:bg-[#EAE1D1]'
+                      }`}
+                    >
+                      {g === 'all' ? 'ሁሉም (All Grades)' : `${t.gradeTierPrefix} ${g}`}
+                    </button>
+                  );
+                })}
+              </>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FAF6EC] border border-[#38332D] rounded text-xs font-bold font-serif-ethiopic text-[#1E1B18]">
+                <GraduationCap className="w-4 h-4 text-emerald-800" />
+                <span>{language === 'am' ? `የተፈቀደው ክፍል: ክፍል ${studentGrade}` : `Enrolled: Grade ${studentGrade}`}</span>
+                <span className="text-[10px] text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded font-bold">
+                  🔒 {language === 'am' ? 'የተቆለፈ' : 'Locked'}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Search Box */}

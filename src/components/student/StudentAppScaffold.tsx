@@ -22,6 +22,7 @@ import {
   Search,
   Flame,
   LogOut,
+  ChevronLeft,
 } from 'lucide-react';
 import {
   GradeLevel,
@@ -51,6 +52,8 @@ import { StudentVoiceTutorScreen } from './StudentVoiceTutorScreen';
 import { OfflineSyncIndicator } from '../notifications/OfflineSyncIndicator';
 import { NotificationBell } from '../notifications/NotificationBell';
 import { DirectSystemPaymentModal } from '../subscription/DirectSystemPaymentModal';
+import { useLanguage } from '../../context/LanguageContext';
+import { LanguageSelectorDropdown } from '../LanguageSelectorDropdown';
 
 interface StudentAppScaffoldProps {
   initialGrade?: GradeLevel;
@@ -63,9 +66,10 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
   initialLanguage = 'am',
   onExitToTeacherDashboard,
 }) => {
-  const [currentTab, setCurrentTab] = useState<StudentTab>('home');
+  const [currentTab, setCurrentTabState] = useState<StudentTab>('home');
+  const [tabHistory, setTabHistory] = useState<StudentTab[]>([]);
   const [grade, setGrade] = useState<GradeLevel>(initialGrade);
-  const [language, setLanguage] = useState<LanguageCode>(initialLanguage);
+  const { language, setLanguage } = useLanguage();
   const [darkMode, setDarkMode] = useState(false);
   const [lowDataMode, setLowDataMode] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -74,6 +78,61 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
   const { user, userProfile, logout } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Active Subject & Topic in view for deep learning screen
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('math-g9');
+  const [selectedTopic, setSelectedTopic] = useState<CurriculumTopic | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<CurriculumUnit | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<CurriculumLesson | null>(null);
+  const [isDeepLearningActive, setIsDeepLearningActive] = useState(false);
+
+  const setCurrentTab = (nextTab: StudentTab) => {
+    setCurrentTabState((prev) => {
+      if (prev !== nextTab) {
+        setTabHistory((h) => [...h, prev]);
+        try {
+          window.history.pushState({ studentTab: nextTab }, '');
+        } catch {
+          // ignore history error in restricted iframe
+        }
+      }
+      return nextTab;
+    });
+  };
+
+  const handleGlobalBack = () => {
+    if (isDeepLearningActive) {
+      setIsDeepLearningActive(false);
+      return;
+    }
+    if (tabHistory.length > 0) {
+      const prev = tabHistory[tabHistory.length - 1];
+      setTabHistory((h) => h.slice(0, -1));
+      setCurrentTabState(prev);
+    } else if (currentTab !== 'home') {
+      setCurrentTabState('home');
+    }
+  };
+
+  useEffect(() => {
+    const onPopState = () => {
+      if (isDeepLearningActive) {
+        setIsDeepLearningActive(false);
+        return;
+      }
+      setTabHistory((h) => {
+        if (h.length > 0) {
+          const prev = h[h.length - 1];
+          setCurrentTabState(prev);
+          return h.slice(0, -1);
+        }
+        setCurrentTabState('home');
+        return h;
+      });
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [isDeepLearningActive]);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -88,13 +147,6 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
       setShowLogoutConfirm(false);
     }
   };
-
-  // Active Subject & Topic in view for deep learning screen
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('math-g9');
-  const [selectedTopic, setSelectedTopic] = useState<CurriculumTopic | null>(null);
-  const [selectedUnit, setSelectedUnit] = useState<CurriculumUnit | null>(null);
-  const [selectedLesson, setSelectedLesson] = useState<CurriculumLesson | null>(null);
-  const [isDeepLearningActive, setIsDeepLearningActive] = useState(false);
 
   // Final Test Runner State
   const [isTestRunnerOpen, setIsTestRunnerOpen] = useState(false);
@@ -335,24 +387,35 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
           </div>
         </div>
 
-        {/* Action Controls: Grade Switcher, Subscription, Language Switcher, Audit */}
+        {/* Action Controls: Grade Badge (Locked for students), Subscription status */}
         <div className="flex items-center gap-1.5 sm:gap-3">
-          {/* Grade Selector (9, 10, 11, 12) Segmented Control */}
-          <div className="hidden sm:flex items-center p-1 rounded-2xl bg-slate-100 border border-slate-200/90 text-xs shadow-inner">
-            {([9, 10, 11, 12] as GradeLevel[]).map((g) => (
-              <button
-                key={g}
-                onClick={() => handleSelectGrade(g)}
-                className={`px-3 py-1 rounded-xl font-bold transition-all cursor-pointer ${
-                  grade === g
-                    ? 'bg-white text-emerald-800 shadow-xs ring-1 ring-slate-200'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                {language === 'am' ? `ክፍል ${g}` : `Grade ${g}`}
-              </button>
-            ))}
-          </div>
+          {/* Grade Display: Super Admin can switch; Students are strictly locked to their enrolled grade */}
+          {isOwnerSuperAdmin ? (
+            <div className="hidden sm:flex items-center p-1 rounded-2xl bg-amber-50 border border-amber-300 text-xs shadow-inner">
+              <span className="text-[10px] font-bold text-amber-900 px-2">👑 Admin:</span>
+              {([9, 10, 11, 12] as GradeLevel[]).map((g) => (
+                <button
+                  key={g}
+                  onClick={() => handleSelectGrade(g)}
+                  className={`px-2.5 py-1 rounded-xl font-bold transition-all cursor-pointer ${
+                    grade === g
+                      ? 'bg-amber-800 text-white shadow-xs'
+                      : 'text-amber-900 hover:text-black'
+                  }`}
+                >
+                  {language === 'am' ? `ክፍል ${g}` : `Grade ${g}`}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-950 shadow-2xs font-serif-ethiopic">
+              <GraduationCap className="w-4 h-4 text-emerald-700" />
+              <span>{language === 'am' ? `ክፍል ${grade}` : `Grade ${grade}`}</span>
+              <span className="text-[10px] text-emerald-800 bg-emerald-200/70 px-1.5 py-0.5 rounded-full font-bold">
+                🔒 {language === 'am' ? 'የተቆለፈ' : 'Locked'}
+              </span>
+            </div>
+          )}
 
           {/* Subscription Status Pill */}
           <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-xs font-bold text-emerald-900 shadow-2xs">
@@ -367,33 +430,8 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
             )}
           </div>
 
-          {/* Language Switcher */}
-          <div className="relative group">
-            <button className="px-2.5 py-1.5 rounded-2xl border border-slate-200 text-xs font-bold flex items-center gap-1.5 cursor-pointer bg-white text-slate-700 hover:bg-slate-50 shadow-2xs">
-              <Languages className="w-3.5 h-3.5 text-emerald-700" />
-              <span className="uppercase text-[11px] font-mono">{language}</span>
-            </button>
-            <div className="absolute right-0 mt-1 hidden group-hover:block w-40 p-1.5 rounded-2xl bg-white border border-slate-200 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
-              {[
-                { code: 'am', label: 'አማርኛ (Amharic)' },
-                { code: 'en', label: 'English' },
-                { code: 'om', label: 'Afaan Oromoo' },
-                { code: 'ti', label: 'ትግርኛ (Tigrinya)' },
-              ].map((l) => (
-                <button
-                  key={l.code}
-                  onClick={() => handleSelectLanguage(l.code as LanguageCode)}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold cursor-pointer transition-colors ${
-                    language === l.code
-                      ? 'text-emerald-800 bg-emerald-50'
-                      : 'text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  {l.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Unified Single Header Language Selector */}
+          <LanguageSelectorDropdown theme="slate" />
 
           {/* Offline Indicator & Notifications */}
           <OfflineSyncIndicator onOpenOfflineManager={() => setCurrentTab('profile')} />
@@ -426,18 +464,29 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
         <aside className="hidden md:flex flex-col justify-between w-60 lg:w-64 bg-white border-r border-slate-200/90 p-4 shrink-0 shadow-[1px_0_3px_rgba(0,0,0,0.02)]">
           <div className="space-y-5 overflow-y-auto pr-1">
             {/* Student Mini Profile Header Card */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 to-emerald-50/40 border border-slate-200/80 flex items-center justify-between gap-3">
+            <div
+              onClick={() => setCurrentTab('profile')}
+              className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 to-emerald-50/40 border border-slate-200/80 flex items-center justify-between gap-3 cursor-pointer hover:border-emerald-300 transition-colors"
+            >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
-                  {grade}
+                <div className="w-9 h-9 rounded-xl bg-emerald-700 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs overflow-hidden">
+                  {userProfile?.photoURL || userProfile?.thumbnailURL ? (
+                    <img
+                      src={userProfile.photoURL || userProfile.thumbnailURL}
+                      alt={userProfile?.displayName || 'Student'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    grade
+                  )}
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-black text-slate-900 truncate font-serif-ethiopic">
-                    {language === 'am' ? `ክፍል ${grade} ተማሪ` : `Grade ${grade} Student`}
+                    {userProfile?.displayName || (language === 'am' ? `ክፍል ${grade} ተማሪ` : `Grade ${grade} Student`)}
                   </p>
                   <p className="text-[10px] text-emerald-700 font-bold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    2019 ዓ.ም ስርዓተ-ትምህርት
+                    ክፍል {grade} • 2019 ዓ.ም
                   </p>
                 </div>
               </div>
@@ -540,6 +589,26 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
 
         {/* MAIN SCROLLABLE CONTENT VIEWPORT */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 md:pb-12">
+          {/* GLOBAL BACK NAVIGATION BAR FOR ALL SECTIONS */}
+          {(currentTab !== 'home' || isDeepLearningActive) && (
+            <div className="mb-4 flex items-center justify-between bg-white border border-slate-200/90 rounded-2xl px-4 py-2.5 shadow-2xs">
+              <button
+                onClick={handleGlobalBack}
+                className="inline-flex items-center gap-2 text-xs font-black text-slate-800 hover:text-emerald-700 transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4 text-emerald-600" />
+                <span>{language === 'am' ? 'ወደ ኋላ ተመለስ (Back)' : 'Back'}</span>
+              </button>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                {isDeepLearningActive
+                  ? language === 'am'
+                    ? 'የትምህርት ክፍለ-ጊዜ'
+                    : 'Topic Lesson'
+                  : currentTab.replace('_', ' ')}
+              </span>
+            </div>
+          )}
+
           {/* TAB 1: HOME */}
           {currentTab === 'home' && (
             <StudentHomeScreen
@@ -625,6 +694,7 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
             <StudentBooksView
               grade={grade}
               language={language}
+              onBack={handleGlobalBack}
               onOpenAITutorForBook={(title, text) => {
                 setCurrentTab('ai_tutor');
               }}
@@ -670,15 +740,7 @@ export const StudentAppScaffold: React.FC<StudentAppScaffoldProps> = ({
           {/* TAB 7: PROFILE & SUBSCRIPTION */}
           {currentTab === 'profile' && (
             <StudentProfileView
-              grade={grade}
-              language={language}
-              darkMode={darkMode}
-              lowDataMode={lowDataMode}
-              onSelectGrade={handleSelectGrade}
-              onSelectLanguage={handleSelectLanguage}
-              onToggleDarkMode={handleToggleDarkMode}
-              onToggleLowDataMode={handleToggleLowDataMode}
-              onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
+              onBack={handleGlobalBack}
             />
           )}
         </main>

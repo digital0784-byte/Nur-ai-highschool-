@@ -30,6 +30,7 @@ export const SubscriptionPaywallGate: React.FC<SubscriptionPaywallGateProps> = (
 }) => {
   const { user, openAuthModal } = useAuth();
   const {
+    isOwnerSuperAdmin,
     hasLearningAccess,
     accessStatus,
     latestPayment,
@@ -37,8 +38,8 @@ export const SubscriptionPaywallGate: React.FC<SubscriptionPaywallGateProps> = (
     remainingDays,
   } = useSubscription();
 
-  // If user has active subscription or is Super Admin, render children directly!
-  if (hasLearningAccess) {
+  // If user has active subscription or is Super Admin, render children directly without payment prompt!
+  if (isOwnerSuperAdmin || hasLearningAccess) {
     return <>{children}</>;
   }
 

@@ -4,21 +4,20 @@ import {
   CreditCard,
   Smartphone,
   Building2,
+  Landmark,
   Copy,
   Check,
   ShieldCheck,
   Zap,
-  PhoneCall,
   CheckCircle2,
   AlertTriangle,
-  Sparkles,
   Info,
-  Lock,
 } from 'lucide-react';
 import { Grade } from '../../types';
+import { PaymentMethodName } from '../../types/subscription';
 import { useAuth } from '../../context/AuthContext';
 import { useSubscription } from '../../context/SubscriptionContext';
-import { subscriptionService } from '../../services/subscriptionService';
+import { DEFAULT_PRICING_CONFIG, subscriptionService } from '../../services/subscriptionService';
 
 interface DirectSystemPaymentModalProps {
   isOpen: boolean;
@@ -33,8 +32,9 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
   selectedGrade = 9,
   onPaymentComplete,
 }) => {
-  const { user, userProfile, openAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const {
+    pricingConfig,
     isOwnerSuperAdmin,
     submitPayment,
     superAdminApprove,
@@ -42,7 +42,7 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
   } = useSubscription();
 
   const [activeGrade, setActiveGrade] = useState<Grade>(selectedGrade);
-  const [activeMethod, setActiveMethod] = useState<'telebirr' | 'cbe'>('telebirr');
+  const [activeMethod, setActiveMethod] = useState<PaymentMethodName>('Dashen Bank');
   const [transactionRef, setTransactionRef] = useState('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,29 +51,15 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
 
   if (!isOpen) return null;
 
-  const prices: Record<Grade, number> = {
-    9: 54,
-    10: 54,
-    11: 54,
-    12: 54,
-  };
-
-  const currentPrice = prices[activeGrade];
-
-  const telebirrData = {
-    accountName: 'Nuriye Ahmed Adem',
-    accountNumber: '0910097862',
-    dialCode: '*127#',
-    directDial: 'tel:0910097862',
-  };
-
-  const cbeData = {
-    bankName: 'የኢትዮጵያ ንግድ ባንክ (Commercial Bank of Ethiopia)',
-    accountName: 'Nuriye Ahmed Adem',
-    accountNumber: '1000382883776',
-  };
+  const currentPrice = subscriptionService.getPriceForGrade(activeGrade, pricingConfig);
+  const methodsMap = pricingConfig?.methods || DEFAULT_PRICING_CONFIG.methods;
+  const currentMethodConfig =
+    methodsMap[activeMethod] ||
+    DEFAULT_PRICING_CONFIG.methods[activeMethod] ||
+    DEFAULT_PRICING_CONFIG.methods['Dashen Bank'];
 
   const copyToClipboard = (text: string, key: string) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
@@ -91,7 +77,7 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
 
     const trimmedRef = transactionRef.trim();
     if (!trimmedRef) {
-      setErrorMessage('እባክዎ የቴሌብር ማረጋገጫ (Transaction ID) ወይም የሲቢኢ (FT...) ቁጥር ያስገቡ።');
+      setErrorMessage('እባክዎ የክፍያ ማረጋገጫ (Transaction ID / Reference) ቁጥር ያስገቡ።');
       return;
     }
 
@@ -102,20 +88,13 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
 
     setIsProcessing(true);
     try {
-      const methodName =
-        activeMethod === 'telebirr'
-          ? 'Telebirr'
-          : 'Commercial Bank of Ethiopia (CBE)';
-
-      // Submit payment directly into system
       const paymentRecord = await submitPayment({
         grade: activeGrade,
         amountETB: currentPrice,
-        paymentMethod: methodName,
+        paymentMethod: activeMethod,
         transactionReference: trimmedRef,
       });
 
-      // If owner super admin or if self-verifying, auto-approve
       if (isOwnerSuperAdmin && paymentRecord?.paymentId) {
         await superAdminApprove(
           paymentRecord.paymentId,
@@ -125,13 +104,12 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
         );
       }
 
-      // Refresh subscription state
       await refreshSubscription();
 
       setSuccessMessage(
         isOwnerSuperAdmin
-          ? `የሱፐር አድሚን ቀጥታ ክፍያ ተረጋግጦ ክፍል ${activeGrade} ሙሉ በሙሉ ተከፍቷል!`
-          : `የክፍያ ማረጋገጫዎ በሲስተሙ ውስጥ በቀጥታ ተመዝግቧል! አስተዳዳሪው (${telebirrData.accountName}) እንዳረጋገጠው ይከፈታል።`
+          ? `የሱፐር አድሚን ክፍያ ተረጋግጦ ክፍል ${activeGrade} ሙሉ በሙሉ ተከፍቷል!`
+          : `የክፍያ ማረጋገጫዎ በሲስተሙ ውስጥ ተመዝግቧል (Status: PENDING)! በአስተዳዳሪው (SUPER_ADMIN) ሲረጋገጥ ይከፈታል።`
       );
       setTransactionRef('');
 
@@ -142,12 +120,18 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
         }, 1500);
       }
     } catch (err: any) {
-      console.error('Direct payment processing error:', err);
       setErrorMessage(err.message || 'ክፍያውን ማረጋገጥ አልተቻለም፣ እባክዎ በድጋሚ ይሞክሩ።');
     } finally {
       setIsProcessing(false);
     }
   };
+
+  const methodButtons: { id: PaymentMethodName; label: string; icon: any }[] = [
+    { id: 'Telebirr', label: 'ቴሌብር (Telebirr)', icon: Smartphone },
+    { id: 'Dashen Bank', label: 'ዳሸን ባንክ (Dashen)', icon: Landmark },
+    { id: 'Commercial Bank of Ethiopia (CBE)', label: 'ንግድ ባንክ (CBE)', icon: Building2 },
+    { id: 'Bank of Abyssinia', label: 'አቢሲኒያ ባንክ (BoA)', icon: CreditCard },
+  ];
 
   return (
     <div
@@ -160,7 +144,7 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
         id="direct-payment-modal-card"
         className="w-full max-w-xl bg-[#FAF6EC] border-[2px] border-[#38332D] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
       >
-        {/* Modal Top Header matching red theme */}
+        {/* Modal Top Header */}
         <div className="bg-[#0B132B] text-white p-4 sm:p-5 flex items-center justify-between border-b border-slate-700 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
@@ -169,14 +153,11 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold font-serif-ethiopic text-white">
-                  NUR AI Premium — 54 ETB/month
+                  NUR AI High School — ክፍል {activeGrade} ({currentPrice} ETB/month)
                 </h3>
-                <span className="text-[10px] bg-emerald-500 text-slate-950 font-black px-1.5 py-0.5 rounded">
-                  OFFICIAL
-                </span>
               </div>
               <p className="text-xs text-slate-300 font-sans">
-                Currency: ETB (Ethiopian Birr) • Direct Activation
+                Official Student Subscription Payment • Manual Verification
               </p>
             </div>
           </div>
@@ -199,6 +180,7 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
             <div className="grid grid-cols-4 gap-2">
               {([9, 10, 11, 12] as Grade[]).map((g) => {
                 const isSelected = activeGrade === g;
+                const priceForG = subscriptionService.getPriceForGrade(g, pricingConfig);
                 return (
                   <button
                     key={g}
@@ -212,7 +194,7 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
                   >
                     <div className="text-xs font-bold font-serif-ethiopic">ክፍል {g}</div>
                     <div className="text-[11px] font-extrabold text-amber-600">
-                      {prices[g]} ETB
+                      {priceForG} ETB
                     </div>
                   </button>
                 );
@@ -223,72 +205,91 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
           {/* Payment Method Selector Tabs */}
           <div>
             <label className="block text-xs font-bold text-stone-700 font-serif-ethiopic mb-1.5">
-              2. የመክፈያ መንገድ ይምረጡ (Telebirr ወይም CBE):
+              2. የመክፈያ መንገድ ይምረጡ (Select Payment Method):
             </label>
             <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveMethod('telebirr')}
-                className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer ${
-                  activeMethod === 'telebirr'
-                    ? 'bg-amber-500/15 border-amber-500 text-amber-950 ring-2 ring-amber-500/30 font-bold'
-                    : 'bg-white border-stone-300 text-stone-700 hover:bg-stone-50'
-                }`}
-              >
-                <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0">
-                  <Smartphone className="w-4 h-4" />
-                </div>
-                <div className="text-left truncate">
-                  <div className="text-xs font-bold font-serif-ethiopic">ቴሌብር (Telebirr)</div>
-                  <div className="text-[11px] font-mono font-bold text-amber-900">0910097862</div>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveMethod('cbe')}
-                className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer ${
-                  activeMethod === 'cbe'
-                    ? 'bg-purple-500/15 border-purple-600 text-purple-950 ring-2 ring-purple-600/30 font-bold'
-                    : 'bg-white border-stone-300 text-stone-700 hover:bg-stone-50'
-                }`}
-              >
-                <div className="w-8 h-8 rounded-lg bg-purple-700 text-white flex items-center justify-center shrink-0">
-                  <Building2 className="w-4 h-4" />
-                </div>
-                <div className="text-left truncate">
-                  <div className="text-xs font-bold font-serif-ethiopic">ንግድ ባንክ (CBE)</div>
-                  <div className="text-[11px] font-mono font-bold text-purple-900">1000382883776</div>
-                </div>
-              </button>
+              {methodButtons.map((m) => {
+                const isSelected = activeMethod === m.id;
+                const Icon = m.icon;
+                const mCfg = methodsMap[m.id] || DEFAULT_PRICING_CONFIG.methods[m.id];
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setActiveMethod(m.id)}
+                    className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-500/15 border-emerald-700 text-emerald-950 ring-2 ring-emerald-600/30 font-bold'
+                        : 'bg-white border-stone-300 text-stone-700 hover:bg-stone-50'
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-slate-800 text-white flex items-center justify-center shrink-0">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="text-left truncate">
+                      <div className="text-xs font-bold font-serif-ethiopic truncate">{m.label}</div>
+                      <div className="text-[10px] font-mono text-stone-600 truncate">
+                        {user ? mCfg?.accountNumber || 'Official Channel' : 'Registered Students Only'}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Account Detail Box for Telebirr */}
-          {activeMethod === 'telebirr' && (
-            <div className="bg-white border-2 border-amber-400 rounded-xl p-4 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between border-b border-amber-100 pb-2">
-                <span className="text-xs text-stone-600 font-bold">የቴሌብር ስም (Account Name):</span>
-                <span className="text-xs font-black text-stone-900 font-mono">
-                  {telebirrData.accountName}
-                </span>
+          {/* Official Payment Instructions Box (Restricted to Registered Students) */}
+          {!user ? (
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 text-center space-y-2.5 shadow-xs">
+              <div className="text-xs font-bold text-amber-950 font-serif-ethiopic">
+                የክፍያ ሂሳብ መረጃዎች ለተመዘገቡ ተማሪዎች ብቻ የተጠበቁ ናቸው
+              </div>
+              <p className="text-[11px] text-amber-800">
+                የቴሌብር እና የባንክ የክፍያ መመሪያዎችን ለማየት እባክዎ መጀመሪያ ይመዝገቡ ወይም ወደ መለያዎ ይግቡ።
+              </p>
+              <button
+                type="button"
+                onClick={() => openAuthModal('login')}
+                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg cursor-pointer transition-colors"
+              >
+                ይግቡ / ይመዝገቡ (Login / Register)
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white border-2 border-stone-300 rounded-xl p-4 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+                <span className="text-xs text-stone-600 font-bold">የሂሳብ ስም (Account Name):</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-stone-900 font-mono">
+                    {currentMethodConfig.accountName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(currentMethodConfig.accountName, 'acc_name')}
+                    className="p-1 text-stone-500 hover:text-stone-900 rounded cursor-pointer"
+                  >
+                    {copiedKey === 'acc_name' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between border-b border-amber-100 pb-2">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-2">
                 <div>
-                  <span className="text-xs text-stone-600 block">የቴሌብር ስልክ ቁጥር:</span>
-                  <span className="text-base font-mono font-black text-amber-700">
-                    {telebirrData.accountNumber}
+                  <span className="text-xs text-stone-600 block">
+                    የሂሳብ / ስልክ ቁጥር (Account / Phone Number):
+                  </span>
+                  <span className="text-base font-mono font-black text-emerald-800">
+                    {currentMethodConfig.accountNumber || 'በአስተዳዳሪ (SUPER_ADMIN) የሚሞላ'}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                {currentMethodConfig.accountNumber && (
                   <button
                     type="button"
-                    onClick={() => copyToClipboard(telebirrData.accountNumber, 'tb_num')}
-                    className="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors border border-amber-300"
+                    onClick={() => copyToClipboard(currentMethodConfig.accountNumber, 'acc_num')}
+                    className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors border border-emerald-300"
                   >
-                    {copiedKey === 'tb_num' ? (
+                    {copiedKey === 'acc_num' ? (
                       <>
                         <Check className="w-3.5 h-3.5 text-emerald-600" />
                         <span>ተገልብጧል</span>
@@ -300,78 +301,19 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
                       </>
                     )}
                   </button>
-
-                  <a
-                    href={telebirrData.directDial}
-                    className="px-2.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
-                    title="በስልክዎ በቀጥታ ይደውሉ"
-                  >
-                    <PhoneCall className="w-3.5 h-3.5" />
-                    <span>ደውል</span>
-                  </a>
-                </div>
+                )}
               </div>
 
-              <div className="p-2.5 bg-amber-50 rounded-lg text-xs text-amber-950 font-serif-ethiopic flex items-start gap-2 border border-amber-200/60">
-                <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <div className="p-2.5 bg-stone-50 rounded-lg text-xs text-stone-800 font-serif-ethiopic flex items-start gap-2 border border-stone-200/80">
+                <Info className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
                 <p className="leading-relaxed text-[11.5px]">
-                  በቴሌብር መተግበሪያ (Telebirr App) ወይም በ <strong>*127#</strong> ወደ{' '}
-                  <strong>{telebirrData.accountNumber}</strong> ({telebirrData.accountName}){' '}
-                  <strong>{currentPrice} ብር</strong> ያስተላልፉ። ከዚያ የመጣውን የክፍያ ማረጋገጫ ቁጥር (Transaction ID) ከታች ያስገቡ።
+                  {currentMethodConfig.instructionsAm}
                 </p>
               </div>
             </div>
           )}
 
-          {/* Account Detail Box for CBE */}
-          {activeMethod === 'cbe' && (
-            <div className="bg-white border-2 border-purple-400 rounded-xl p-4 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between border-b border-purple-100 pb-2">
-                <span className="text-xs text-stone-600 font-bold">የሂሳብ ስም (Account Name):</span>
-                <span className="text-xs font-black text-stone-900 font-mono">
-                  {cbeData.accountName}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between border-b border-purple-100 pb-2">
-                <div>
-                  <span className="text-xs text-stone-600 block">የሲቢኢ የሂሳብ ቁጥር (CBE Account):</span>
-                  <span className="text-base font-mono font-black text-purple-800">
-                    {cbeData.accountNumber}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(cbeData.accountNumber, 'cbe_acc')}
-                  className="px-2.5 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-900 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors border border-purple-300"
-                >
-                  {copiedKey === 'cbe_acc' ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>ተገልብጧል</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>ሂሳቡን ቅዳ</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <div className="p-2.5 bg-purple-50 rounded-lg text-xs text-purple-950 font-serif-ethiopic flex items-start gap-2 border border-purple-200/60">
-                <Info className="w-4 h-4 text-purple-700 shrink-0 mt-0.5" />
-                <p className="leading-relaxed text-[11.5px]">
-                  በ CBE Mobile Banking ወይም በ CBE Birr ወደ ሂሳብ ቁጥር{' '}
-                  <strong>{cbeData.accountNumber}</strong> ({cbeData.accountName}){' '}
-                  <strong>{currentPrice} ብር</strong> ያስተላልፉ። የባንክ ማመሳከሪያ ቁጥር (FT Number) ከታች ይመዝግቡ።
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Form to submit and verify directly */}
+          {/* Form to submit payment */}
           <form onSubmit={handleDirectActivation} className="space-y-4 pt-1">
             <div>
               <label className="block text-xs font-bold text-stone-800 font-serif-ethiopic mb-1">
@@ -381,17 +323,12 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
                 type="text"
                 value={transactionRef}
                 onChange={(e) => setTransactionRef(e.target.value)}
-                placeholder={
-                  activeMethod === 'telebirr'
-                    ? 'ለምሳሌ፡ CIB4938291 ወይም 0910...'
-                    : 'ለምሳሌ፡ FT2421039841...'
-                }
+                placeholder="ለምሳሌ፡ FT2421039841..."
                 className="w-full px-3.5 py-2.5 rounded-xl border border-stone-400 bg-white text-stone-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#2E6B4A]"
                 required
               />
             </div>
 
-            {/* Error Message */}
             {errorMessage && (
               <div className="p-3 bg-red-50 border border-red-300 text-red-900 text-xs rounded-xl flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
@@ -399,7 +336,6 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
               </div>
             )}
 
-            {/* Success Message */}
             {successMessage && (
               <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs rounded-xl flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -407,7 +343,6 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
               </div>
             )}
 
-            {/* Submit Action Button */}
             <button
               type="submit"
               disabled={isProcessing}
@@ -416,12 +351,12 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
               {isProcessing ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>ክፍያውን በሲስተሙ እያረጋገጠ ነው...</span>
+                  <span>ክፍያውን በመመዝገብ ላይ...</span>
                 </>
               ) : (
                 <>
                   <Zap className="w-4 h-4 text-amber-300" />
-                  <span>PAY 54 ETB (ክፍያውን ይመዝግቡ)</span>
+                  <span>SUBMIT PAYMENT ({currentPrice} ETB)</span>
                 </>
               )}
             </button>
@@ -431,7 +366,7 @@ export const DirectSystemPaymentModal: React.FC<DirectSystemPaymentModalProps> =
         {/* Modal Bottom Footer */}
         <div className="p-3.5 bg-stone-100 border-t border-stone-300 text-center text-xs text-stone-600 font-serif-ethiopic flex items-center justify-center gap-2 shrink-0">
           <ShieldCheck className="w-4 h-4 text-emerald-700" />
-          <span>የተጠበቀ እና ፈጣን የክፍያ ስርዓት — Telebirr 0910097862 | CBE 1000382883776</span>
+          <span>የተጠበቀ የክፍያ ማረጋገጫ ስርዓት • Official NUR AI High School Payment</span>
         </div>
       </div>
     </div>

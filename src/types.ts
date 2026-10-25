@@ -455,7 +455,7 @@ export interface YouTubeVideoItem {
   publishedAt?: string;
 }
 
-export type UserRole = 'student' | 'teacher' | 'admin' | 'parent';
+export type UserRole = 'student' | 'teacher' | 'admin' | 'parent' | 'SUPER_ADMIN' | 'STUDENT' | 'TEACHER';
 
 export interface UserProfile {
   uid: string;
@@ -463,6 +463,8 @@ export interface UserProfile {
   phoneNumber?: string;
   preferredLanguage?: LanguageCode;
   displayName: string;
+  photoURL?: string;
+  thumbnailURL?: string;
   role: UserRole;
   grade?: Grade;
   schoolName?: string;
@@ -470,8 +472,88 @@ export interface UserProfile {
   suspendedAt?: string | null;
   suspensionReason?: string | null;
   subscriptionStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED' | 'ACTIVE' | 'NONE';
+  notificationPreferences?: {
+    studyReminders: boolean;
+    examAlerts: boolean;
+    paymentUpdates: boolean;
+    newContentAlerts?: boolean;
+  };
+  privacySettings?: {
+    showOnLeaderboard: boolean;
+    shareProgressWithTeachers: boolean;
+  };
   createdAt: string;
   updatedAt: string;
+}
+
+export type ReferenceBookAccessLevel = 'FREE' | 'PREMIUM' | 'ADMIN_ONLY';
+export type ReferenceBookStatus = 'PUBLISHED' | 'DRAFT' | 'ARCHIVED';
+
+export interface ReferenceBook {
+  id: string;
+  title: string;
+  titleAmharic?: string;
+  author: string;
+  subjectId: string;
+  subjectName: string;
+  gradeId: Grade;
+  category: string;
+  description: string;
+  coverImageUrl?: string;
+  coverGradient?: string;
+  accessLevel: ReferenceBookAccessLevel;
+  status: ReferenceBookStatus;
+  source: string;
+  licenseInfo: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReferenceBookChapter {
+  id: string;
+  bookId: string;
+  chapterNumber: number;
+  title: string;
+  summary: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReferenceBookSection {
+  id: string;
+  bookId: string;
+  chapterId: string;
+  sectionNumber: string;
+  title: string;
+  content: string[];
+  keyFormulas?: string[];
+  workedExamples?: { question: string; solution: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReferenceBookProgress {
+  id?: string;
+  userId: string;
+  bookId: string;
+  chapterId: string;
+  sectionId: string;
+  progressPercent: number;
+  lastReadPosition: string;
+  updatedAt: string;
+}
+
+export interface ReferenceBookBookmark {
+  id: string;
+  userId: string;
+  bookId: string;
+  bookTitle?: string;
+  chapterId: string;
+  chapterTitle?: string;
+  sectionId: string;
+  sectionTitle?: string;
+  note?: string;
+  createdAt: string;
 }
 
 export interface QuizAttemptRecord {
@@ -498,4 +580,7 @@ export interface StudentProgressRecord {
   };
   lastUpdated?: string;
 }
+
+export type { SubscriptionRecord, PaymentSubmission } from './types/subscription';
+
 

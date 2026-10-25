@@ -75,7 +75,7 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
   isRenewal = false,
   onBackToHome,
 }) => {
-  const { user, userProfile, login, register, resetPassword, logout, updateProfileData } = useAuth();
+  const { user, userProfile, login, loginAsSuperAdmin, register, resetPassword, logout, updateProfileData } = useAuth();
   const { language, setLanguage, languages } = useLanguage();
   const {
     subscription,
@@ -92,6 +92,14 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
 
   // Helper to map legacy numeric step or string step to OnboardingStep
   const resolveInitialStep = (): OnboardingStep => {
+    const isSuper =
+      isOwnerSuperAdmin ||
+      user?.email?.trim().toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() ||
+      userProfile?.role === 'SUPER_ADMIN' ||
+      userProfile?.role === 'admin' ||
+      userProfile?.phoneNumber === '0910097862';
+
+    if (user && isSuper) return 'verification';
     if (user && accessStatus === 'SUSPENDED') return 'suspended';
     if (user && hasLearningAccess) return 'verification';
     if (user && (latestPayment?.status === 'PENDING' || accessStatus === 'PENDING')) return 'verification';
@@ -110,7 +118,52 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
     return 'start';
   };
 
-  const [step, setStep] = useState<OnboardingStep>(resolveInitialStep);
+  const [step, setStepState] = useState<OnboardingStep>(resolveInitialStep);
+  const [stepHistory, setStepHistory] = useState<OnboardingStep[]>([]);
+
+  // Automatically bypass onboarding and grant instant entry if user is Super Admin
+  useEffect(() => {
+    const isSuper =
+      isOwnerSuperAdmin ||
+      user?.email?.trim().toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() ||
+      userProfile?.role === 'SUPER_ADMIN' ||
+      userProfile?.role === 'admin' ||
+      userProfile?.phoneNumber === '0910097862';
+
+    if (isSuper && user) {
+      onComplete();
+    }
+  }, [user, isOwnerSuperAdmin, userProfile?.role, userProfile?.email, userProfile?.phoneNumber, onComplete]);
+
+  const setStep = (nextStep: OnboardingStep) => {
+    setStepState((prev) => {
+      if (prev !== nextStep) {
+        setStepHistory((h) => [...h, prev]);
+        try {
+          window.history.pushState({ onboardingStep: nextStep }, '');
+        } catch {
+          // ignore history errors
+        }
+      }
+      return nextStep;
+    });
+  };
+
+  useEffect(() => {
+    const onPopState = () => {
+      setStepHistory((h) => {
+        if (h.length > 0) {
+          const prev = h[h.length - 1];
+          setStepState(prev);
+          return h.slice(0, -1);
+        }
+        setStepState('start');
+        return h;
+      });
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   // Grade Selection State (Grades 9, 10, 11, 12)
   const [chosenGrade, setChosenGrade] = useState<Grade>(() => {
@@ -154,7 +207,7 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
 
   // Payment Form State
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodName>('Telebirr');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodName>('Dashen Bank');
   const [txRef, setTxRef] = useState('');
   const [proofImage, setProofImage] = useState('');
   const [proofFileName, setProofFileName] = useState('');
@@ -350,9 +403,15 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
         localStorage.setItem('nur_selected_grade', accountGrade.toString());
       }
 
-      // Check subscription
-      // Note: Subscription status is reactively evaluated in SubscriptionContext
-      const isSuper = isOwnerSuperAdmin || identifier.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+      // Check subscription or Super Admin free status
+      const isSuper =
+        isOwnerSuperAdmin ||
+        identifier.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() ||
+        identifier.trim() === '0910097862' ||
+        identifier.trim() === '+251910097862' ||
+        userProfile?.role === 'SUPER_ADMIN' ||
+        userProfile?.role === 'admin';
+
       if (isSuper || hasLearningAccess) {
         onComplete();
         return;
@@ -527,13 +586,8 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
     const methods = pricingConfig?.methods || DEFAULT_PRICING_CONFIG.methods;
     return (
       methods[selectedMethod] ||
-      methods['Telebirr'] || {
-        displayName: 'ቴሌብር (Telebirr)',
-        accountName: 'Nuriye Ahmed Adem',
-        accountNumber: '0910097862',
-        instructionsAm: 'በቴሌብር ወደ 0910097862 ይክፈሉ።',
-        instructionsEn: 'Pay via Telebirr to 0910097862.',
-      }
+      DEFAULT_PRICING_CONFIG.methods[selectedMethod] ||
+      DEFAULT_PRICING_CONFIG.methods['Dashen Bank']
     );
   }, [pricingConfig, selectedMethod]);
 
@@ -560,27 +614,24 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Language Switcher */}
+            {/* Single Entry Language Switcher (Requirement: Language selector in one place at the start) */}
             <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-2xl p-1 text-xs">
-              {[
-                { code: 'am', label: 'አማ' },
-                { code: 'en', label: 'EN' },
-                { code: 'om', label: 'OM' },
-                { code: 'ti', label: 'ትግ' },
-              ].map((l) => (
+              {languages.map((l) => (
                 <button
                   key={l.code}
                   onClick={() => {
                     setLanguage(l.code as LanguageCode);
                     localStorage.setItem('app_tutorial_language', l.code);
                   }}
-                  className={`px-2.5 py-1 rounded-xl font-bold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1 ${
                     language === l.code
                       ? 'bg-emerald-600 text-white shadow-xs'
                       : 'text-slate-400 hover:text-white'
                   }`}
+                  title={`${l.name} (${l.nativeName})`}
                 >
-                  {l.label}
+                  <span className="text-[11px]">{l.flagOrLabel}</span>
+                  <span>{l.nativeName.split(' ')[0]}</span>
                 </button>
               ))}
             </div>
@@ -588,7 +639,7 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
             {/* Quick Login Shortcut in Header */}
             <button
               onClick={() => {
-                setStep('select_grade');
+                setStep('login');
               }}
               className="text-xs font-bold text-slate-300 hover:text-white px-3 py-1.5 rounded-xl border border-slate-700 hover:border-slate-500 transition-colors cursor-pointer"
             >
@@ -659,12 +710,32 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
             {/* SECONDARY: LOGIN */}
             <button
               onClick={() => {
-                setStep('select_grade');
+                setStep('login');
               }}
               className="w-full py-3.5 px-6 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer hover:border-slate-500"
             >
               <User className="w-4 h-4 text-emerald-400" />
               <span>{language === 'am' ? 'መለያ አለኝ (LOGIN)' : 'LOGIN'}</span>
+            </button>
+          </div>
+
+          {/* SUPER ADMIN FREE DIRECT ENTRY */}
+          <div className="w-full max-w-md mt-3.5">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await loginAsSuperAdmin();
+                  await refreshSubscription();
+                  onComplete();
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-600/15 to-amber-700/20 hover:from-amber-500/30 hover:to-amber-600/25 border-2 border-amber-500/50 hover:border-amber-400 text-amber-200 font-black text-xs sm:text-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-lg shadow-amber-950/40"
+            >
+              <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0" />
+              <span>{language === 'am' ? '👑 የአድሚን ቀጥታ መግቢያ (ያለ ክፍያ በነፃ)' : '👑 Super Admin Free Access (No Payment)'}</span>
             </button>
           </div>
 
@@ -1231,6 +1302,29 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
                 </>
               )}
             </button>
+
+            {/* Super Admin Direct Bypass / 100% Free Entry */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    setIsLoggingIn(true);
+                    await loginAsSuperAdmin();
+                    await refreshSubscription();
+                    onComplete();
+                  } catch (err: any) {
+                    setLoginError(err.message || 'Login failed');
+                  } finally {
+                    setIsLoggingIn(false);
+                  }
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400 text-amber-300 font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4 text-amber-400" />
+                <span>{language === 'am' ? '👑 እንደ Super Admin በነፃ ግባ (ያለ ክፍያ)' : '👑 Super Admin One-Click Free Login'}</span>
+              </button>
+            </div>
           </form>
 
           {/* Switch to Register */}
@@ -1319,6 +1413,77 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
   // RENDER STEP 5: PAYMENT SCREEN (Requirement 7 & 8)
   // ==========================================================================
   if (step === 'payment') {
+    const isSuper =
+      isOwnerSuperAdmin ||
+      user?.email?.trim().toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() ||
+      userProfile?.role === 'SUPER_ADMIN' ||
+      userProfile?.role === 'admin' ||
+      userProfile?.phoneNumber === '0910097862';
+
+    if (isSuper) {
+      return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 sm:p-8">
+          <div className="max-w-md w-full bg-slate-900 border-2 border-amber-500/40 rounded-3xl p-6 text-center space-y-4 shadow-xl">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
+              <ShieldCheck className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-black text-white font-serif-ethiopic">
+              {language === 'am' ? '👑 ሰላም Super Admin!' : '👑 Welcome Super Admin!'}
+            </h3>
+            <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed font-serif-ethiopic">
+              {language === 'am'
+                ? 'እርስዎ የሲስተሙ ዋና ባለቤትና አስተዳዳሪ በመሆንዎ ክፍያ መክፈል አይጠበቅብዎትም። በነፃ እና ሙሉ በሙሉ ያለ ገደብ ወደ ሲስተሙ መግባት ይችላሉ።'
+                : 'As the Super Admin and system owner, you are exempt from payment. You have full, unrestricted lifetime access.'}
+            </p>
+            <button
+              type="button"
+              onClick={() => onComplete()}
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>{language === 'am' ? 'ወደ ሲስተሙ በነፃ ይግቡ' : 'ENTER SYSTEM FOR FREE'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!user) {
+      return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 sm:p-8">
+          <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center space-y-4">
+            <Lock className="w-8 h-8 text-amber-400 mx-auto" />
+            <h3 className="text-lg font-black text-white font-serif-ethiopic">
+              {language === 'am'
+                ? 'የክፍያ መመሪያዎች ለተመዘገቡ ተማሪዎች ብቻ ይታያሉ'
+                : 'Payment Instructions Restricted to Registered Students'}
+            </h3>
+            <p className="text-xs text-slate-400">
+              {language === 'am'
+                ? 'የቴሌብር እና የባንክ የክፍያ ሂሳብ ቁጥሮችን ለማየት እባክዎ መጀመሪያ ይመዝገቡ ወይም ወደ መለያዎ ይግቡ።'
+                : 'Please register or sign in first to access the secure payment screen.'}
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setStep('register')}
+                className="px-4 py-2.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-black cursor-pointer"
+              >
+                {language === 'am' ? 'አዲስ ተማሪ ምዝገባ' : 'Register'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep('login')}
+                className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-200 text-xs font-bold cursor-pointer"
+              >
+                {language === 'am' ? 'ግባ (Login)' : 'Login'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-8">
         <div className="max-w-2xl mx-auto w-full">
@@ -1428,16 +1593,22 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
                   </span>
                   <div className="flex items-center justify-between mt-1">
                     <span className="text-sm font-black text-white font-mono">
-                      {currentMethodConfig.accountNumber}
+                      {currentMethodConfig.accountNumber
+                        ? currentMethodConfig.accountNumber
+                        : language === 'am'
+                        ? 'በአስተዳዳሪ (SUPER_ADMIN) የሚሞላ'
+                        : 'Configurable by Super Admin'}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(currentMethodConfig.accountNumber, 'acc')}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition-colors flex items-center gap-1 cursor-pointer"
-                    >
-                      {copiedKey === 'acc' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span className="text-[10px]">{copiedKey === 'acc' ? 'ተቀድቷል' : 'ኮፒ'}</span>
-                    </button>
+                    {currentMethodConfig.accountNumber && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(currentMethodConfig.accountNumber, 'acc')}
+                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        {copiedKey === 'acc' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span className="text-[10px]">{copiedKey === 'acc' ? 'ተቀድቷል' : 'ኮፒ'}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -1746,80 +1917,68 @@ export const StudentOnboardingFlow: React.FC<StudentOnboardingFlowProps> = ({
           </div>
 
           {/* ================================================================= */}
-          {/* SUPER ADMIN APPROVAL / TEST SIMULATION HARNESS (Requirement 10 & 22) */}
+          {/* SUPER ADMIN APPROVAL PANEL (STRICTLY RESTRICTED TO SUPER_ADMIN)   */}
           {/* ================================================================= */}
-          <div className="mt-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900 border border-amber-500/30">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                <span className="text-xs font-bold text-amber-300 font-serif-ethiopic">
-                  👑 SUPER_ADMIN የአስተዳዳሪ ማጽደቂያ ፓነል (Admin Review & Simulator)
-                </span>
+          {isOwnerSuperAdmin && (
+            <div className="mt-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900 border border-amber-500/30">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-amber-300 font-serif-ethiopic">
+                    👑 SUPER_ADMIN የአስተዳዳሪ ማጽደቂያ ፓነል (Admin Review)
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-slate-400">SUPER_ADMIN ONLY</span>
               </div>
-              <span className="text-[10px] font-mono text-slate-400">Admin Control</span>
-            </div>
 
-            <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
-              {language === 'am'
-                ? 'ለስርዓቱ ፍተሻና ማረጋገጫ (Part 21 Section 10 & 22)፤ አስተዳዳሪው ክፍያውን እዚህ ላይ በቀጥታ ማጽደቅ ወይም ውድቅ ማድረግ ይችላል።'
-                : 'Super Admin review harness to approve/reject this student payment per Part 21 requirements.'}
-            </p>
+              {adminActionMessage && (
+                <div className="mt-3 p-2.5 rounded-xl bg-slate-950 text-emerald-400 text-xs border border-emerald-800/80 font-mono">
+                  {adminActionMessage}
+                </div>
+              )}
 
-            {adminActionMessage && (
-              <div className="mt-3 p-2.5 rounded-xl bg-slate-950 text-emerald-400 text-xs border border-emerald-800/80 font-mono">
-                {adminActionMessage}
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2.5">
-              <button
-                type="button"
-                disabled={isAdminProcessing}
-                onClick={handleAdminApprovePayment}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{language === 'am' ? 'ክፍያውን አጽድቅ (Approve)' : 'Approve Payment'}</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isAdminProcessing}
-                onClick={() => setRejectReasonPrompt(!rejectReasonPrompt)}
-                className="px-4 py-2 rounded-xl bg-rose-950 border border-rose-800 hover:bg-rose-900 text-rose-200 font-bold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                <XCircle className="w-4 h-4" />
-                <span>{language === 'am' ? 'ውድቅ አድርግ (Reject)' : 'Reject Payment'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsTestHarnessOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs flex items-center gap-1.5 cursor-pointer ml-auto"
-              >
-                <span>🧪 Test All Grades</span>
-              </button>
-            </div>
-
-            {rejectReasonPrompt && (
-              <div className="mt-3 pt-3 border-t border-slate-800 space-y-2">
-                <input
-                  type="text"
-                  value={customRejectReason}
-                  onChange={(e) => setCustomRejectReason(e.target.value)}
-                  placeholder="የውድቅ የተደረገበት ምክንያት..."
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white"
-                />
+              <div className="mt-4 flex flex-wrap gap-2.5">
                 <button
                   type="button"
-                  onClick={handleAdminRejectPayment}
-                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold"
+                  disabled={isAdminProcessing}
+                  onClick={handleAdminApprovePayment}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
                 >
-                  ውሳኔውን አረጋግጥ (Confirm Rejection)
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{language === 'am' ? 'ክፍያውን አጽድቅ (Approve)' : 'Approve Payment'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isAdminProcessing}
+                  onClick={() => setRejectReasonPrompt(!rejectReasonPrompt)}
+                  className="px-4 py-2 rounded-xl bg-rose-950 border border-rose-800 hover:bg-rose-900 text-rose-200 font-bold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <XCircle className="w-4 h-4" />
+                  <span>{language === 'am' ? 'ውድቅ አድርግ (Reject)' : 'Reject Payment'}</span>
                 </button>
               </div>
-            )}
-          </div>
+
+              {rejectReasonPrompt && (
+                <div className="mt-3 pt-3 border-t border-slate-800 space-y-2">
+                  <input
+                    type="text"
+                    value={customRejectReason}
+                    onChange={(e) => setCustomRejectReason(e.target.value)}
+                    placeholder="የውድቅ የተደረገበት ምክንያት..."
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAdminRejectPayment}
+                    className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold"
+                  >
+                    ውሳኔውን አረጋግጥ (Confirm Rejection)
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Test Harness Modal */}

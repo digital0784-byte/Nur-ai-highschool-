@@ -53,7 +53,7 @@ export const FrontendGatewayModal: React.FC<FrontendGatewayModalProps> = ({
 }) => {
   const { language, setLanguage, languages, t, isRtl } = useLanguage();
   const { user, userProfile, login, register } = useAuth();
-  const { isOwnerSuperAdmin, submitPayment } = useSubscription();
+  const { isOwnerSuperAdmin, submitPayment, pricingConfig } = useSubscription();
 
   // Current Screen State: 1 = Welcome, 2 = Select Language & Grade, 3 = Payment, Login, Registration & Others
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -72,7 +72,9 @@ export const FrontendGatewayModal: React.FC<FrontendGatewayModalProps> = ({
 
   // Payment form states
   const [paymentTxRef, setPaymentTxRef] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'telebirr' | 'cbe'>('telebirr');
+  const [paymentMethod, setPaymentMethod] = useState<
+    'Telebirr' | 'Dashen Bank' | 'Commercial Bank of Ethiopia (CBE)' | 'Bank of Abyssinia'
+  >('Telebirr');
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentFeedback, setPaymentFeedback] = useState<string | null>(null);
 
@@ -232,10 +234,18 @@ export const FrontendGatewayModal: React.FC<FrontendGatewayModalProps> = ({
     setPaymentSubmitting(true);
     setPaymentFeedback(null);
     try {
+      const gradeFee =
+        selectedGrade === 9
+          ? pricingConfig.grade9Price || 160
+          : selectedGrade === 10
+          ? pricingConfig.grade10Price || 180
+          : selectedGrade === 11
+          ? pricingConfig.grade11Price || 200
+          : pricingConfig.grade12Price || 200;
       await submitPayment({
         grade: selectedGrade,
-        amountETB: 54,
-        paymentMethod: paymentMethod === 'telebirr' ? 'Telebirr' : 'CBE Birr',
+        amountETB: gradeFee,
+        paymentMethod,
         transactionReference: paymentTxRef.trim(),
       });
       setPaymentFeedback(
@@ -810,29 +820,6 @@ export const FrontendGatewayModal: React.FC<FrontendGatewayModalProps> = ({
               {/* TAB 1: LOGIN */}
               {screen3Tab === 'login' && (
                 <div className="bg-white p-4 sm:p-5 rounded-xl border border-[#38332D]/30 space-y-4 shadow-2xs">
-                  {/* Quick Demo Credentials Banner */}
-                  <div className="p-3 rounded-lg bg-amber-50 border border-amber-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <span className="text-amber-900 font-bold">
-                      💡 ፈጣን የሙከራ መግቢያ (Quick Test Shortcuts)፦
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={handleQuickAdminDemo}
-                        className="px-2.5 py-1 rounded bg-[#1E1B18] text-amber-300 text-[11px] font-bold hover:bg-black transition-colors"
-                      >
-                        ሱፐር አድሚን (Super Admin)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleQuickStudentDemo}
-                        className="px-2.5 py-1 rounded bg-emerald-700 text-white text-[11px] font-bold hover:bg-emerald-800 transition-colors"
-                      >
-                        የተማሪ አካውንት (Student)
-                      </button>
-                    </div>
-                  </div>
-
                   {authError && (
                     <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-300 text-rose-800 text-xs flex items-center gap-2">
                       <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
@@ -969,92 +956,152 @@ export const FrontendGatewayModal: React.FC<FrontendGatewayModalProps> = ({
                 </div>
               )}
 
-              {/* TAB 3: PAYMENT */}
+              {/* TAB 3: PAYMENT (Restricted to Registered Students) */}
               {screen3Tab === 'payment' && (
                 <div className="bg-white p-4 sm:p-5 rounded-xl border border-[#38332D]/30 space-y-4 shadow-2xs">
-                  {/* Account Numbers Information Card */}
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950 via-[#0F2A1E] to-emerald-950 text-white space-y-2 border border-emerald-500/40">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-emerald-400">
-                        የክፍያ ሂሳብ ቁጥሮች (Official Payment Accounts)
-                      </span>
-                      <span className="text-[11px] bg-emerald-400 text-stone-950 px-2 py-0.5 rounded font-black font-mono">
-                        54 ETB / ወር
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-mono text-xs">
-                      <div className="p-2.5 rounded-lg bg-white/10 border border-white/10">
-                        <span className="text-emerald-300 block text-[10px]">📱 Telebirr:</span>
-                        <span className="font-bold text-white text-sm select-all">0910097862</span>
-                        <span className="text-stone-300 block text-[10px]">(Nuriye Ahmed Adem)</span>
-                      </div>
-
-                      <div className="p-2.5 rounded-lg bg-white/10 border border-white/10">
-                        <span className="text-emerald-300 block text-[10px]">🏦 CBE (ንግድ ባንክ):</span>
-                        <span className="font-bold text-white text-sm select-all">1000382883776</span>
-                        <span className="text-stone-300 block text-[10px]">(Nuriye Ahmed Adem)</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {paymentFeedback && (
-                    <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                      <span>{paymentFeedback}</span>
-                    </div>
-                  )}
-
-                  {/* Payment Verification Form */}
-                  <form onSubmit={handlePaymentSubmit} className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-stone-700 mb-1">
-                          የክፍያ ዘዴ (Method)
-                        </label>
-                        <select
-                          value={paymentMethod}
-                          onChange={(e: any) => setPaymentMethod(e.target.value)}
-                          className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-lg"
-                        >
-                          <option value="telebirr">Telebirr (0910097862)</option>
-                          <option value="cbe">CBE ንግድ ባንክ (1000382883776)</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-stone-700 mb-1">
-                          የግብይት ማረጋገጫ ቁጥር (Transaction ID / SMS)
-                        </label>
-                        <input
-                          type="text"
-                          value={paymentTxRef}
-                          onChange={(e) => setPaymentTxRef(e.target.value)}
-                          placeholder="ምሳሌ፡ FT2348572 ወይም ደረሰኝ ቁጥር"
-                          className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-1">
-                      <button
-                        type="submit"
-                        disabled={paymentSubmitting}
-                        className="px-5 py-2 rounded-lg bg-[#047857] hover:bg-[#065F46] text-white text-xs font-bold transition-all cursor-pointer shadow-xs disabled:opacity-50"
-                      >
-                        {paymentSubmitting ? 'በማስገባት ላይ...' : 'ክፍያውን አስገባና አረጋግጥ (Submit Payment)'}
-                      </button>
-                      {onDirectPaymentOpen && (
+                  {!user ? (
+                    <div className="p-5 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 space-y-3 text-center">
+                      <Lock className="w-6 h-6 text-amber-700 mx-auto" />
+                      <h5 className="text-sm font-bold font-serif-ethiopic">
+                        የክፍያ ሂሳብ መረጃዎች ለተመዘገቡ ተማሪዎች ብቻ የተጠበቁ ናቸው
+                      </h5>
+                      <p className="text-xs text-amber-800">
+                        የቴሌብር እና የባንክ የክፍያ መመሪያዎችን ለማየት እባክዎ መጀመሪያ እንደ ተማሪ ይመዝገቡ ወይም ወደ አካውንትዎ ይግቡ።
+                      </p>
+                      <div className="flex items-center justify-center gap-2 pt-1">
                         <button
                           type="button"
-                          onClick={onDirectPaymentOpen}
-                          className="text-xs text-emerald-800 underline font-semibold"
+                          onClick={() => setScreen3Tab('register')}
+                          className="px-4 py-2 rounded-lg bg-[#047857] text-white text-xs font-bold cursor-pointer"
                         >
-                          ሙሉ የክፍያ ገጽ ክፈት
+                          አዲስ ተማሪ ምዝገባ (Register)
                         </button>
-                      )}
+                        <button
+                          type="button"
+                          onClick={() => setScreen3Tab('login')}
+                          className="px-4 py-2 rounded-lg bg-stone-800 text-white text-xs font-bold cursor-pointer"
+                        >
+                          ነባር ተማሪ ግባ (Login)
+                        </button>
+                      </div>
                     </div>
-                  </form>
+                  ) : (
+                    <>
+                      {/* Account Numbers Information Card (Dynamic from pricingConfig.methods) */}
+                      <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950 via-[#0F2A1E] to-emerald-950 text-white space-y-2 border border-emerald-500/40">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-emerald-400">
+                            የክፍያ ሂሳብ ቁጥሮች (Official Payment Accounts)
+                          </span>
+                          <span className="text-[11px] bg-emerald-400 text-stone-950 px-2 py-0.5 rounded font-black font-mono">
+                            ክፍል {selectedGrade}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-mono text-xs">
+                          {(
+                            [
+                              'Telebirr',
+                              'Dashen Bank',
+                              'Commercial Bank of Ethiopia (CBE)',
+                              'Bank of Abyssinia',
+                            ] as const
+                          ).map((mKey) => {
+                            const mCfg = pricingConfig.methods[mKey];
+                            if (!mCfg || !mCfg.isEnabled) return null;
+                            return (
+                              <div
+                                key={mKey}
+                                className="p-2.5 rounded-lg bg-white/10 border border-white/10"
+                              >
+                                <span className="text-emerald-300 block text-[10px]">
+                                  {mCfg.displayName}:
+                                </span>
+                                <span className="font-bold text-white text-sm select-all">
+                                  {mCfg.accountNumber}
+                                </span>
+                                <span className="text-stone-300 block text-[10px]">
+                                  ({mCfg.accountName})
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {paymentFeedback && (
+                        <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                          <span>{paymentFeedback}</span>
+                        </div>
+                      )}
+
+                      {/* Payment Verification Form */}
+                      <form onSubmit={handlePaymentSubmit} className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">
+                              የክፍያ ዘዴ (Method)
+                            </label>
+                            <select
+                              value={paymentMethod}
+                              onChange={(e: any) => setPaymentMethod(e.target.value)}
+                              className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-lg"
+                            >
+                              {(
+                                [
+                                  'Telebirr',
+                                  'Dashen Bank',
+                                  'Commercial Bank of Ethiopia (CBE)',
+                                  'Bank of Abyssinia',
+                                ] as const
+                              ).map((mKey) => {
+                                const mCfg = pricingConfig.methods[mKey];
+                                if (!mCfg || !mCfg.isEnabled) return null;
+                                return (
+                                  <option key={mKey} value={mKey}>
+                                    {mCfg.displayName} — {mCfg.accountNumber} ({mCfg.accountName})
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">
+                              የግብይት ማረጋገጫ ቁጥር (Transaction ID / SMS)
+                            </label>
+                            <input
+                              type="text"
+                              value={paymentTxRef}
+                              onChange={(e) => setPaymentTxRef(e.target.value)}
+                              placeholder="ምሳሌ፡ FT2348572 ወይም ደረሰኝ ቁጥር"
+                              className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-700 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-1">
+                          <button
+                            type="submit"
+                            disabled={paymentSubmitting}
+                            className="px-5 py-2 rounded-lg bg-[#047857] hover:bg-[#065F46] text-white text-xs font-bold transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                          >
+                            {paymentSubmitting ? 'በማስገባት ላይ...' : 'ክፍያውን አስገባና አረጋግጥ (Submit Payment)'}
+                          </button>
+                          {onDirectPaymentOpen && (
+                            <button
+                              type="button"
+                              onClick={onDirectPaymentOpen}
+                              className="text-xs text-emerald-800 underline font-semibold"
+                            >
+                              ሙሉ የክፍያ ገጽ ክፈት
+                            </button>
+                          )}
+                        </div>
+                      </form>
+                    </>
+                  )}
                 </div>
               )}
 

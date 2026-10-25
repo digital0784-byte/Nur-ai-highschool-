@@ -106,7 +106,11 @@ function TutorialAppContent() {
     // Only guard non-super-admin users from admin routes or unpaid access
     if (!isOwnerSuperAdmin) {
       setActiveTab((prev) => {
-        if (prev === 'admin_dashboard' || prev === 'security_fortress') {
+        if (
+          prev === 'admin_dashboard' ||
+          prev === 'security_fortress' ||
+          prev === 'system_integration'
+        ) {
           return hasLearningAccess ? 'student_app' : 'subscription_payment';
         }
         if (prev === 'student_app' && !hasLearningAccess) {
@@ -118,7 +122,12 @@ function TutorialAppContent() {
   }, [userProfile?.uid, isOwnerSuperAdmin, hasLearningAccess, subscriptionLoading]);
 
   const handleTabChange = (newTab: ActiveTab) => {
-    if ((newTab === 'admin_dashboard' || newTab === 'security_fortress') && !isOwnerSuperAdmin) {
+    if (
+      (newTab === 'admin_dashboard' ||
+        newTab === 'security_fortress' ||
+        newTab === 'system_integration') &&
+      !isOwnerSuperAdmin
+    ) {
       setActiveTab(hasLearningAccess ? 'student_app' : 'subscription_payment');
       return;
     }
@@ -187,8 +196,25 @@ function TutorialAppContent() {
     );
   }, [currentSubject, selectedTopicId, selectedGrade]);
 
-  // Handler for changing grade: also synchronizes topic tier
+  // Synchronize student's locked grade from profile
+  useEffect(() => {
+    if (userProfile?.grade && [9, 10, 11, 12].includes(userProfile.grade)) {
+      if (!isOwnerSuperAdmin && selectedGrade !== userProfile.grade) {
+        const studentLockedGrade = userProfile.grade as Grade;
+        setSelectedGrade(studentLockedGrade);
+        localStorage.setItem('nur_selected_grade', studentLockedGrade.toString());
+        const newTopic = getTopicForGrade(currentSubject, studentLockedGrade);
+        setSelectedTopicId(newTopic.id);
+      }
+    }
+  }, [userProfile?.grade, isOwnerSuperAdmin, selectedGrade, currentSubject]);
+
+  // Handler for changing grade: strictly allowed for Super Admin, locked for regular students
   const handleSelectGrade = (grade: Grade) => {
+    if (!isOwnerSuperAdmin && userProfile?.grade && userProfile.grade !== grade) {
+      // User cannot enter or switch to another grade level
+      return;
+    }
     setSelectedGrade(grade);
     localStorage.setItem('nur_selected_grade', grade.toString());
     const newTopic = getTopicForGrade(currentSubject, grade);
@@ -221,6 +247,42 @@ function TutorialAppContent() {
 
   return (
     <div className="min-h-screen bg-[#FAF6EC] text-[#24211E] py-3 sm:py-6 px-2 sm:px-4 md:px-6 flex flex-col items-center justify-start">
+      {/* Unconditional Super Admin Quick-Switch Bar */}
+      {isOwnerSuperAdmin && (
+        <div className="w-full max-w-6xl mb-2.5 bg-gradient-to-r from-stone-950 via-emerald-950 to-stone-950 text-white px-4 py-2.5 rounded-2xl border border-amber-500/40 shadow-md flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-stone-950 font-black uppercase text-[10px]">
+              👑 SUPER_ADMIN
+            </span>
+            <span className="font-bold font-serif-ethiopic text-amber-200">
+              Nuriye Ahmed Adem (mejennur669@gmail.com) — ያለ ቅድመ-ሁኔታ ሙሉ የሲስተም ፈቃድ
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setActiveTab('student_app')}
+              className={`px-3 py-1 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                activeTab === 'student_app'
+                  ? 'bg-emerald-500 text-stone-950 shadow-xs'
+                  : 'bg-stone-800 text-stone-200 hover:bg-stone-700 border border-stone-700'
+              }`}
+            >
+              🎓 የተማሪ ሙሉ ሲስተም (Student App)
+            </button>
+            <button
+              onClick={() => setActiveTab('admin_dashboard')}
+              className={`px-3 py-1 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                activeTab === 'admin_dashboard'
+                  ? 'bg-amber-400 text-stone-950 shadow-xs'
+                  : 'bg-stone-800 text-stone-200 hover:bg-stone-700 border border-stone-700'
+              }`}
+            >
+              ⚡ ዋና አድሚን ዳሽቦርድ (Admin ERP)
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Container with 1.5px solid dark notebook border */}
       <div
         id="app-main-frame"
@@ -378,7 +440,7 @@ function TutorialAppContent() {
                 </div>
               )}
 
-              {activeTab === 'system_integration' && (
+              {activeTab === 'system_integration' && isOwnerSuperAdmin && (
                 <div className="p-2 sm:p-4 lg:p-6">
                   <FullSystemIntegrationView />
                 </div>
